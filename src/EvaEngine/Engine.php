@@ -780,6 +780,10 @@ class Engine
 
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)
     {
+        $this->getDI()->getEventsManager()->attach('dispatch:beforeException', function($event, $dispatcher, $exception){
+            throw $exception;
+        });
+
         if($this->getDI()->getConfig()->debug) {
             return $this;
         }
@@ -787,7 +791,7 @@ class Engine
         $errorClass = get_class($errorHandler);
         set_error_handler("$errorClass::errorHandler");
         set_exception_handler("$errorClass::exceptionHandler");
-        //register_shutdown_function("$errorClass::shutdownHandler");
+        register_shutdown_function("$errorClass::shutdownHandler");
         return $this;
     }
 

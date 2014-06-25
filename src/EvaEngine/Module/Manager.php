@@ -6,6 +6,7 @@ use Phalcon\Loader;
 use Phalcon\Events\EventsAwareInterface;
 use Phalcon\Events\ManagerInterface;
 use Phalcon\Events\Manager as EventsManager;
+use Eva\EvaEngine\Mvc\Model;
 
 class Manager implements EventsAwareInterface
 {
@@ -18,6 +19,8 @@ class Manager implements EventsAwareInterface
     protected $cacheFile;
 
     protected $eventsManager;
+
+    protected $injectRelations = false;
 
     public function getLoader()
     {
@@ -86,6 +89,11 @@ class Manager implements EventsAwareInterface
         return false;
     }
 
+    public function hasModule($moduleName)
+    {
+        return isset($this->modules[$moduleName]) ? true : false;
+    }
+
     public function getModules()
     {
         return $this->modules;
@@ -116,6 +124,7 @@ class Manager implements EventsAwareInterface
             'moduleConfig' => '', //module config file path
             'routesFrontend' => '', //module router frontend path
             'routesBackend' => '', //module router backend path
+            'relations' => '', //entity relations for injection
             'listeners' => '', //module listeners list array
             'viewHelpers' => '', //module view helpers
             'adminMenu' => '', //admin menu
@@ -173,6 +182,7 @@ class Manager implements EventsAwareInterface
             }
             $modules[$key]['listeners'] = $module['className']::registerGlobalEventListeners();
             $modules[$key]['viewHelpers'] = $module['className']::registerGlobalViewHelpers();
+            $modules[$key]['relations'] = $module['className']::registerGlobalRelations();
         }
         $loader->registerNamespaces($namespaces)->register();
 
@@ -251,6 +261,37 @@ class Manager implements EventsAwareInterface
             return $modules[$moduleName]['viewHelpers'];
         }
         return array();
+    }
+
+    public function getInjectRelations(Model $entity)
+    {
+        $relations = $this->injectRelations;
+
+        if($relations === false) {
+            $relations = array();
+            $modules = $this->getModules();
+            foreach($modules as $moduleName => $module) {
+                if(empty($module['relations'])) {
+                    continue;
+                }
+                foreach($module['relations'] as $relation) {
+                    $relations[$relation['entity']] = $relation;
+                }
+            }
+            $this->injectRelations = $relations;
+        }
+
+        if(!$relations) {
+            return array();
+        }
+
+        $entityRalations = array();
+        foreach($relations as $relation) {
+            if($entity instanceof $relation['entity']) {
+                $entityRalations[] = $relation;
+            }
+        }
+        return $entityRalations;
     }
 
     public function __construct($defaultPath = null)

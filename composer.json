@@ -12,7 +12,9 @@
     "require": {
         "php": ">=5.3.10",
 	"ext-phalcon": ">=1.3.2",
-        "phalcon/incubator" : "dev-master"
+        "phalcon/incubator" : "dev-master",
+	"swiftmailer/swiftmailer" : "dev-master",
+	"knplabs/gaufrette" : "dev-master"
     },
     "autoload": {
         "psr-4": {"Eva\\EvaEngine\\": "src/EvaEngine"}

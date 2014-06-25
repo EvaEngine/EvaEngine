@@ -16,6 +16,8 @@ class Model extends \Phalcon\Mvc\Model
 
     protected $modelForm;
 
+    public static $injectRelations;
+
     public function setModelForm($form)
     {
         $this->modelForm = $form;
@@ -82,11 +84,26 @@ class Model extends \Phalcon\Mvc\Model
         return $data;
     }
 
+    public function loadRelations()
+    {
+        $relations = $this->getDI()->getModuleManager()->getInjectRelations($this);
+        if(!$relations) {
+            return $this;
+        }
+        foreach($relations as $relation) {
+            $relationType = $relation['relationType'];
+            call_user_func_array(array($this, $relationType), $relation['parameters']);
+        }
+        return $this;
+    }
+
     public function initialize()
     {
         if (true === $this->useMasterSlave) {
             $this->setWriteConnectionService('dbMaster');
             $this->setReadConnectionService('dbSlave');
         }
+
+        $this->loadRelations();
     }
 }
