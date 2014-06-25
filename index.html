@@ -230,6 +230,7 @@ $engine
                                 <li>触发事件<code>module:afterLoadModule</code></li>
                             </ol>                       
                         </li>
+                        <li>Phalcon原始模块启动过程</code>
                     </ol>
                 </section>
 
@@ -241,13 +242,115 @@ $engine->loadModules(array("EvaUser"));
 </pre>
                     <p>自定义配置</p>
                     <pre>
-$engine->loadModules(array("EvaUser" => array(
-    'className' => 'Eva\EvaUser\Module',
-    'path' => __DIR__ . '/../modules/EvaUser/Module.php'
+$engine->loadModules(array(
+"EvaUser" => array( //模块名
+    'className' => 'Eva\EvaUser\Module', //模块启动文件Class名
+    'path' => __DIR__ . '/../modules/EvaUser/Module.php', //模块启动文件路径
+    'moduleConfig' => '/../modules/EvaUser/config/config.php', //模块配置文件路径
+    'routesFrontend' =>  '/../modules/EvaUser/config/routes.frontend.php', //模块前台路由配置文件路径
+    'routesBackend' =>  '/../modules/EvaUser/config/routes.backend.php', //模块后台路由配置文件路径
+    'adminMenu' => '', //模块后台导航文件
 )));
 </pre>
                 </section>
 
+                <section>
+                    <h2>4.1 默认配置的DI，其一</h2>
+                    <ul>
+                        <li>ModuleManager : 模块管理器 （EvaEngine实现）</li>
+                        <li>EventsManager : 事件管理器（已启用优先级）</li>
+                        <li>Config : 全局配置</li>
+                        <li>Router : 路由</li>
+                        <li>Dispatcher : 分发器（事件已注入）</li>
+                        <li>ModelsMetadata : 表结构（默认开启文件缓存）</li>
+                        <li>ModelsManager: Model管理器（默认开启主从）</li>
+                        <li>View : View （EvaEngine\View）</li>
+                        <li>Session : Session（默认使用文件）</li>
+                        <li>DbMaster / DbSlave : 数据库主从</li>
+                        <li>ViewCache / ModelCache / ApiCache: 默认均为文件</li>
+                        <li>Queue : 队列，默认为GearmanClient</li>
+                        <li>Worker : 默认为GearmanWorker</li>
+                        <li>Mailer : 邮件发送服务，默认为<a href="http://swiftmailer.org/">Swift_Mailer</a></li>
+                        <li>MailMessage: 邮件主题，支持模板，EvaEngine\MailMessage</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>4.2 默认配置的DI，其二</h2>
+                    <ul>
+                        <li>Url : Url生成器</li>
+                        <li>Escaper : 转义</li>
+                        <li>Tag : View标签 EvaEngine\Tag</li>
+                        <li>Flash : 提示信息处理</li>
+                        <li>Placeholder : 模板占位符</li>
+                        <li>Cookies : 默认关闭加密</li>
+                        <li>Translate : I18N实现，默认使用csv</li>
+                        <li>FileSystem : 文件服务，基于<a href="https://github.com/KnpLabs/Gaufrette">Gaufrette</a></li>
+                    </ul>
+                    <hr>
+                    <p>启动DI的推荐方法：</p>
+                    <pre>$this->getDI()->getModuleManager();</pre>
+                    <p>不推荐：</p>
+                    <pre>$this->getDI()->get('moduleManager');</pre>
+                </section>
+
+                <section>
+                    <h2>5.1 异常处理</h2>
+                    <p>什么时候用异常：当主要业务无法继续进行（注册、登录、访问资源不存在）</p>
+                    <p>什么时候不用异常：伴随主业务的附加服务（注册发邮件、用户得积分）</p>
+                    <ul>
+                        <li>所有异常会抛至顶层，由Eva\EvaEngine\ErrorHandler统一接管</li>
+                        <li>ErrorHandler可替换</li>
+                        <li>Debug开启时，ErrorHandler为Phalcon\Debug</li>
+                        <li>ErrorHandler根据Exception不同，产生不同响应（Http Status Code / HTML / JSON）</li>
+                        <li>EvaEngine的异常必须实现接口Eva\EvaEngine\Exception\ExceptionInterface。异常中携带了Http Status Code</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>5.2 异常的归类</h2>
+                    <pre>
+- StandardException                      #标准异常     500
+  - LogicException                       #逻辑异常     500
+    - BadFunctionCallException           #错误函数调用 400
+    - BadMethodCallException             #错误方法调用 405
+    - DomainException                    #Domain错误   400 
+    - InvalidArgumentException           #错误的参数   400 
+    - LengthException                    #长度错误     400 
+    - OutOfRangeException                #超出范围     400
+    - OperationNotPermitedException      #操作不允许   403 
+    - ResourceConflictException          #资源冲突     409 
+    - ResourceExpiredException           #资源过期     403 
+    - ResourceNotFoundException          #资源不存在   404
+    - UnauthorizedException              #资源未授权   401
+    - VerifyFailedException              #验证失败     403
+  - RuntimeException                     #运行异常     500
+    - IOException                        #IO错误       500 
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>5.3 异常举例</h2>
+                    <ul>
+                        <li>用户名重复 ResourceConflictException 409</li>
+                        <li>输入API参数错误 InvalidArgumentException 400</li>
+                        <li>访问不存在的文章 ResourceNotFoundException 404</li>
+                        <li>POST接口使用GET访问 BadMethodCallException 405</li>
+                        <li>未登录访问后台 UnauthorizedException 401</li>
+                        <li>修改无权修改的资源 OperationNotPermitedException 403</li>
+                        <li>文件无法写入 IOException 500</li>
+                        <li>核心错误     RuntimeException 500</li>
+                    </ul>
+                    <hr>
+                    <p>错误代码规范： ERR_模块_异常信息</p>
+                    <pre>throw new Exception\UnauthorizedException('ERR_USER_NOT_ACTIVATED');</pre>
+                </section>
+
+
+                <section>
+                    <h2>5.4 内部错误代码</h2>
+                    <p>待定</p>
+                </section>
 			</div>
 
 		</div>
@@ -255,7 +358,7 @@ $engine->loadModules(array("EvaUser" => array(
 		<script src="lib/js/head.min.js"></script>
 		<script src="js/reveal.min.js"></script>
 
-		<script>
+	<script>
 
 			// Full list of configuration options available here:
 			// https://github.com/hakimel/reveal.js#configuration
