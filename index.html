@@ -354,24 +354,81 @@ $engine->loadModules(array(
 
                 <section>
                     <h2>6.1 对Controller的扩展</h2>
-                    <p>待定</p>
+                    <p>通过不同的接口实现来区分数据类型：HTML/JSON，权限：Session/Token</p>
+                    <ul>
+                        <li><code>JsonControllerInterface</code> 数据自动支持Json/Jsonp</li>
+                        <li><code>SessionAuthorityControllerInterface</code> 基于Session验证</li>
+                        <li><code>TokenAuthorityControllerInterface</code> 基于Token验证</li>
+                    </ul>
                 </section>
 
                 <section>
                     <h2>7.1 对Model的扩展</h2>
-                    <p>待定</p>
+                    <ul>
+                        <li>默认开启主从</li>
+                        <li>支持表前缀，默认为`eva_`</li>
+                        <li>initialize()会默认加载跨模块的Entity关系</li>
+                        <li>dump()用于将带有关系的Entity输出为数组</li>
+                    </ul>
                 </section>
 
                 <section>
                     <h2>8.1 对View的扩展</h2>
-                    <p>待定</p>
+                    <p>基于模块名设置模版</p>
+                    <pre>$view->setModuleLayout('EvaCommon', '/views/admin/layouts/layout');</pre>
+                    <p>基于模块名设置View的根目录</p>
+                    <pre>$view->setModuleViewsDir('EvaBlog', '/views');</pre>
+                    <p>基于模块名设置区块的根目录</p>
+                    <pre>$view->setModulePartialsDir('EvaCommon', '/views');</pre>
                 </section>
 
                 <section>
                     <h2>9.1 对Form的扩展</h2>
+                    <p>Form可以绑定Model</p>
+                    <pre>protected $defaultModelClass = 'Eva\EvaBlog\Models\Text';</pre>
+                    <p>Form间可以关联</p>
+                    <pre>
+        $form = new Forms\PostForm();
+        $post = new Models\Post();
+        $form->setModel($post);
+        $form->addForm('text', 'Eva\EvaBlog\Forms\TextForm');
+</pre>
+                    <p>关联后统一验证，验证完毕通过Form保存所有关联数据</p>
+                    <pre>
+        $data = $this->request->getPost();
+        if (!$form->isFullValid($data)) {
+            $form->save('updatePost');
+        }
+</pre>
+                    <p>子表单的输出会自动添加前缀</p>
+                    <pre>$form->getForm('text')->render('content');
+&lt;input name="text[content]" /&gt;
+</pre>
+
+<p>可以通过注解及绑定Model自动初始化Form Elemens</p>
+                    <pre>
+    /**
+     * @Type(Select)
+     * @Option(deleted=Deleted)
+     */
+    public $status;
+</pre>
+                </section>
+
+                <section>
+                    <h2>10.1 后台的UI控件</h2>
                     <p>待定</p>
                 </section>
-			</div>
+
+                <section>
+                    <h2>11.1 未解决的问题</h2>
+                     <ul>
+                        <li>如何应对字段的变更</li>
+                        <li>简单可行的CMS缓存策略</li>
+                        <li>多对多及复杂情况的Form处理</li>
+                    </ul>
+                </section>
+            </div>
 
 		</div>
 
