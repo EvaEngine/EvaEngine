@@ -2,6 +2,8 @@
 
 namespace Eva\EvaEngine\Mvc\User;
 
+use Phalcon\Http\ResponseInterface;
+
 class Component extends \Phalcon\Mvc\User\Component
 {
     public function reDispatch($location, $data = null)

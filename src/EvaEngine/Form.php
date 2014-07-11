@@ -221,13 +221,12 @@ class Form extends \Phalcon\Forms\Form
 
     public function isFullValid($data, $entity = null)
     {
+        $this->setRawPostData($data);
+
         if (!$this->formset) {
             $entity = $entity ? $entity : $this->model;
-
             return $this->isValid($data, $entity);
         }
-
-        $this->setRawPostData($data);
 
         $formCount = count($this->formset);
         $validResult = 0;

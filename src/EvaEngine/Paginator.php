@@ -2,6 +2,7 @@
 
 namespace Eva\EvaEngine;
 
+
 class Paginator extends \Phalcon\Paginator\Adapter\QueryBuilder
 {
     protected $query;
@@ -47,7 +48,7 @@ class Paginator extends \Phalcon\Paginator\Adapter\QueryBuilder
         if ($paginate->current > 1) {
             $i = $paginate->current - $pageRange;
             $i = $i <= 1 ? 1 : $i;
-            for ($i; $i < $paginate->current; $i++) {
+            for (; $i < $paginate->current; $i++) {
                 $prevPageRange[] = $i;
             }
             if ($prevPageRange && $prevPageRange[0] > 1) {
@@ -61,7 +62,7 @@ class Paginator extends \Phalcon\Paginator\Adapter\QueryBuilder
             $limit = $paginate->current + $pageRange;
             $limit = $limit >= $paginate->total_pages ? $paginate->total_pages : $limit;
             $i = $paginate->current + 1;
-            for ($i; $i <= $limit; $i++) {
+            for (; $i <= $limit; $i++) {
                 $nextPageRange[] = $i;
             }
             if ($nextPageRange && $nextPageRange[count($nextPageRange) - 1] < $paginate->total_pages) {
