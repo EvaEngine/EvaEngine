@@ -32,7 +32,7 @@ class Model extends \Phalcon\Mvc\Model
     public function setPrefix($tablePrefix)
     {
         $this->prefix = $tablePrefix;
-        return $htis;
+        return $this;
     }
 
     public function getPrefix()

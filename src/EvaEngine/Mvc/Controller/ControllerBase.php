@@ -222,9 +222,10 @@ class ControllerBase extends Controller
         ));
     }
 
-    public function displayJsonResponse()
+    public function displayJsonResponse($object, $code = 200)
     {
-
+        $this->response->setContentType('application/json', 'utf-8');
+        return $this->response->setJsonContent($object);
     }
 
     public function displayJsonErrorResponse($code, $message)

@@ -223,7 +223,7 @@ class Engine
             }
         }
 
-        if(!$listeners) {
+        if(!is_array($listeners)) {
             return $this;
         }
 
@@ -302,6 +302,7 @@ class Engine
         /**********************************
         DI initialize for MVC core
         ***********************************/
+        //$di->set('application', $this);
 
         //call loadmodules will overwrite this
         $di->set('moduleManager', function () use ($di) {
@@ -369,6 +370,10 @@ class Engine
         /**********************************
         DI initialize for cache
         ***********************************/
+        $di->set('globalCache', function() use ($self) {
+            return $self->diGlobalCache();
+        });
+
         $di->set('viewCache', function() use ($self) {
             return $self->diViewCache();
         });
@@ -379,6 +384,10 @@ class Engine
 
         $di->set('apiCache', function() use ($self) {
             return $self->diApiCache();
+        });
+
+        $di->set('fastCache', function() use ($self) {
+            return $self->diFastCache();
         });
 
         /**********************************
@@ -630,6 +639,11 @@ class Engine
         return $dbAdapter;
     }
 
+    public function diGlobalCache()
+    {
+        return $this->diCache('globalCache', 'eva_global_');
+    }
+
     public function diViewCache()
     {
         return $this->diCache('viewCache', 'eva_view_');
@@ -645,6 +659,18 @@ class Engine
         return $this->diCache('apiCache', 'eva_api_');
     }
 
+    public function diFastCache()
+    {
+        $config = $this->getDI()->getConfig();
+        if(!($config->cache->fastCache->enable)) {
+            return false;
+        }
+
+        $redis = new \Redis();
+        $redis->connect($config->cache->fastCache->host, $config->cache->fastCache->port, $config->cache->fastCache->timeout);
+        return $redis;
+    }
+
     protected function diCache($configKey, $prefix = 'eva_')
     {
         $config = $this->getDI()->getConfig();
@@ -656,6 +682,8 @@ class Engine
             'memory' => 'Phalcon\Cache\Backend\Memory',
             'mongo' => 'Phalcon\Cache\Backend\Mongo',
             'xcache' => 'Phalcon\Cache\Backend\Xcache',
+            'redis' => 'Phalcon\Cache\Backend\Redis',
+            'wincache' => 'Phalcon\Cache\Backend\Wincache',
             'base64' => 'Phalcon\Cache\Frontend\Base64',
             'data' => 'Phalcon\Cache\Frontend\Data',
             'igbinary' => 'Phalcon\Cache\Frontend\Igbinary',
