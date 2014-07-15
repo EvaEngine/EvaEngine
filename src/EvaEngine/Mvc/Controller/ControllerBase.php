@@ -4,6 +4,8 @@ namespace Eva\EvaEngine\Mvc\Controller;
 
 use Phalcon\Mvc\Controller;
 use Eva\EvaEngine\Exception;
+use Phalcon\Forms\Form;
+use Phalcon\Mvc\Model;
 
 class ControllerBase extends Controller
 {
@@ -89,11 +91,107 @@ class ControllerBase extends Controller
     public function redirectHandler($defaultRedirect = null, $securityCheck = false)
     {
         $formRedirect = $this->request->getPost('__redirect');
+        //Form Post will over write default
         if ($formRedirect) {
             return $this->response->redirect($formRedirect);
         }
 
         return $this->response->redirect($defaultRedirect);
+    }
+
+
+    public function showErrorMessage($code, $message, $messageType = 'error')
+    {
+        if (!isset($this->recommendedReasonPhrases[$code])) {
+            throw new Exception\InvalidArgumentException(sprintf('No http response code %s supported', $code));
+        }
+
+        $this->flashSession->$messageType($message->getMessage());
+        $this->response->setStatusCode($code, $this->recommendedReasonPhrases[$code]);
+        return $this;
+    }
+
+
+    public function showErrorMessageAsJson($code, $message)
+    {
+        if (!isset($this->recommendedReasonPhrases[$code])) {
+            throw new Exception\InvalidArgumentException(sprintf('No http response code %s supported', $code));
+        }
+
+        $this->response->setContentType('application/json', 'utf-8');
+        $this->response->setStatusCode($code, $this->recommendedReasonPhrases[$code]);
+        return $this->response->setJsonContent(array(
+            'errors' => array(
+                array(
+                    'code' => $code,
+                    'message' => $message
+                )
+            ),
+        ));
+    }
+
+    public function showException($exception, $messages = null, $messageType = 'error')
+    {
+        $messageArray = array();
+        if ($messages) {
+            foreach ($messages as $message) {
+                $this->flashSession->$messageType($message->getMessage());
+                $messageArray[] = $message->getMessage();
+            }
+        }
+
+        $logger = $this->getDI()->get('logException');
+        $logger->log(
+            implode('', $messageArray) . "\n" .
+            get_class($exception) . ":" . $exception->getMessage(). "\n" .
+            " File=" . $exception->getFile() . "\n" .
+            " Line=" . $exception->getLine() . "\n" .
+            $exception->getTraceAsString()
+        );
+
+        //Not eva exception, keep throw
+        if (!($exception instanceof Exception\ExceptionInterface)) {
+            throw $exception;
+        }
+
+        $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
+        $this->flashSession->$messageType($exception->getMessage());
+        return $this;
+    }
+
+    public function showExceptionAsJson($exception, $messages = null)
+    {
+        $this->response->setContentType('application/json', 'utf-8');
+        if (!($exception instanceof Exception\ExceptionInterface)) {
+            $this->response->setStatusCode('500', 'System Runtime Exception');
+            return $this->response->setJsonContent(array(
+                'errors' => array(
+                    array(
+                        'code' => $exception->getCode(),
+                        'message' => $exception->getMessage(),
+                    )
+                ),
+            ));
+        }
+
+        $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
+        $errors = array();
+        if ($messages) {
+            foreach ($messages as $message) {
+                $errors[] = array(
+                    'code' => 0,
+                    'message' => $message->getMessage(),
+                );
+            }
+        }
+        $errors[] = array(
+            'code' => $exception->getCode(),
+            'message' => $exception->getMessage(),
+        );
+
+        return $this->response->setJsonContent(array(
+            'errors' => $errors
+        ));
     }
 
     public function ignoreException($exception, $messages = null, $messageType = 'debug')
@@ -119,37 +217,8 @@ class ControllerBase extends Controller
 
     }
 
-    public function displayException($exception, $messages = null, $messageType = 'error')
-    {
-        $messageArray = array();
-        if ($messages) {
-            foreach ($messages as $message) {
-                $this->flashSession->$messageType($message->getMessage());
-                $messageArray[] = $message->getMessage();
-            }
-        }
 
-        $logger = $this->getDI()->get('logException');
-        $logger->log(
-            implode('', $messageArray) . "\n" .
-            get_class($exception) . ":" . $exception->getMessage(). "\n" .
-            " File=" . $exception->getFile() . "\n" .
-            " Line=" . $exception->getLine() . "\n" .
-            $exception->getTraceAsString()
-        );
-
-        //Not eva exception, keep throw
-        if (!($exception instanceof \Eva\EvaEngine\Exception\ExceptionInterface)) {
-            throw $exception;
-        }
-
-        $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
-        $this->flashSession->$messageType($exception->getMessage());
-
-        return $this;
-    }
-
-    public function displayModelMessages(\Phalcon\Mvc\Model $model, $messageType = 'warning')
+    public function showModelMessages(Model $model, $messageType = 'warning')
     {
         $messages = $model->getMessages();
         if ($messages) {
@@ -160,7 +229,18 @@ class ControllerBase extends Controller
         return $this;
     }
 
-    public function displayInvalidMessages(\Phalcon\Forms\Form $form, $messageType = 'warning')
+    public function showModelMessagesAsJson(Model $model)
+    {
+        $messages = $model->getMessages();
+        if ($messages) {
+            foreach ($messages as $message) {
+                $this->flashSession->$messageType($message->getMessage());
+            }
+        }
+        return $this;
+    }
+
+    public function showInvalidMessages(Form $form, $messageType = 'warning')
     {
         $messages = $form->getMessages();
         if ($messages) {
@@ -171,7 +251,7 @@ class ControllerBase extends Controller
         return $this;
     }
 
-    public function displayJsonInvalidMessages(\Phalcon\Forms\Form $form, $messageType = 'warning')
+    public function showInvalidMessagesAsJson(Form $form, $messageType = 'warning')
     {
         $messages = $form->getMessages();
         $content = array();
@@ -187,62 +267,12 @@ class ControllerBase extends Controller
         ));
     }
 
-    public function displayExceptionForJson($exception, $messages = null)
-    {
-        $this->response->setContentType('application/json', 'utf-8');
-        if (!($exception instanceof \Eva\EvaEngine\Exception\ExceptionInterface)) {
-            $this->response->setStatusCode('500', 'System Runtime Exception');
 
-            return $this->response->setJsonContent(array(
-                'errors' => array(
-                    array(
-                        'code' => $exception->getCode(),
-                        'message' => $exception->getMessage(),
-                    )
-                ),
-            ));
-        }
-        $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
-        $errors = array();
-        if ($messages) {
-            foreach ($messages as $message) {
-                $errors[] = array(
-                    'code' => 0,
-                    'message' => $message->getMessage(),
-                );
-            }
-        }
-        $errors[] = array(
-            'code' => $exception->getCode(),
-            'message' => $exception->getMessage(),
-        );
-
-        return $this->response->setJsonContent(array(
-            'errors' => $errors
-        ));
-    }
-
-    public function displayJsonResponse($object, $code = 200)
+    public function showResponseAsJson($object, $code = 200)
     {
         $this->response->setContentType('application/json', 'utf-8');
         return $this->response->setJsonContent($object);
     }
 
-    public function displayJsonErrorResponse($code, $message)
-    {
-        if (!isset($this->recommendedReasonPhrases[$code])) {
-            throw new Exception\InvalidArgumentException(sprintf('No http response code %s supported', $code));
-        }
 
-        $this->response->setStatusCode($code, $this->recommendedReasonPhrases[$code]);
-
-        return $this->response->setJsonContent(array(
-            'errors' => array(
-                array(
-                    'code' => $code,
-                    'message' => $message
-                )
-            ),
-        ));
-    }
 }
