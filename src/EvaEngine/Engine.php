@@ -755,7 +755,9 @@ class Engine
         }
 
         $sessionClass = $adapterMapping[$adapterKey];
-        $session = new $sessionClass($config->session->options->toArray());
+        $session = new $sessionClass(array_merge(array(
+            'uniqueId' => $this->getAppName(),
+        ), $config->session->options->toArray()));
         if (!$session->isStarted()) {
             //NOTICE: Get php warning here, not found reason
             $session->start();
