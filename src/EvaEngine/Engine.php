@@ -1,13 +1,16 @@
 <?php
 /**
-* EvaEngine (http://evaengine.com/)
-*
-* @copyright Copyright (c) 2014 AlloVince (allo.vince@gmail.com)
-* @license   http://framework.zend.com/license/new-bsd New BSD License
-*/
+ * EvaEngine (http://evaengine.com/)
+ *
+ * @copyright Copyright (c) 2014 AlloVince (allo.vince@gmail.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine;
 
+use Eva\EvaEngine\CLI\Formatter\OutputFormatterInterface;
+use Eva\EvaEngine\CLI\Output\ConsoleOutput;
+use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
 use Phalcon\Mvc\Url as UrlResolver;
 use Phalcon\DI\FactoryDefault;
@@ -23,21 +26,26 @@ use Eva\EvaEngine\Module\Manager as ModuleManager;
 use Eva\EvaEngine\Mvc\Model\Manager as ModelManager;
 use Eva\EvaEngine\Tag;
 
+use Phalcon\CLI\Router as CLIRouter;
+use Phalcon\CLI\Dispatcher as CLIDispatcher;
+use Phalcon\DI\FactoryDefault\CLI;
+use Zend\Loader\Exception\InvalidArgumentException;
+
 /**
  * Core application configuration / bootstrap
- * 
+ *
  * Default application folder structures as
- * 
+ *
  * - AppRoot
  * -- apps
- * -- cache 
- * -- config 
- * -- logs 
- * -- modules 
- * -- public 
- * -- tests 
- * -- vendor 
- * -- workers 
+ * -- cache
+ * -- config
+ * -- logs
+ * -- modules
+ * -- public
+ * -- tests
+ * -- vendor
+ * -- workers
  *
  * The most common workflow is:
  * <code>
@@ -67,6 +75,8 @@ class Engine
     protected $environment; //development | test | production
 
     protected $debugger;
+
+    protected $appMode = 'web';
 
     public function getEnvironment()
     {
@@ -133,7 +143,7 @@ class Engine
 
     public function readCache($cacheFile, $serialize = false)
     {
-        if(file_exists($cacheFile) && $cache = include($cacheFile)) {
+        if (file_exists($cacheFile) && $cache = include($cacheFile)) {
             return true === $serialize ? unserialize($cache) : $cache;
         }
         return null;
@@ -141,8 +151,8 @@ class Engine
 
     public function writeCache($cacheFile, $content, $serialize = false)
     {
-        if($cacheFile && $fh = fopen($cacheFile, 'w')) {
-            if(true === $serialize) {
+        if ($cacheFile && $fh = fopen($cacheFile, 'w')) {
+            if (true === $serialize) {
                 fwrite($fh, "<?php return '" . serialize($content) . "';");
             } else {
                 fwrite($fh, '<?php return ' . var_export($content, true) . ';');
@@ -155,7 +165,7 @@ class Engine
 
     public function getDebugger()
     {
-        if($this->debugger) {
+        if ($this->debugger) {
             return $this->debugger;
         }
 
@@ -165,22 +175,33 @@ class Engine
         return $this->debugger = $debugger;
     }
 
+    public function getAppMode()
+    {
+        return $this->appMode;
+    }
+
     public function getApplication()
     {
-        if ($this->application) {
-            return $this->application;
+        if (!$this->application) {
+            if($this->appMode == 'cli') {
+                $this->application = new Console();
+            } else {
+                $this->application = new Application();
+            }
         }
 
-        return $this->application = new Application();
+        return $this->application;
     }
 
 
     /**
      * Load modules from input settings, and call phalcon application->registerModules() for register
-     * 
-     * below events will be trigger 
+     *
+     * below events will be trigger
      * - module:beforeLoadModule
      * - module:afterLoadModule
+     *
+     * @param array $moduleSettings
      *
      * @return FactoryDefault
      */
@@ -188,7 +209,7 @@ class Engine
     {
         $moduleManager = $this->getDI()->getModuleManager();
 
-        if($this->getEnvironment() == 'production') {
+        if ($this->getEnvironment() == 'production') {
             $cachePrefix = $this->getAppName();
             $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.modules.php";
             $moduleManager->setCacheFile($cacheFile);
@@ -211,35 +232,35 @@ class Engine
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.events.php";
         $listeners = $this->readCache($cacheFile);
 
-        if(!$listeners) {
+        if (!$listeners) {
             $moduleManager = $this->getDI()->getModuleManager();
             $modules = $moduleManager->getModules();
             $listeners = array();
             foreach ($modules as $moduleName => $module) {
                 $moduleListeners = $moduleManager->getModuleListeners($moduleName);
-                if($moduleListeners) {
+                if ($moduleListeners) {
                     $listeners[$moduleName] = $moduleListeners;
                 }
             }
         }
 
-        if(!is_array($listeners)) {
+        if (!is_array($listeners)) {
             return $this;
         }
 
         $eventsManager = $this->getDI()->getEventsManager();
-        foreach($listeners as $moduleName => $moduleListeners) {
-            foreach($moduleListeners as $eventType => $listener) {
+        foreach ($listeners as $moduleName => $moduleListeners) {
+            foreach ($moduleListeners as $eventType => $listener) {
                 $eventsManager->attach($eventType, new $listener);
             }
         }
 
-        if($di->getConfig()->debug) {
+        if ($di->getConfig()->debug) {
             $debugger = $this->getDebugger();
             $debugger->debugVar($listeners, 'events');
         }
 
-        if(!$di->getConfig()->debug && $listeners) {
+        if (!$di->getConfig()->debug && $listeners) {
             $this->writeCache($cacheFile, $listeners);
         }
         return $this;
@@ -252,7 +273,7 @@ class Engine
         $cachePrefix = $this->getAppName();
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.helpers.php";
         $helpers = $this->readCache($cacheFile);
-        if($helpers) {
+        if ($helpers) {
             Tag::registerHelpers($helpers);
             return $this;
         }
@@ -260,15 +281,15 @@ class Engine
         $helpers = array();
         $moduleManager = $di->getModuleManager();
         $modules = $moduleManager->getModules();
-        foreach($modules as $moduleName => $module) {
+        foreach ($modules as $moduleName => $module) {
             $moduleHelpers = $moduleManager->getModuleViewHelpers($moduleName);
-            if(is_array($moduleHelpers)) {
+            if (is_array($moduleHelpers)) {
                 $helpers += $moduleHelpers;
             }
         }
         Tag::registerHelpers($helpers);
 
-        if(!$di->getConfig()->debug && $helpers) {
+        if (!$di->getConfig()->debug && $helpers) {
             $this->writeCache($cacheFile, $helpers);
         }
         return $this;
@@ -282,26 +303,29 @@ class Engine
     }
 
     /**
-    * Configuration application default DI
-    *
-    * Most DI settings from config file
-    *
-    * @return FactoryDefault
-    */
+     * Configuration application default DI
+     *
+     * Most DI settings from config file
+     *
+     * @return FactoryDefault
+     */
     public function getDI()
     {
         if ($this->di) {
             return $this->di;
         }
-
-        $di = new FactoryDefault();
+        if($this->appMode == 'cli') {
+            $di = new FactoryDefault\CLI();
+        } else {
+            $di = new FactoryDefault();
+        }
 
         //PHP5.3 not support $this in closure
         $self = $this;
 
         /**********************************
-        DI initialize for MVC core
-        ***********************************/
+         * DI initialize for MVC core
+         ***********************************/
         //$di->set('application', $this);
 
         //call loadmodules will overwrite this
@@ -357,8 +381,8 @@ class Engine
         });
 
         /**********************************
-        DI initialize for database
-        ***********************************/
+         * DI initialize for database
+         ***********************************/
         $di->set('dbMaster', function () use ($self) {
             return $self->diDbMaster();
         });
@@ -368,31 +392,31 @@ class Engine
         });
 
         /**********************************
-        DI initialize for cache
-        ***********************************/
-        $di->set('globalCache', function() use ($self) {
+         * DI initialize for cache
+         ***********************************/
+        $di->set('globalCache', function () use ($self) {
             return $self->diGlobalCache();
         });
 
-        $di->set('viewCache', function() use ($self) {
+        $di->set('viewCache', function () use ($self) {
             return $self->diViewCache();
         });
 
-        $di->set('modelCache', function() use ($self) {
+        $di->set('modelCache', function () use ($self) {
             return $self->diModelCache();
         });
 
-        $di->set('apiCache', function() use ($self) {
+        $di->set('apiCache', function () use ($self) {
             return $self->diApiCache();
         });
 
-        $di->set('fastCache', function() use ($self) {
+        $di->set('fastCache', function () use ($self) {
             return $self->diFastCache();
         });
 
         /**********************************
-        DI initialize for queue
-        ***********************************/
+         * DI initialize for queue
+         ***********************************/
         $di->set('queue', function () use ($di) {
             $config = $di->getConfig();
             $client = new \GearmanClient();
@@ -414,8 +438,8 @@ class Engine
 
 
         /**********************************
-        DI initialize for email 
-        ***********************************/
+         * DI initialize for email
+         ***********************************/
         $di->set('mailer', function () use ($self) {
             return $self->diMailer();
         });
@@ -423,8 +447,8 @@ class Engine
         $di->set('mailMessage', 'Eva\EvaEngine\MailMessage');
 
         /**********************************
-        DI initialize for helpers
-        ***********************************/
+         * DI initialize for helpers
+         ***********************************/
         $di->set('url', function () use ($di) {
             $config = $di->getConfig();
             $url = new UrlResolver();
@@ -454,7 +478,7 @@ class Engine
             return $self->diTranslate();
         });
 
-        $di->set('fileSystem', function() use ($self) {
+        $di->set('fileSystem', function () use ($self) {
             return $self->diFileSystem();
         });
 
@@ -462,8 +486,57 @@ class Engine
             $config = $di->getConfig();
             return $logger = new FileLogger($config->logger->path . 'error_' . date('Y-m-d') . '.log');
         });
-
+        if($this->appMode  == 'cli') {
+            $this->cliDI($di);
+        }
         return $this->di = $di;
+    }
+
+    /**
+     * CLI 模式下的 DI 配置
+     *
+     * @param CLI $di
+     */
+    protected function cliDI(CLI $di)
+    {
+        global $argv;
+
+        $di->set('router', function() use ($di, $argv) {
+
+            $router = new CLIRouter();
+            $router->setDI($di);
+            return $router;
+        });
+        $di->set('output', function() {
+            return new ConsoleOutput();
+        });
+
+        $di->set("dispatcher", function() use ($di, $argv) {
+            $dispatcher = new CLIDispatcher();
+            $dispatcher->setDI($di);
+
+
+            array_shift($argv);
+            $firstParam = array_shift($argv);
+            if(strpos($firstParam, ':') > 0) {
+                @list($moduleName, $taskName) = preg_split("/:/", $firstParam);
+                $dispatcher->setTaskName(ucwords($taskName));
+                $dispatcher->setActionName(array_shift($argv));
+                $dispatcher->setParams($argv);
+                $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+            } else {
+                $dispatcher->setTaskName('Main');
+                $dispatcher->setActionName($firstParam);
+                $dispatcher->setParams($argv);
+                $dispatcher->setNamespaceName("Eva\\EvaEngine\\Tasks");
+            }
+
+
+            return $dispatcher;
+        });
+
+
+
     }
 
     public function diConfig()
@@ -471,7 +544,7 @@ class Engine
         $di = $this->getDI();
         $cachePrefix = $this->getAppName();
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.config.php";
-        if($cache = $this->readCache($cacheFile)) {
+        if ($cache = $this->readCache($cacheFile)) {
             return new Config($cache);
         }
 
@@ -500,7 +573,7 @@ class Engine
         }
         $config->merge(new Config(include $this->getConfigPath() . "/config.local.php"));
 
-        if(!$config->debug) {
+        if (!$config->debug) {
             $this->writeCache($cacheFile, $config->toArray());
         }
         return $config;
@@ -511,7 +584,7 @@ class Engine
         $di = $this->getDI();
         $cachePrefix = $this->getAppName();
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.router.php";
-        if($router = $this->readCache($cacheFile, true)) {
+        if ($router = $this->readCache($cacheFile, true)) {
             return $router;
         }
 
@@ -542,7 +615,7 @@ class Engine
             }
         }
 
-        if(!$di->getConfig()->debug) {
+        if (!$di->getConfig()->debug) {
             $this->writeCache($cacheFile, $router, true);
         }
         return $router;
@@ -561,12 +634,12 @@ class Engine
         );
 
         $config = $this->getDI()->getConfig();
-        if(!$config->modelsMetadata->enable) {
+        if (!$config->modelsMetadata->enable) {
             return new \Phalcon\Mvc\Model\MetaData\Memory();
         }
 
         $adapterKey = strtolower($config->modelsMetadata->adapter);
-        if(!isset($adapterMapping[$adapterKey])) {
+        if (!isset($adapterMapping[$adapterKey])) {
             throw new Exception\RuntimeException(sprintf('No metadata adapter found by %s', $adapterKey));
         }
         $adapterClass = $adapterMapping[$adapterKey];
@@ -576,7 +649,7 @@ class Engine
     public function diDbMaster()
     {
         $config = $this->getDI()->getConfig();
-        if(!isset($config->dbAdapter->master->adapter) || !$config->dbAdapter->master) {
+        if (!isset($config->dbAdapter->master->adapter) || !$config->dbAdapter->master) {
             throw new Exception\RuntimeException(sprintf('No DB Master options found'));
         }
         return $this->diDbAdapter($config->dbAdapter->master->adapter, $config->dbAdapter->master->toArray());
@@ -587,7 +660,7 @@ class Engine
         $config = $this->getDI()->getConfig();
         $slaves = $config->dbAdapter->slave;
         $slaveKey = array_rand($slaves->toArray());
-        if(!isset($slaves->$slaveKey) || count($slaves) < 1) {
+        if (!isset($slaves->$slaveKey) || count($slaves) < 1) {
             throw new Exception\RuntimeException(sprintf('No DB slave options found'));
         }
         return $this->diDbAdapter($slaves->$slaveKey->adapter, $slaves->$slaveKey->toArray());
@@ -606,7 +679,7 @@ class Engine
 
         $options['charset'] = isset($options['charset']) && $options['charset'] ? $options['charset'] : 'utf8';
 
-        if(!isset($adapterMapping[$adapterName])) {
+        if (!isset($adapterMapping[$adapterName])) {
             throw new Exception\RuntimeException(sprintf('No matched DB adapter found by %s', $adapterName));
         }
 
@@ -662,7 +735,7 @@ class Engine
     public function diFastCache()
     {
         $config = $this->getDI()->getConfig();
-        if(!($config->cache->fastCache->enable)) {
+        if (!($config->cache->fastCache->enable)) {
             return false;
         }
 
@@ -693,7 +766,7 @@ class Engine
         );
 
         $frontCacheClassName = strtolower($config->cache->$configKey->frontend->adapter);
-        if(!isset($adapterMapping[$frontCacheClassName])) {
+        if (!isset($adapterMapping[$frontCacheClassName])) {
             throw new Exception\RuntimeException(sprintf('No cache adapter found by %s', $frontCacheClassName));
         }
         $frontCacheClass = $adapterMapping[$frontCacheClassName];
@@ -701,11 +774,11 @@ class Engine
             $config->cache->$configKey->frontend->options->toArray()
         );
 
-        if(!$config->cache->enable || !$config->cache->$configKey->enable) {
+        if (!$config->cache->enable || !$config->cache->$configKey->enable) {
             $cache = new \Eva\EvaEngine\Cache\Backend\Disable($frontCache);
         } else {
             $backendCacheClassName = strtolower($config->cache->$configKey->backend->adapter);
-            if(!isset($adapterMapping[$backendCacheClassName])) {
+            if (!isset($adapterMapping[$backendCacheClassName])) {
                 throw new Exception\RuntimeException(sprintf('No cache adapter found by %s', $backendCacheClassName));
             }
             $backendCacheClass = $adapterMapping[$backendCacheClassName];
@@ -722,14 +795,13 @@ class Engine
     public function diMailer()
     {
         $config = $this->getDI()->getConfig();
-        if($config->mailer->transport == 'smtp') {
+        if ($config->mailer->transport == 'smtp') {
             $transport = \Swift_SmtpTransport::newInstance()
-            ->setHost($config->mailer->host)
-            ->setPort($config->mailer->port)
-            ->setEncryption($config->mailer->encryption)
-            ->setUsername($config->mailer->username)
-            ->setPassword($config->mailer->password)
-            ;
+                ->setHost($config->mailer->host)
+                ->setPort($config->mailer->port)
+                ->setEncryption($config->mailer->encryption)
+                ->setUsername($config->mailer->username)
+                ->setPassword($config->mailer->password);
         } else {
             $transport = \Swift_SendmailTransport::newInstance($config->mailer->sendmailCommand);
         }
@@ -750,14 +822,12 @@ class Engine
 
         $config = $this->getDI()->getConfig();
         $adapterKey = strtolower($config->session->adapter);
-        if(!isset($adapterMapping[$adapterKey])) {
+        if (!isset($adapterMapping[$adapterKey])) {
             throw new Exception\RuntimeException(sprintf('No session adapter found by %s', $adapterKey));
         }
 
         $sessionClass = $adapterMapping[$adapterKey];
-        $session = new $sessionClass(array_merge(array(
-            'uniqueId' => $this->getAppName(),
-        ), $config->session->options->toArray()));
+        $session = new $sessionClass($config->session->options->toArray());
         if (!$session->isStarted()) {
             //NOTICE: Get php warning here, not found reason
             $session->start();
@@ -798,7 +868,11 @@ class Engine
         $this->getApplication()->setDI($this->getDI());
         $this->attachModuleEvents();
         //Error Handler must run before router start
-        $this->initErrorHandler(new Error\ErrorHandler);
+        if($this->appMode == 'cli') {
+            $this->initErrorHandler(new Error\CLIErrorHandler());
+        } else {
+            $this->initErrorHandler(new Error\ErrorHandler);
+        }
         return $this;
     }
 
@@ -810,11 +884,11 @@ class Engine
 
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)
     {
-        $this->getDI()->getEventsManager()->attach('dispatch:beforeException', function($event, $dispatcher, $exception){
+        $this->getDI()->getEventsManager()->attach('dispatch:beforeException', function ($event, $dispatcher, $exception) {
             throw $exception;
         });
 
-        if($this->getDI()->getConfig()->debug) {
+        if ($this->getDI()->getConfig()->debug && $this->appMode != 'cli') {
             return $this;
         }
 
@@ -828,6 +902,9 @@ class Engine
 
     public function runCustom()
     {
+        if($this->appMode == 'cli') {
+            return;
+        }
         $di = $this->getDI();
 
         $debug = $di->get('config')->debug;
@@ -880,11 +957,15 @@ class Engine
      *
      * @param string Application root path
      * @param string Application name for some cache prefix
+     * @param string Application mode, 'cli' or 'web' , 'cli' for CLI mode
      */
-    public function __construct($appRoot = null, $appName = 'evaengine')
+    public function __construct($appRoot = null, $appName = 'evaengine', $appMode = 'web')
     {
         $this->appRoot = $appRoot ? $appRoot : __DIR__;
         $this->appName = empty($_SERVER['APPLICATION_NAME']) ? $appName : $_SERVER['APPLICATION_NAME'];
         $this->environment = empty($_SERVER['APPLICATION_ENV']) ? 'development' : $_SERVER['APPLICATION_ENV'];
+
+        $appMode = strtolower($appMode);
+        $this->appMode = in_array($appMode, array('web', 'cli')) ? $appMode : 'web';
     }
 }

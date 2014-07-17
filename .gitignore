@@ -3,3 +3,4 @@ vendor/*
 log/*
 .idea*
 *.swp
+/.idea/
