@@ -140,14 +140,22 @@ class Manager implements EventsAwareInterface
                 $moduleKey = ucfirst($key);
                 $module = array_merge($defaultModuleSetting, $module);
             } elseif (is_string($module)) {
-                //TODO: if module already registered in composer
-                if(class_exists($module)) {
-                    continue;
-                } else {
-                    $moduleKey = ucfirst($module);
+                $moduleKey = ucfirst($module);
+                $moduleClass = "Eva\\$moduleKey\\Module";
+                //Class already registered by composer
+                if(true === class_exists($moduleClass)) {
+                    $ref = new \ReflectionClass($moduleClass);
+                    $path = dirname($ref->getFileName());
                     //Only Module Name means its a Eva Standard module
                     $module = array_merge($defaultModuleSetting, array(
-                        'className' => "Eva\\$moduleKey\\Module",
+                        'className' => $moduleClass,
+                        'path' => "$path/Module.php",
+                    ));
+
+                } else {
+                    //Only Module Name means its a Eva Standard module
+                    $module = array_merge($defaultModuleSetting, array(
+                        'className' => $moduleClass,
                         'path' => "$modulesPath/$moduleKey/Module.php",
                     ));
                 }
