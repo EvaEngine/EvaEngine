@@ -36,7 +36,7 @@ class Tag extends \Phalcon\Tag
 
     public static function config()
     {
-        $config = self::getDI()->get('config');
+        $config = self::getDI()->getConfig();
         if (!$args = func_get_args()) {
             return $config;
         }
@@ -58,7 +58,7 @@ class Tag extends \Phalcon\Tag
 
     public static function _($message = null, $replacement = null)
     {
-        $translate = self::getDI()->get('translate');
+        $translate = self::getDI()->getTranslate();
         if ($message) {
             return $translate->_(trim($message), $replacement);
         }
@@ -68,7 +68,7 @@ class Tag extends \Phalcon\Tag
 
     public static function flashOutput()
     {
-        $flash = self::getDI()->get('flash');
+        $flash = self::getDI()->getFlash();
         if (!$flash) {
             return '';
         }
@@ -81,7 +81,7 @@ class Tag extends \Phalcon\Tag
         );
 
         $messageString = '';
-        $escaper = self::getDI()->get('escaper');
+        $escaper = self::getDI()->getEscaper();
         foreach ($messages as $type => $submessages) {
             foreach ($submessages as $message) {
                 $messageString .= '<div class="alert ' . $classMapping[$type] . '" data-raw-message="' . $escaper->escapeHtmlAttr($message) . '">' . self::_($message) . '</div>';
@@ -93,7 +93,7 @@ class Tag extends \Phalcon\Tag
 
     public static function uri($uri, array $query = null, array $baseQuery = null)
     {
-        $url = self::getDI()->get('url');
+        $url = self::getDI()->getUrl();
         if ($query && $baseQuery) {
             $query = array_merge($baseQuery, $query);
         }
@@ -152,9 +152,8 @@ class Tag extends \Phalcon\Tag
     public static function gravatar($email, $s = 80, $d = 'mm', $r = 'g')
     {
         $url = 'http://www.gravatar.com/avatar/';
-        $url .= md5( strtolower( trim( $email ) ) );
+        $url .= md5(strtolower(trim($email)));
         $url .= "?s=$s&d=$d&r=$r";
-
         return $url;
     }
 
@@ -169,7 +168,7 @@ class Tag extends \Phalcon\Tag
     public static function jsTime($time = '', $timezone = null)
     {
         $time = $time ? $time : time();
-        $timezone = $timezone ? $timezone : self::getDI()->get('config')->datetime->defaultTimezone;
+        $timezone = $timezone ? $timezone : self::getDI()->getConfig()->datetime->defaultTimezone;
         $time = $time + $timezone * 3600;
         $prefix = $timezone < 0 ? '-' : '+';
 
@@ -190,7 +189,7 @@ class Tag extends \Phalcon\Tag
      */
     public static function isoTime($time = null, $timezone = null)
     {
-        $timezone = $timezone ? $timezone : self::getDI()->get('config')->datetime->defaultTimezone;
+        $timezone = $timezone ? $timezone : self::getDI()->getConfig()->datetime->defaultTimezone;
         $time = $time ? $time : time();
 
         return $time = gmdate('c', $time);
@@ -198,8 +197,8 @@ class Tag extends \Phalcon\Tag
 
     public static function datetime($time = '', $format = '', $timezone = null)
     {
-        $timezone = $timezone ? $timezone : self::getDI()->get('config')->datetime->defaultTimezone;
-        $format = $format ? $format : self::getDI()->get('config')->datetime->defaultFormat;
+        $timezone = $timezone ? $timezone : self::getDI()->getConfig()->datetime->defaultTimezone;
+        $format = $format ? $format : self::getDI()->getConfig()->datetime->defaultFormat;
         $time = $time ? $time : time();
         $time = is_numeric($time) ? $time : strtotime($time);
         $time = $time + $timezone * 3600;

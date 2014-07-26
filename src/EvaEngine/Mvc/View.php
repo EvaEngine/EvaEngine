@@ -39,7 +39,7 @@ class View extends \Phalcon\Mvc\View
 
     public function setModuleLayout($moduleName, $layoutPath)
     {
-        $moduleManager = $this->getDI()->get('moduleManager');
+        $moduleManager = $this->getDI()->getModuleManager();
         if (!$moduleManager) {
             return $this;
         }
@@ -61,7 +61,7 @@ class View extends \Phalcon\Mvc\View
 
     public function setModuleViewsDir($moduleName, $viewsDir)
     {
-        $moduleManager = $this->getDI()->get('moduleManager');
+        $moduleManager = $this->getDI()->getModuleManager();
         if (!$moduleManager) {
             return $this;
         }
@@ -81,7 +81,7 @@ class View extends \Phalcon\Mvc\View
 
     public function setModulePartialsDir($moduleName, $partialsDir)
     {
-        $moduleManager = $this->getDI()->get('moduleManager');
+        $moduleManager = $this->getDI()->getModuleManager();
         if (!$moduleManager) {
             return $this;
         }

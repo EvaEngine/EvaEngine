@@ -909,7 +909,7 @@ class Engine
         }
         $di = $this->getDI();
 
-        $debug = $di->get('config')->debug;
+        $debug = $di->getConfig()->debug;
         if ($debug) {
             $debugger = $this->getDebugger();
         }

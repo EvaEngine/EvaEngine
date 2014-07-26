@@ -65,7 +65,7 @@ class MailMessage implements \Phalcon\DI\InjectionAwareInterface
             return $this->from;
         }
 
-        $this->from = $this->getDI()->get('config')->mailer->defaultFrom;
+        $this->from = $this->getDI()->getConfig()->mailer->defaultFrom;
 
         return $this->from;
     }
@@ -147,12 +147,12 @@ class MailMessage implements \Phalcon\DI\InjectionAwareInterface
 
     public function toSystemUrl($path)
     {
-        return $this->getDI()->get('config')->mailer->systemPath . $path;
+        return $this->getDI()->getConfig()->mailer->systemPath . $path;
     }
 
     public function toStaticUrl($path)
     {
-        return $this->getDI()->get('config')->mailer->staticPath . $path;
+        return $this->getDI()->getConfig()->mailer->staticPath . $path;
     }
 
     public function getMessage()

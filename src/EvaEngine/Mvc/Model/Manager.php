@@ -19,7 +19,7 @@ class Manager extends \Phalcon\Mvc\Model\Manager
 
     public function getReadConnection($model)
     {
-        if ($this->getDI()->get('dbSlave')) {
+        if ($this->getDI()->getDbSlave()) {
             $this->setReadConnectionService($model, 'dbSlave');
         }
 
@@ -28,7 +28,7 @@ class Manager extends \Phalcon\Mvc\Model\Manager
 
     public function getWriteConnection($model)
     {
-        if ($this->getDI()->get('dbMaster')) {
+        if ($this->getDI()->getDbMaster()) {
             $this->setWriteConnectionService($model, 'dbMaster');
         }
 

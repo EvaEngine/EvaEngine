@@ -12,4 +12,4 @@ before_script:
   - phpenv rehash
 script:
   phpunit -v &
-  phpcs --standard=PSR2 --extensions=php --ignore=vendor/*,tests/* ./
+  phpcs --standard=PSR2 --extensions=php --ignore=vendor/*,tests/* --warning-severity=0 ./
