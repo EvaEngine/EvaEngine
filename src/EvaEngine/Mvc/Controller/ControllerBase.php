@@ -255,7 +255,7 @@ class ControllerBase extends Controller
     {
         $messages = $form->getMessages();
         $content = array();
-        foreach($messages as $message) {
+        foreach ($messages as $message) {
             $content[] = array(
                 'code' => 10001,
                 'message' => $message->getMessage(),
@@ -273,6 +273,4 @@ class ControllerBase extends Controller
         $this->response->setContentType('application/json', 'utf-8');
         return $this->response->setJsonContent($object);
     }
-
-
 }

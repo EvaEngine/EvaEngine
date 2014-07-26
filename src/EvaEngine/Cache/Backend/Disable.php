@@ -9,12 +9,12 @@ class Disable extends \Phalcon\Cache\Backend
         return null;
     }
 
-    public function exists($keyName = NULL, $lifetime = NULL)
+    public function exists($keyName = null, $lifetime = null)
     {
         return false;
     }
 
-    public function save ($keyName = NULL, $content = NULL, $lifetime = NULL, $stopBuffer = NULL)
+    public function save($keyName = null, $content = null, $lifetime = null, $stopBuffer = null)
     {
     }
 
@@ -26,7 +26,7 @@ class Disable extends \Phalcon\Cache\Backend
     {
     }
 
-    public function flush ()
+    public function flush()
     {
     }
 }

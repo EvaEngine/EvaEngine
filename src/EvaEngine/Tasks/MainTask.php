@@ -47,4 +47,4 @@ class MainTask extends TaskBase
     {
         $this->output->writelnComment('你正在查找'.$params[0] .'的帮助');
     }
-} 
+}

@@ -11,7 +11,7 @@ class Uniqueness extends PhalconUniqueness implements ValidatorInterface
     {
         $conditions = $this->getOption('conditions');
         $bind = $this->getOption('bind');
-        if(!$conditions && !$bind) {
+        if (!$conditions && !$bind) {
             return parent::validate($model);
         }
 
@@ -28,11 +28,10 @@ class Uniqueness extends PhalconUniqueness implements ValidatorInterface
             'bind' => $bindArray
         ));
 
-        if($item) {
+        if ($item) {
             $this->appendMessage(sprintf('Field %s not unique', $field));
             return false;
         }
         return true;
     }
-
 }

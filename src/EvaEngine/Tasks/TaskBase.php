@@ -26,4 +26,4 @@ class TaskBase extends Task
     {
         $this->output = new ConsoleOutput();
     }
-} 
+}

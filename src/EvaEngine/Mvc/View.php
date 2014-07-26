@@ -147,5 +147,4 @@ class View extends \Phalcon\Mvc\View
 
         return str_pad("", count($arFrom) * 3, '..' . $ps) . implode($ps, $arTo);
     }
-
 }

@@ -161,5 +161,4 @@ class MailMessage implements \Phalcon\DI\InjectionAwareInterface
 
         return $this->message;
     }
-
 }

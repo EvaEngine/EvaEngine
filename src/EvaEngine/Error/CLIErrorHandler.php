@@ -20,7 +20,7 @@ use Phalcon\Logger\AdapterInterface as LoggerInterface;
 
 class CLIErrorHandler implements ErrorHandlerInterface
 {
-    static $logger = false;
+    static protected $logger = false;
 
     public static function errorHandler($errno, $errstr, $errfile, $errline)
     {
@@ -56,7 +56,7 @@ class CLIErrorHandler implements ErrorHandlerInterface
         $di = DI::getDefault();
         $config = $di->get('config');
 
-        if(!isset($config->error->disableLog) ||
+        if (!isset($config->error->disableLog) ||
             (isset($config->error->disableLog) && $config->error->disableLog) ||
             empty($config->error->logPath)
         ) {

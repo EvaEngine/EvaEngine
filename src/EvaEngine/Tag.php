@@ -2,8 +2,6 @@
 
 namespace Eva\EvaEngine;
 
-
-
 class Tag extends \Phalcon\Tag
 {
     protected static $helpers = array();
@@ -15,17 +13,17 @@ class Tag extends \Phalcon\Tag
 
     public static function unregisterHelper($helperName)
     {
-        if(isset(self::$helpers[$helperName])) {
+        if (isset(self::$helpers[$helperName])) {
             unset(self::$helpers[$helperName]);
         }
     }
 
     public function __call($helperName, $arguments)
     {
-        if(method_exists(__CLASS__, $helperName)) {
+        if (method_exists(__CLASS__, $helperName)) {
             return call_user_func_array(__CLASS__ . "::$helperName", $arguments);
         }
-        if(empty(self::$helpers[$helperName])) {
+        if (empty(self::$helpers[$helperName])) {
             throw new Exception\BadMethodCallException(sprintf('Request helper %s not registered', $helperName));
         }
         $helperClass = self::$helpers[$helperName];
@@ -39,13 +37,13 @@ class Tag extends \Phalcon\Tag
     public static function config()
     {
         $config = self::getDI()->get('config');
-        if(!$args = func_get_args()) {
+        if (!$args = func_get_args()) {
             return $config;
         }
 
         $res = $config;
-        foreach($args as $arg) {
-            if(!isset($res->$arg)) {
+        foreach ($args as $arg) {
+            if (!isset($res->$arg)) {
                 return '';
             }
             $res = $res->$arg;
@@ -168,7 +166,7 @@ class Tag extends \Phalcon\Tag
      *
      * @return string javascript parse-able string
      */
-    public static function jsTime($time = '' , $timezone = null)
+    public static function jsTime($time = '', $timezone = null)
     {
         $time = $time ? $time : time();
         $timezone = $timezone ? $timezone : self::getDI()->get('config')->datetime->defaultTimezone;
@@ -198,7 +196,7 @@ class Tag extends \Phalcon\Tag
         return $time = gmdate('c', $time);
     }
 
-    public static function datetime($time = '', $format = '',  $timezone = null)
+    public static function datetime($time = '', $format = '', $timezone = null)
     {
         $timezone = $timezone ? $timezone : self::getDI()->get('config')->datetime->defaultTimezone;
         $format = $format ? $format : self::getDI()->get('config')->datetime->defaultFormat;

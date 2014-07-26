@@ -110,13 +110,13 @@ class Error
             switch ($exception->getCode()) {
                 case Dispatcher::EXCEPTION_HANDLER_NOT_FOUND:
                 case Dispatcher::EXCEPTION_ACTION_NOT_FOUND:
-                $options['statusCode'] = 404;
-                break;
+                    $options['statusCode'] = 404;
+                    break;
                 case Dispatcher::EXCEPTION_INVALID_PARAMS:
-                $options['statusCode'] = 401;
-                break;
+                    $options['statusCode'] = 401;
+                    break;
                 default:
-                $options['statusCode'] = 500;
+                    $options['statusCode'] = 500;
             }
         }
 
@@ -157,37 +157,37 @@ class Error
     {
         switch ($code) {
             case 0:
-            return 'Uncaught exception';
+                return 'Uncaught exception';
             case E_ERROR:
-            return 'E_ERROR';
+                return 'E_ERROR';
             case E_WARNING:
-            return 'E_WARNING';
+                return 'E_WARNING';
             case E_PARSE:
-            return 'E_PARSE';
+                return 'E_PARSE';
             case E_NOTICE:
-            return 'E_NOTICE';
+                return 'E_NOTICE';
             case E_CORE_ERROR:
-            return 'E_CORE_ERROR';
+                return 'E_CORE_ERROR';
             case E_CORE_WARNING:
-            return 'E_CORE_WARNING';
+                return 'E_CORE_WARNING';
             case E_COMPILE_ERROR:
-            return 'E_COMPILE_ERROR';
+                return 'E_COMPILE_ERROR';
             case E_COMPILE_WARNING:
-            return 'E_COMPILE_WARNING';
+                return 'E_COMPILE_WARNING';
             case E_USER_ERROR:
-            return 'E_USER_ERROR';
+                return 'E_USER_ERROR';
             case E_USER_WARNING:
-            return 'E_USER_WARNING';
+                return 'E_USER_WARNING';
             case E_USER_NOTICE:
-            return 'E_USER_NOTICE';
+                return 'E_USER_NOTICE';
             case E_STRICT:
-            return 'E_STRICT';
+                return 'E_STRICT';
             case E_RECOVERABLE_ERROR:
-            return 'E_RECOVERABLE_ERROR';
+                return 'E_RECOVERABLE_ERROR';
             case E_DEPRECATED:
-            return 'E_DEPRECATED';
+                return 'E_DEPRECATED';
             case E_USER_DEPRECATED:
-            return 'E_USER_DEPRECATED';
+                return 'E_USER_DEPRECATED';
         }
 
         return $code;
@@ -197,14 +197,14 @@ class Error
     {
         $errorOrException = $this->isException() ? 'EXCEPTION' : 'ERROR';
 
-        return sprintf("[%s][%s][%s][%s][%s][%s]",
-                        $errorOrException,
-                        $this->errorType(),
-                        $this->type(),
-                        $this->message(),
-                        $this->file(),
-                        $this->line()
-                    );
+        return sprintf(
+            "[%s][%s][%s][%s][%s][%s]",
+            $errorOrException,
+            $this->errorType(),
+            $this->type(),
+            $this->message(),
+            $this->file(),
+            $this->line()
+        );
     }
-
 }

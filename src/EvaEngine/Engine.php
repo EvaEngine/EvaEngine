@@ -183,7 +183,7 @@ class Engine
     public function getApplication()
     {
         if (!$this->application) {
-            if($this->appMode == 'cli') {
+            if ($this->appMode == 'cli') {
                 $this->application = new Console();
             } else {
                 $this->application = new Application();
@@ -314,7 +314,7 @@ class Engine
         if ($this->di) {
             return $this->di;
         }
-        if($this->appMode == 'cli') {
+        if ($this->appMode == 'cli') {
             $di = new FactoryDefault\CLI();
         } else {
             $di = new FactoryDefault();
@@ -486,7 +486,7 @@ class Engine
             $config = $di->getConfig();
             return $logger = new FileLogger($config->logger->path . 'error_' . date('Y-m-d') . '.log');
         });
-        if($this->appMode  == 'cli') {
+        if ($this->appMode  == 'cli') {
             $this->cliDI($di);
         }
         return $this->di = $di;
@@ -518,7 +518,7 @@ class Engine
 
             array_shift($argv);
             $firstParam = array_shift($argv);
-            if(strpos($firstParam, ':') > 0) {
+            if (strpos($firstParam, ':') > 0) {
                 @list($moduleName, $taskName) = preg_split("/:/", $firstParam);
                 $dispatcher->setTaskName(ucwords($taskName));
                 $dispatcher->setActionName(array_shift($argv));
@@ -870,7 +870,7 @@ class Engine
         $this->getApplication()->setDI($this->getDI());
         $this->attachModuleEvents();
         //Error Handler must run before router start
-        if($this->appMode == 'cli') {
+        if ($this->appMode == 'cli') {
             $this->initErrorHandler(new Error\CLIErrorHandler());
         } else {
             $this->initErrorHandler(new Error\ErrorHandler);
@@ -904,7 +904,7 @@ class Engine
 
     public function runCustom()
     {
-        if($this->appMode == 'cli') {
+        if ($this->appMode == 'cli') {
             return;
         }
         $di = $this->getDI();

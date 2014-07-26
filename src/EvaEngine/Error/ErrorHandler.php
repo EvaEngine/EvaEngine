@@ -107,7 +107,7 @@ class ErrorHandler implements ErrorHandlerInterface
         $di = DI::getDefault();
         $config = $di->getConfig();
 
-        if(!isset($config->error->disableLog) ||
+        if (!isset($config->error->disableLog) ||
             (isset($config->error->disableLog) && $config->error->disableLog) ||
             empty($config->error->logPath)
         ) {
@@ -154,9 +154,9 @@ class ErrorHandler implements ErrorHandlerInterface
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                 case E_ALL:
-                break;
+                    break;
                 default:
-                $useErrorController = true;
+                    $useErrorController = true;
             }
         }
 

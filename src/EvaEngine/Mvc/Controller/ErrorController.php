@@ -129,7 +129,7 @@ EOF;
 EOF;
 
 
-protected $contentCode401 = <<<EOF
+    protected $contentCode401 = <<<EOF
 <!doctype html>
 <html lang="en">
 <head>

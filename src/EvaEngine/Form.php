@@ -484,5 +484,4 @@ class Form extends \Phalcon\Forms\Form
 
         return $element;
     }
-
 }

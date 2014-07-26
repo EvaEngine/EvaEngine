@@ -5,7 +5,6 @@ namespace Eva\EvaEngine\Mvc;
 use Phalcon\Mvc\Model\Resultset\Simple as SimpleResultSet;
 use Eva\EvaEngine\Mvc\Model\Manager as ModelManager;
 
-
 class Model extends \Phalcon\Mvc\Model
 {
     protected $prefix;
@@ -37,7 +36,7 @@ class Model extends \Phalcon\Mvc\Model
 
     public function getPrefix()
     {
-        if($this->prefix) {
+        if ($this->prefix) {
             return $this->prefix;
         }
         return $this->prefix = ModelManager::getDefaultPrefix();
@@ -62,12 +61,12 @@ class Model extends \Phalcon\Mvc\Model
                     if ($this->$key instanceof SimpleResultSet || is_array($this->$key)) {
                         $subdatas = array();
                         foreach ($this->$key as $child) {
-                            if(method_exists($child, 'dump')) {
+                            if (method_exists($child, 'dump')) {
                                 $subdatas[] = $child->dump($subdata);
                             }
                         }
                         $data[$key] = $subdatas;
-                    } elseif(method_exists($this->$key, 'dump')) {
+                    } elseif (method_exists($this->$key, 'dump')) {
                         $data[$key] = $this->$key->dump($subdata);
                     } else {
                         $data[$key] = null;
@@ -87,10 +86,10 @@ class Model extends \Phalcon\Mvc\Model
     public function loadRelations()
     {
         $relations = $this->getDI()->getModuleManager()->getInjectRelations($this);
-        if(!$relations) {
+        if (!$relations) {
             return $this;
         }
-        foreach($relations as $relation) {
+        foreach ($relations as $relation) {
             $relationType = $relation['relationType'];
             call_user_func_array(array($this, $relationType), $relation['parameters']);
         }

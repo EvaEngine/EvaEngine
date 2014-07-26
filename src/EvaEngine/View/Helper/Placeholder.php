@@ -48,7 +48,7 @@ class Placeholder
 
         $name = (string) $name;
         $container = $this->getContainer($name);
-        if($default && !$container->getValue()) {
+        if ($default && !$container->getValue()) {
             $container->set($default);
         }
         return $container;

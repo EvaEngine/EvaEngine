@@ -27,5 +27,4 @@ class StandardException extends \Phalcon\Exception implements ExceptionInterface
         }
         parent::__construct($message, $code, $previous);
     }
-
 }

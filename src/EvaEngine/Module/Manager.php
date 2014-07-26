@@ -24,7 +24,7 @@ class Manager implements EventsAwareInterface
 
     public function getLoader()
     {
-        if($this->loader) {
+        if ($this->loader) {
             return $this->loader;
         }
         return $this->loader = new Loader();
@@ -60,7 +60,7 @@ class Manager implements EventsAwareInterface
 
     public function getEventsManager()
     {
-        if($this->eventsManager) {
+        if ($this->eventsManager) {
             return $this->eventsManager;
         }
         return new EventsManager();
@@ -73,7 +73,7 @@ class Manager implements EventsAwareInterface
 
     public function readCache($cacheFile)
     {
-        if(file_exists($cacheFile) && $cache = include($cacheFile)) {
+        if (file_exists($cacheFile) && $cache = include($cacheFile)) {
             return $cache;
         }
         return null;
@@ -81,7 +81,7 @@ class Manager implements EventsAwareInterface
 
     public function writeCache($cacheFile, array $content)
     {
-        if($cacheFile && $fh = fopen($cacheFile, 'w')) {
+        if ($cacheFile && $fh = fopen($cacheFile, 'w')) {
             fwrite($fh, '<?php return ' . var_export($content, true) . ';');
             fclose($fh);
             return true;
@@ -107,7 +107,7 @@ class Manager implements EventsAwareInterface
         $cacheFile = $this->getCacheFile();
         $loader = $this->getLoader();
 
-        if($cacheFile && $cache = $this->readCache($cacheFile)) {
+        if ($cacheFile && $cache = $this->readCache($cacheFile)) {
             $loader->registerNamespaces($cache['namespaces'])->register();
             $loader->registerClasses($cache['classes'])->register();
             $this->modules = $cache['modules'];
@@ -143,7 +143,7 @@ class Manager implements EventsAwareInterface
                 $moduleKey = ucfirst($module);
                 $moduleClass = "Eva\\$moduleKey\\Module";
                 //Class already registered by composer
-                if(true === class_exists($moduleClass)) {
+                if (true === class_exists($moduleClass)) {
                     $ref = new \ReflectionClass($moduleClass);
                     $path = dirname($ref->getFileName());
                     //Only Module Name means its a Eva Standard module
@@ -183,17 +183,17 @@ class Manager implements EventsAwareInterface
         $namespaces = array();
         $listeners = array();
         $loader->registerClasses($classes)->register();
-        foreach($modules as $key => $module) {
-            if(!class_exists($module['className'])) {
+        foreach ($modules as $key => $module) {
+            if (!class_exists($module['className'])) {
                 continue;
             }
             $moduleInstance = new $module['className'];
-            if(!($moduleInstance instanceof StandardInterface)) {
+            if (!($moduleInstance instanceof StandardInterface)) {
                 continue;
             }
 
             $namespace = $module['className']::registerGlobalAutoloaders();
-            if(is_array($namespace)) {
+            if (is_array($namespace)) {
                 $namespaces += $namespace;
             }
             $modules[$key]['listeners'] = $module['className']::registerGlobalEventListeners();
@@ -204,7 +204,7 @@ class Manager implements EventsAwareInterface
 
         $this->modules = $modules;
 
-        if($cacheFile) {
+        if ($cacheFile) {
             $this->writeCache($cacheFile, array(
                 'classes' => $classes,
                 'namespaces' => $namespaces,
@@ -290,27 +290,27 @@ class Manager implements EventsAwareInterface
     {
         $relations = $this->injectRelations;
 
-        if($relations === false) {
+        if ($relations === false) {
             $relations = array();
             $modules = $this->getModules();
-            foreach($modules as $moduleName => $module) {
-                if(empty($module['relations'])) {
+            foreach ($modules as $moduleName => $module) {
+                if (empty($module['relations'])) {
                     continue;
                 }
-                foreach($module['relations'] as $relation) {
+                foreach ($module['relations'] as $relation) {
                     $relations[$relation['entity']] = $relation;
                 }
             }
             $this->injectRelations = $relations;
         }
 
-        if(!$relations) {
+        if (!$relations) {
             return array();
         }
 
         $entityRalations = array();
-        foreach($relations as $relation) {
-            if($entity instanceof $relation['entity']) {
+        foreach ($relations as $relation) {
+            if ($entity instanceof $relation['entity']) {
                 $entityRalations[] = $relation;
             }
         }
@@ -319,7 +319,7 @@ class Manager implements EventsAwareInterface
 
     public function __construct($defaultPath = null)
     {
-        if($defaultPath) {
+        if ($defaultPath) {
             $this->defaultPath = $defaultPath;
         }
     }
