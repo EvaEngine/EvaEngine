@@ -20,6 +20,14 @@ class Tag extends \Phalcon\Tag
 
     public function __call($helperName, $arguments)
     {
+        //Add alias for i18n heloer
+        if ($helperName === '_') {
+            return call_user_func_array(array(
+                __CLASS__,
+                'translate'
+            ), $arguments);
+        }
+
         if (method_exists(__CLASS__, $helperName)) {
             return call_user_func_array(__CLASS__ . "::$helperName", $arguments);
         }
@@ -32,14 +40,6 @@ class Tag extends \Phalcon\Tag
             $helper,
             '__invoke'
         ), $arguments);
-    }
-
-    public static function __callStatic($name, $arguments)
-    {
-        if ($name === '_') {
-            return parent::__callStatic('translate', $arguments);
-        }
-        return parent::__callStatic($name, $arguments);
     }
 
     public static function config()
