@@ -34,6 +34,14 @@ class Tag extends \Phalcon\Tag
         ), $arguments);
     }
 
+    public static function __callStatic($name, $arguments) 
+    {
+        if ($name === '_') {
+            return parent::__callStatic('translate', $arguments);
+        }
+        return parent::__callStatic($name, $arguments);
+    }
+
     public static function config()
     {
         $config = self::getDI()->getConfig();
@@ -56,7 +64,7 @@ class Tag extends \Phalcon\Tag
         return Mvc\View::getComponent($componentName, $params);
     }
 
-    public static function _($message = null, $replacement = null)
+    public static function translate($message = null, $replacement = null)
     {
         $translate = self::getDI()->getTranslate();
         if ($message) {
