@@ -105,7 +105,7 @@ class ErrorHandler implements ErrorHandlerInterface
         }
 
         $di = DI::getDefault();
-        $config = $di->get('config');
+        $config = $di->getConfig();
 
         if(!isset($config->error->disableLog) ||
             (isset($config->error->disableLog) && $config->error->disableLog) ||
