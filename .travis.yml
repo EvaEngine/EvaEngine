@@ -6,6 +6,8 @@ php:
 before_script:
   - git clone git://github.com/phalcon/cphalcon.git --depth=1 && cd cphalcon/build/safe && phpize && ./configure --enable-phalcon && sudo make install
   - cd ../../../ && phpenv config-add ./tests/phalcon.ini
+  - composer self-update
   - composer install
-  - cd tests
-script: phpunit -v
+script:
+  phpunit -v
+  phpcs --standard=PSR2 --extensions=php --ignore=vendor/*,tests/* ./

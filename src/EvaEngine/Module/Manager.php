@@ -184,10 +184,14 @@ class Manager implements EventsAwareInterface
         $listeners = array();
         $loader->registerClasses($classes)->register();
         foreach($modules as $key => $module) {
-            $moduleInstance = new $module['className'];
-            if(!class_exists($module['className']) || !($moduleInstance instanceof StandardInterface)) {
+            if(!class_exists($module['className'])) {
                 continue;
             }
+            $moduleInstance = new $module['className'];
+            if(!($moduleInstance instanceof StandardInterface)) {
+                continue;
+            }
+
             $namespace = $module['className']::registerGlobalAutoloaders();
             if(is_array($namespace)) {
                 $namespaces += $namespace;
