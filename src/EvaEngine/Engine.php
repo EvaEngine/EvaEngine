@@ -501,20 +501,19 @@ class Engine
     {
         global $argv;
 
-        $di->set('router', function() use ($di, $argv) {
-
+        $di->set('router', function () use ($di, $argv) {
             $router = new CLIRouter();
             $router->setDI($di);
             return $router;
         });
-        $di->set('output', function() {
+
+        $di->set('output', function () {
             return new ConsoleOutput();
         });
 
-        $di->set("dispatcher", function() use ($di, $argv) {
+        $di->set("dispatcher", function () use ($di, $argv) {
             $dispatcher = new CLIDispatcher();
             $dispatcher->setDI($di);
-
 
             array_shift($argv);
             $firstParam = array_shift($argv);
@@ -531,12 +530,8 @@ class Engine
                 $dispatcher->setNamespaceName("Eva\\EvaEngine\\Tasks");
             }
 
-
             return $dispatcher;
         });
-
-
-
     }
 
     public function diConfig()
