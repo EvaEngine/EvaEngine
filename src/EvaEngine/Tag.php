@@ -34,7 +34,7 @@ class Tag extends \Phalcon\Tag
         ), $arguments);
     }
 
-    public static function __callStatic($name, $arguments) 
+    public static function __callStatic($name, $arguments)
     {
         if ($name === '_') {
             return parent::__callStatic('translate', $arguments);
