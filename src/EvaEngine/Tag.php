@@ -92,7 +92,7 @@ class Tag extends \Phalcon\Tag
         $escaper = self::getDI()->getEscaper();
         foreach ($messages as $type => $submessages) {
             foreach ($submessages as $message) {
-                $messageString .= '<div class="alert ' . $classMapping[$type] . '" data-raw-message="' . $escaper->escapeHtmlAttr($message) . '">' . self::_($message) . '</div>';
+                $messageString .= '<div class="alert ' . $classMapping[$type] . '" data-raw-message="' . $escaper->escapeHtmlAttr($message) . '">' . self::translate($message) . '</div>';
             }
         }
 
