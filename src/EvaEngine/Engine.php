@@ -612,6 +612,9 @@ class Engine
 
         if (!$di->getConfig()->debug) {
             $this->writeCache($cacheFile, $router, true);
+        } else {
+            //Dump merged routers for debug
+            $this->writeCache($this->getConfigPath() . "/_debug.$cachePrefix.router.php", $router, true);
         }
         return $router;
     }
