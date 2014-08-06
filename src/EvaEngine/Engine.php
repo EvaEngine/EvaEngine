@@ -842,7 +842,7 @@ class Engine
         if (false === file_exists($file)) {
             //empty translator
             return new \Phalcon\Translate\Adapter\NativeArray(array(
-                'content' => array() 
+                'content' => array()
             ));
         }
         $translate = new \Phalcon\Translate\Adapter\Csv(array(
