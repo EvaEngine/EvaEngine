@@ -840,7 +840,10 @@ class Engine
         $config = $this->getDI()->getConfig();
         $file = $config->translate->path . $config->translate->forceLang . '.csv';
         if (false === file_exists($file)) {
-            $file = $config->translate->path . 'empty.csv';
+            //empty translator
+            return new \Phalcon\Translate\Adapter\NativeArray(array(
+                'content' => array() 
+            ));
         }
         $translate = new \Phalcon\Translate\Adapter\Csv(array(
             'file' => $file,
