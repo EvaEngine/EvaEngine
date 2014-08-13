@@ -391,6 +391,12 @@ class Engine
             return $self->diDbSlave();
         });
 
+        $di->set('transactions', function () use ($di) {
+            $transactions = new \Phalcon\Mvc\Model\Transaction\Manager();
+            $transactions->setDbService('dbMaster');
+            return $transactions;
+        });
+
         /**********************************
          * DI initialize for cache
          ***********************************/
