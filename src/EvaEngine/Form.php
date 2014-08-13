@@ -215,8 +215,13 @@ class Form extends \Phalcon\Forms\Form
                 $this->add($element);
             }
         }
-
+        $this->afterSetModel();
         return $this;
+    }
+
+    public function afterSetModel()
+    {
+        //callback
     }
 
     public function isFullValid($data, $entity = null)
@@ -240,6 +245,8 @@ class Form extends \Phalcon\Forms\Form
                 $validResult++;
             }
         }
+
+        $this->bind($data, $this->getModel());
         if ($this->isValid($data, $this->getModel())) {
             $validResult++;
         }
@@ -316,7 +323,7 @@ class Form extends \Phalcon\Forms\Form
         }
         $attributes = array_merge(array(
            'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
-        ), $attributes);
+        ), (array) $attributes);
 
         return parent::render($name, $attributes);
     }
