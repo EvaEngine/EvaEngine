@@ -329,170 +329,254 @@ class Engine
         //$di->set('application', $this);
 
         //call loadmodules will overwrite this
-        $di->set('moduleManager', function () use ($di) {
-            $moduleManager = new ModuleManager();
-            $moduleManager->setEventsManager($di->getEventsManager());
-            return $moduleManager;
-        }, true);
+        $di->set(
+            'moduleManager',
+            function () use ($di) {
+                $moduleManager = new ModuleManager();
+                $moduleManager->setEventsManager($di->getEventsManager());
+                return $moduleManager;
+            },
+            true
+        );
 
         //System global events manager
-        $di->set('eventsManager', function () {
-            $eventsManager = new EventsManager();
-            $eventsManager->enablePriorities(true);
-            return $eventsManager;
-        }, true);
+        $di->set(
+            'eventsManager',
+            function () {
+                $eventsManager = new EventsManager();
+                $eventsManager->enablePriorities(true);
+                return $eventsManager;
+            },
+            true
+        );
 
-        $di->set('config', function () use ($self) {
-            return $self->diConfig();
-        }, true);
+        $di->set(
+            'config',
+            function () use ($self) {
+                return $self->diConfig();
+            },
+            true
+        );
 
-        $di->set('router', function () use ($self) {
-            return $self->diRouter();
-        }, true);
+        $di->set(
+            'router',
+            function () use ($self) {
+                return $self->diRouter();
+            },
+            true
+        );
 
-        $di->set('dispatcher', function () use ($di) {
-            $dispatcher = new Dispatcher();
-            $dispatcher->setEventsManager($di->getEventsManager());
-            return $dispatcher;
-        }, true);
+        $di->set(
+            'dispatcher',
+            function () use ($di) {
+                $dispatcher = new Dispatcher();
+                $dispatcher->setEventsManager($di->getEventsManager());
+                return $dispatcher;
+            },
+            true
+        );
 
-        $di->set('modelsMetadata', function () use ($self) {
-            return $self->diModelsMetadata();
-        }, true);
+        $di->set(
+            'modelsMetadata',
+            function () use ($self) {
+                return $self->diModelsMetadata();
+            },
+            true
+        );
 
-        $di->set('modelsManager', function () use ($di) {
-            $config = $di->getConfig();
-            ModelManager::setDefaultPrefix($config->dbAdapter->prefix);
-            //for solving db master/slave under static find method
-            $modelsManager = new ModelManager();
+        $di->set(
+            'modelsManager',
+            function () use ($di) {
+                $config = $di->getConfig();
+                ModelManager::setDefaultPrefix($config->dbAdapter->prefix);
+                //for solving db master/slave under static find method
+                $modelsManager = new ModelManager();
 
-            return $modelsManager;
-        });
+                return $modelsManager;
+            }
+        );
 
-        $di->set('view', function () use ($di) {
-            $view = new View();
-            $view->setViewsDir(__DIR__ . '/views/');
-            $view->setEventsManager($di->getEventsManager());
-            return $view;
-        });
+        $di->set(
+            'view',
+            function () use ($di) {
+                $view = new View();
+                $view->setViewsDir(__DIR__ . '/views/');
+                $view->setEventsManager($di->getEventsManager());
+                return $view;
+            }
+        );
 
-        $di->set('session', function () use ($self) {
-            return $self->diSession();
-        });
+        $di->set(
+            'session',
+            function () use ($self) {
+                return $self->diSession();
+            }
+        );
 
         /**********************************
          * DI initialize for database
          ***********************************/
-        $di->set('dbMaster', function () use ($self) {
-            return $self->diDbMaster();
-        });
+        $di->set(
+            'dbMaster',
+            function () use ($self) {
+                return $self->diDbMaster();
+            }
+        );
 
-        $di->set('dbSlave', function () use ($self) {
-            return $self->diDbSlave();
-        });
+        $di->set(
+            'dbSlave',
+            function () use ($self) {
+                return $self->diDbSlave();
+            }
+        );
 
-        $di->set('transactions', function () use ($di) {
-            $transactions = new \Phalcon\Mvc\Model\Transaction\Manager();
-            $transactions->setDbService('dbMaster');
-            return $transactions;
-        });
+        $di->set(
+            'transactions',
+            function () use ($di) {
+                $transactions = new \Phalcon\Mvc\Model\Transaction\Manager();
+                $transactions->setDbService('dbMaster');
+                return $transactions;
+            }
+        );
 
         /**********************************
          * DI initialize for cache
          ***********************************/
-        $di->set('globalCache', function () use ($self) {
-            return $self->diGlobalCache();
-        });
+        $di->set(
+            'globalCache',
+            function () use ($self) {
+                return $self->diGlobalCache();
+            }
+        );
 
-        $di->set('viewCache', function () use ($self) {
-            return $self->diViewCache();
-        });
+        $di->set(
+            'viewCache',
+            function () use ($self) {
+                return $self->diViewCache();
+            }
+        );
 
-        $di->set('modelCache', function () use ($self) {
-            return $self->diModelCache();
-        });
+        $di->set(
+            'modelCache',
+            function () use ($self) {
+                return $self->diModelCache();
+            }
+        );
 
-        $di->set('apiCache', function () use ($self) {
-            return $self->diApiCache();
-        });
+        $di->set(
+            'apiCache',
+            function () use ($self) {
+                return $self->diApiCache();
+            }
+        );
 
-        $di->set('fastCache', function () use ($self) {
-            return $self->diFastCache();
-        });
+        $di->set(
+            'fastCache',
+            function () use ($self) {
+                return $self->diFastCache();
+            }
+        );
 
         /**********************************
          * DI initialize for queue
          ***********************************/
-        $di->set('queue', function () use ($di) {
-            $config = $di->getConfig();
-            $client = new \GearmanClient();
-            $client->setTimeout(1000);
-            foreach ($config->queue->servers as $key => $server) {
-                $client->addServer($server->host, $server->port);
+        $di->set(
+            'queue',
+            function () use ($di) {
+                $config = $di->getConfig();
+                $client = new \GearmanClient();
+                $client->setTimeout(1000);
+                foreach ($config->queue->servers as $key => $server) {
+                    $client->addServer($server->host, $server->port);
+                }
+                return $client;
             }
-            return $client;
-        });
+        );
 
-        $di->set('worker', function () use ($di) {
-            $config = $di->getConfig();
-            $worker = new \GearmanWorker();
-            foreach ($config->queue->servers as $key => $server) {
-                $worker->addServer($server->host, $server->port);
+        $di->set(
+            'worker',
+            function () use ($di) {
+                $config = $di->getConfig();
+                $worker = new \GearmanWorker();
+                foreach ($config->queue->servers as $key => $server) {
+                    $worker->addServer($server->host, $server->port);
+                }
+                return $worker;
             }
-            return $worker;
-        });
+        );
 
 
         /**********************************
          * DI initialize for email
          ***********************************/
-        $di->set('mailer', function () use ($self) {
-            return $self->diMailer();
-        });
+        $di->set(
+            'mailer',
+            function () use ($self) {
+                return $self->diMailer();
+            }
+        );
 
         $di->set('mailMessage', 'Eva\EvaEngine\MailMessage');
 
         /**********************************
          * DI initialize for helpers
          ***********************************/
-        $di->set('url', function () use ($di) {
-            $config = $di->getConfig();
-            $url = new UrlResolver();
-            $url->setBaseUri($config->baseUri);
-            return $url;
-        });
+        $di->set(
+            'url',
+            function () use ($di) {
+                $config = $di->getConfig();
+                $url = new UrlResolver();
+                $url->setBaseUri($config->baseUri);
+                return $url;
+            }
+        );
 
         $di->set('escaper', 'Phalcon\Escaper');
 
-        $di->set('tag', function () use ($di, $self) {
-            Tag::setDi($di);
-            $self->registerViewHelpers();
-            return new Tag();
-        });
+        $di->set(
+            'tag',
+            function () use ($di, $self) {
+                Tag::setDi($di);
+                $self->registerViewHelpers();
+                return new Tag();
+            }
+        );
 
         $di->set('flash', 'Phalcon\Flash\Session');
 
         $di->set('placeholder', 'Eva\EvaEngine\View\Helper\Placeholder');
 
-        $di->set('cookies', function () {
-            $cookies = new \Phalcon\Http\Response\Cookies();
-            $cookies->useEncryption(false);
-            return $cookies;
-        });
+        $di->set(
+            'cookies',
+            function () {
+                $cookies = new \Phalcon\Http\Response\Cookies();
+                $cookies->useEncryption(false);
+                return $cookies;
+            }
+        );
 
-        $di->set('translate', function () use ($self) {
-            return $self->diTranslate();
-        });
+        $di->set(
+            'translate',
+            function () use ($self) {
+                return $self->diTranslate();
+            }
+        );
 
-        $di->set('fileSystem', function () use ($self) {
-            return $self->diFileSystem();
-        });
+        $di->set(
+            'fileSystem',
+            function () use ($self) {
+                return $self->diFileSystem();
+            }
+        );
 
-        $di->set('logException', function () use ($di) {
-            $config = $di->getConfig();
-            return $logger = new FileLogger($config->logger->path . 'error_' . date('Y-m-d') . '.log');
-        });
-        if ($this->appMode  == 'cli') {
+        $di->set(
+            'logException',
+            function () use ($di) {
+                $config = $di->getConfig();
+                return $logger = new FileLogger($config->logger->path . 'error_' . date('Y-m-d') . '.log');
+            }
+        );
+        if ($this->appMode == 'cli') {
             $this->cliDI($di);
         }
         return $this->di = $di;
@@ -507,37 +591,46 @@ class Engine
     {
         global $argv;
 
-        $di->set('router', function () use ($di, $argv) {
-            $router = new CLIRouter();
-            $router->setDI($di);
-            return $router;
-        });
-
-        $di->set('output', function () {
-            return new ConsoleOutput();
-        });
-
-        $di->set("dispatcher", function () use ($di, $argv) {
-            $dispatcher = new CLIDispatcher();
-            $dispatcher->setDI($di);
-
-            array_shift($argv);
-            $firstParam = array_shift($argv);
-            if (strpos($firstParam, ':') > 0) {
-                @list($moduleName, $taskName) = preg_split("/:/", $firstParam);
-                $dispatcher->setTaskName(ucwords($taskName));
-                $dispatcher->setActionName(array_shift($argv));
-                $dispatcher->setParams($argv);
-                $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
-            } else {
-                $dispatcher->setTaskName('Main');
-                $dispatcher->setActionName($firstParam);
-                $dispatcher->setParams($argv);
-                $dispatcher->setNamespaceName("Eva\\EvaEngine\\Tasks");
+        $di->set(
+            'router',
+            function () use ($di, $argv) {
+                $router = new CLIRouter();
+                $router->setDI($di);
+                return $router;
             }
+        );
 
-            return $dispatcher;
-        });
+        $di->set(
+            'output',
+            function () {
+                return new ConsoleOutput();
+            }
+        );
+
+        $di->set(
+            "dispatcher",
+            function () use ($di, $argv) {
+                $dispatcher = new CLIDispatcher();
+                $dispatcher->setDI($di);
+
+                array_shift($argv);
+                $moduleName = array_shift($argv);
+                $taskName = array_shift($argv);
+                $actionName = 'main';
+                if (strpos($taskName, ':') > 0) {
+                    @list($taskName, $actionName) = preg_split("/:/", $taskName);
+                }
+
+                $dispatcher->setTaskName(ucwords($taskName));
+                $dispatcher->setActionName($actionName);
+                $dispatcher->setParams($argv);
+//                $dispatcher->setModuleName($moduleName);
+
+                $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+
+                return $dispatcher;
+            }
+        );
     }
 
     public function diConfig()
@@ -698,19 +791,22 @@ class Engine
             $logger = new FileLogger($config->logger->path . date('Y-m-d') . '.log');
 
             //database service name hardcore as db
-            $eventsManager->attach('db', function ($event, $dbAdapter) use ($logger) {
-                if ($event->getType() == 'beforeQuery') {
-                    $sqlVariables = $dbAdapter->getSQLVariables();
-                    if (count($sqlVariables)) {
-                        $query = str_replace(array('%', '?'), array('%%', "'%s'"), $dbAdapter->getSQLStatement());
-                        $query = vsprintf($query, $sqlVariables);
-                        //
-                        $logger->log($query, \Phalcon\Logger::INFO);
-                    } else {
-                        $logger->log($dbAdapter->getSQLStatement(), \Phalcon\Logger::INFO);
+            $eventsManager->attach(
+                'db',
+                function ($event, $dbAdapter) use ($logger) {
+                    if ($event->getType() == 'beforeQuery') {
+                        $sqlVariables = $dbAdapter->getSQLVariables();
+                        if (count($sqlVariables)) {
+                            $query = str_replace(array('%', '?'), array('%%', "'%s'"), $dbAdapter->getSQLStatement());
+                            $query = vsprintf($query, $sqlVariables);
+                            //
+                            $logger->log($query, \Phalcon\Logger::INFO);
+                        } else {
+                            $logger->log($dbAdapter->getSQLStatement(), \Phalcon\Logger::INFO);
+                        }
                     }
                 }
-            });
+            );
             $dbAdapter->setEventsManager($eventsManager);
         }
         return $dbAdapter;
@@ -744,7 +840,11 @@ class Engine
         }
 
         $redis = new \Redis();
-        $redis->connect($config->cache->fastCache->host, $config->cache->fastCache->port, $config->cache->fastCache->timeout);
+        $redis->connect(
+            $config->cache->fastCache->host,
+            $config->cache->fastCache->port,
+            $config->cache->fastCache->timeout
+        );
         return $redis;
     }
 
@@ -831,9 +931,12 @@ class Engine
         }
 
         $sessionClass = $adapterMapping[$adapterKey];
-        $session = new $sessionClass(array_merge(array(
-            'uniqueId' => $this->getAppName(),
-        ), $config->session->options->toArray()));
+        $session = new $sessionClass(array_merge(
+            array(
+                'uniqueId' => $this->getAppName(),
+            ),
+            $config->session->options->toArray()
+        ));
         if (!$session->isStarted()) {
             //NOTICE: Get php warning here, not found reason
             $session->start();
@@ -893,9 +996,12 @@ class Engine
 
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)
     {
-        $this->getDI()->getEventsManager()->attach('dispatch:beforeException', function ($event, $dispatcher, $exception) {
-            throw $exception;
-        });
+        $this->getDI()->getEventsManager()->attach(
+            'dispatch:beforeException',
+            function ($event, $dispatcher, $exception) {
+                throw $exception;
+            }
+        );
 
         if ($this->getDI()->getConfig()->debug && $this->appMode != 'cli') {
             return $this;
