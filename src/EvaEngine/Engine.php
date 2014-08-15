@@ -624,8 +624,6 @@ class Engine
                 $dispatcher->setTaskName(ucwords($taskName));
                 $dispatcher->setActionName($actionName);
                 $dispatcher->setParams($argv);
-//                $dispatcher->setModuleName($moduleName);
-
                 $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
 
                 return $dispatcher;
