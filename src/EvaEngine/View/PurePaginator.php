@@ -32,7 +32,7 @@ class PurePaginator
     public $next;
     public $items;
     public $last;
-    public $first=1;
+    public $first = 1;
 
     public function setPagerRange($number)
     {
@@ -62,14 +62,14 @@ class PurePaginator
      * @param array $items
      * @param int $pageRange
      */
-    public function __construct($pageSize, $total_items, $items, $pageRange=3)
+    public function __construct($pageSize, $total_items, $items, $pageRange = 3)
     {
         $this->current = isset($_REQUEST['page']) ? intval($_REQUEST['page']) : 1;
         $this->current = $this->current > 0 ? $this->current : 1;
         $this->query = $_REQUEST;
         unset($this->query['page']);
         unset($this->query['_url']);
-        
+
         $this->last = $this->total_pages = ceil($total_items / $pageSize);
         $this->items = $items;
         $this->total_items = $total_items;
