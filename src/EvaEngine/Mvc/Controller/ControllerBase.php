@@ -92,12 +92,14 @@ class ControllerBase extends Controller
     {
         $redirectInputName = $redirectType ? "__redirect_$redirectType" : '__redirect';
         $formRedirect = $this->request->getPost($redirectInputName);
-        //Form Post will over write default
-        if ($formRedirect) {
-            return $this->response->redirect($formRedirect);
+        $formRedirect = $formRedirect ?: $this->request->getPost('__redirect');
+
+        $redirectUri = $formRedirect ?: $defaultRedirect;
+        if (!$redirectUri) {
+            throw new Exception\InvalidArgumentException(sprintf('No redirect url input'));
         }
 
-        return $this->response->redirect($defaultRedirect);
+        return $this->response->redirect($redirectUri);
     }
 
 
