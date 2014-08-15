@@ -18,8 +18,9 @@ class MainTask extends TaskBase
     {
 
         $output = $this->output;
-        $output->writelnComment('用法:');
-        $output->writeln('  console.php {Module}:{task名} [{action名} [参数1 ... 参数N]]     ');
+        $output->writeln("");
+        $output->writelnComment('usage:');
+        $output->writeln('  ./console.php moduleName taskName[:actionName] [param1 ... paramN]     ');
 //        $output->writeln("");
 //        $output->writelnComment('默认可用命令:');
 //        $output->writeList(array(

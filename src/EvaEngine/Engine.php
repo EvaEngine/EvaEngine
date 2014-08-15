@@ -8,7 +8,6 @@
 
 namespace Eva\EvaEngine;
 
-use Eva\EvaEngine\CLI\Formatter\OutputFormatterInterface;
 use Eva\EvaEngine\CLI\Output\ConsoleOutput;
 use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
@@ -24,12 +23,10 @@ use Phalcon\Mvc\Dispatcher;
 use Eva\EvaEngine\Mvc\View;
 use Eva\EvaEngine\Module\Manager as ModuleManager;
 use Eva\EvaEngine\Mvc\Model\Manager as ModelManager;
-use Eva\EvaEngine\Tag;
 
 use Phalcon\CLI\Router as CLIRouter;
 use Phalcon\CLI\Dispatcher as CLIDispatcher;
 use Phalcon\DI\FactoryDefault\CLI;
-use Zend\Loader\Exception\InvalidArgumentException;
 
 /**
  * Core application configuration / bootstrap
@@ -203,7 +200,7 @@ class Engine
      *
      * @param array $moduleSettings
      *
-     * @return FactoryDefault
+     * @return Engine
      */
     public function loadModules(array $moduleSettings)
     {
@@ -606,26 +603,31 @@ class Engine
                 return new ConsoleOutput();
             }
         );
-
         $di->set(
-            "dispatcher",
+            'dispatcher',
             function () use ($di, $argv) {
                 $dispatcher = new CLIDispatcher();
                 $dispatcher->setDI($di);
 
+                // remove script name in argv
                 array_shift($argv);
+
                 $moduleName = array_shift($argv);
                 $taskName = array_shift($argv);
                 $actionName = 'main';
                 if (strpos($taskName, ':') > 0) {
                     @list($taskName, $actionName) = preg_split("/:/", $taskName);
                 }
-
-                $dispatcher->setTaskName(ucwords($taskName));
-                $dispatcher->setActionName($actionName);
-                $dispatcher->setParams($argv);
-                $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
-
+                if ($moduleName) {
+                    $dispatcher->setTaskName(ucwords($taskName));
+                    $dispatcher->setActionName($actionName);
+                    $dispatcher->setParams($argv);
+                    $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+                } else {
+                    $dispatcher->setTaskName('Main');
+                    $dispatcher->setParams($argv);
+                    $dispatcher->setNamespaceName("Eva\\EvaEngine\\Tasks");
+                }
                 return $dispatcher;
             }
         );
