@@ -88,9 +88,10 @@ class ControllerBase extends Controller
         }
     }
 
-    public function redirectHandler($defaultRedirect = null, $securityCheck = false)
+    public function redirectHandler($defaultRedirect = null, $redirectType = null, $securityCheck = false)
     {
-        $formRedirect = $this->request->getPost('__redirect');
+        $redirectInputName = $redirectType ? "__redirect_$redirectType" : '__redirect';
+        $formRedirect = $this->request->getPost($redirectInputName);
         //Form Post will over write default
         if ($formRedirect) {
             return $this->response->redirect($formRedirect);
