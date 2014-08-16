@@ -576,7 +576,9 @@ class Engine
         if ($this->appMode == 'cli') {
             $this->cliDI($di);
         }
+
         IoC::setDI($di);
+
         return $this->di = $di;
     }
 
