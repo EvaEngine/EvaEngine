@@ -12,6 +12,7 @@ namespace Eva\EvaEngine;
 // + IoC.php
 // +----------------------------------------------------------------------
 
+use Eva\EvaEngine\Exception\RuntimeException;
 use Phalcon\DI;
 
 class IoC
@@ -37,13 +38,13 @@ class IoC
      *
      * @param string $name
      * @param array $parameters
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return mixed
      */
     public static function get($name, $parameters = null)
     {
         if (self::$di == null) {
-            throw new \RuntimeException('IoC container is null!');
+            throw new RuntimeException('IoC container is null!');
         }
         return self::$di->get($name, $parameters);
     }
@@ -54,13 +55,13 @@ class IoC
      * @param string $name
      * @param mixed $definition
      * @param boolean $shared
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return \Phalcon\DI\ServiceInterface
      */
     public static function set($name, $definition, $shared = null)
     {
         if (self::$di == null) {
-            throw new \RuntimeException('IoC container is null!');
+            throw new RuntimeException('IoC container is null!');
         }
         self::$di->set($name, $definition, $shared);
     }
