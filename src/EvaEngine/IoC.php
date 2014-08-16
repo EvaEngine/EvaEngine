@@ -27,7 +27,7 @@ class IoC
 
     }
 
-    public static function  setDI(DI $di)
+    public static function setDI(DI $di)
     {
         self::$di = $di;
     }
