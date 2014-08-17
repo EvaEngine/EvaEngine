@@ -570,7 +570,7 @@ class Engine
             'logException',
             function () use ($di) {
                 $config = $di->getConfig();
-                return $logger = new FileLogger($config->logger->path . 'error_' . date('Y-m-d') . '.log');
+                return $logger = new FileLogger($config->logger->path . 'error.log');
             }
         );
         if ($this->appMode == 'cli') {
@@ -791,7 +791,7 @@ class Engine
         if ($config->debug) {
             $di = $this->getDI();
             $eventsManager = $di->getEventsManager();
-            $logger = new FileLogger($config->logger->path . date('Y-m-d') . '.log');
+            $logger = new FileLogger($config->logger->path . 'db_query.log');
 
             //database service name hardcore as db
             $eventsManager->attach(
@@ -1002,6 +1002,7 @@ class Engine
         $this->getDI()->getEventsManager()->attach(
             'dispatch:beforeException',
             function ($event, $dispatcher, $exception) {
+                //For fixing phalcon weird behavior https://github.com/phalcon/cphalcon/issues/2558
                 throw $exception;
             }
         );
