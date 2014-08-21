@@ -454,9 +454,9 @@ class Engine
         );
 
         $di->set(
-            'modelCache',
+            'modelsCache',
             function () use ($self) {
-                return $self->diModelCache();
+                return $self->diModelsCache();
             }
         );
 
@@ -817,22 +817,22 @@ class Engine
 
     public function diGlobalCache()
     {
-        return $this->diCache('globalCache', 'eva_global_');
+        return $this->diCache('globalCache', $this->getAppName() . '_global_');
     }
 
     public function diViewCache()
     {
-        return $this->diCache('viewCache', 'eva_view_');
+        return $this->diCache('viewCache', $this->getAppName() . '_view_');
     }
 
-    public function diModelCache()
+    public function diModelsCache()
     {
-        return $this->diCache('modelCache', 'eva_model_');
+        return $this->diCache('modelsCache', $this->getAppName() . '_models_');
     }
 
     public function diApiCache()
     {
-        return $this->diCache('apiCache', 'eva_api_');
+        return $this->diCache('apiCache', $this->getAppName() . '_api_');
     }
 
     public function diFastCache()
