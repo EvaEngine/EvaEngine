@@ -414,7 +414,8 @@ class Engine
             'tokenStorage',
             function () use ($self) {
                 return $self->diTokenStorage();
-            }
+            },
+            true //token Storage MUST set as shared
         );
 
         /**********************************
@@ -424,14 +425,16 @@ class Engine
             'dbMaster',
             function () use ($self) {
                 return $self->diDbMaster();
-            }
+            },
+            true
         );
 
         $di->set(
             'dbSlave',
             function () use ($self) {
                 return $self->diDbSlave();
-            }
+            },
+            true
         );
 
         $di->set(
@@ -440,7 +443,8 @@ class Engine
                 $transactions = new \Phalcon\Mvc\Model\Transaction\Manager();
                 $transactions->setDbService('dbMaster');
                 return $transactions;
-            }
+            },
+            true
         );
 
         /**********************************
@@ -450,35 +454,40 @@ class Engine
             'globalCache',
             function () use ($self) {
                 return $self->diGlobalCache();
-            }
+            },
+            true
         );
 
         $di->set(
             'viewCache',
             function () use ($self) {
                 return $self->diViewCache();
-            }
+            },
+            true
         );
 
         $di->set(
             'modelsCache',
             function () use ($self) {
                 return $self->diModelsCache();
-            }
+            },
+            true
         );
 
         $di->set(
             'apiCache',
             function () use ($self) {
                 return $self->diApiCache();
-            }
+            },
+            true
         );
 
         $di->set(
             'fastCache',
             function () use ($self) {
                 return $self->diFastCache();
-            }
+            },
+            true
         );
 
         /**********************************
@@ -494,7 +503,8 @@ class Engine
                     $client->addServer($server->host, $server->port);
                 }
                 return $client;
-            }
+            },
+            true
         );
 
         $di->set(
@@ -506,7 +516,8 @@ class Engine
                     $worker->addServer($server->host, $server->port);
                 }
                 return $worker;
-            }
+            },
+            true
         );
 
 
@@ -517,7 +528,8 @@ class Engine
             'mailer',
             function () use ($self) {
                 return $self->diMailer();
-            }
+            },
+            true
         );
 
         $di->set('mailMessage', 'Eva\EvaEngine\MailMessage');
