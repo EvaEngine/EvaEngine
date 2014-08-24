@@ -102,7 +102,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         $backendCacheClass = $adapterMapping[$backendCacheClassName];
         $storage = new $backendCacheClass($frontCache, array_merge(
             array(
-                'prefix' => $options['uniqueId'] . '-',
+                'prefix' => $options['uniqueId'] . '_',
             ),
             $options['backend']['options']
         ));
