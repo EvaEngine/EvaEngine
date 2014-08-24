@@ -23,10 +23,10 @@ use Phalcon\Mvc\Dispatcher;
 use Eva\EvaEngine\Mvc\View;
 use Eva\EvaEngine\Module\Manager as ModuleManager;
 use Eva\EvaEngine\Mvc\Model\Manager as ModelManager;
-
 use Phalcon\CLI\Router as CLIRouter;
 use Phalcon\CLI\Dispatcher as CLIDispatcher;
 use Phalcon\DI\FactoryDefault\CLI;
+use Eva\EvaEngine\Service\TokenStorage;
 
 /**
  * Core application configuration / bootstrap
@@ -407,6 +407,13 @@ class Engine
             'session',
             function () use ($self) {
                 return $self->diSession();
+            }
+        );
+
+        $di->set(
+            'tokenStorage',
+            function () use ($self) {
+                return $self->diTokenStorage();
             }
         );
 
@@ -945,6 +952,17 @@ class Engine
             $session->start();
         }
         return $session;
+    }
+
+    public function diTokenStorage()
+    {
+        $config = $this->getDI()->getConfig();
+        return new TokenStorage(array_merge(
+            array(
+                'uniqueId' => $this->getAppName(),
+            ),
+            $config->tokenStorage->toArray()
+        ));
     }
 
     public function diTranslate()
