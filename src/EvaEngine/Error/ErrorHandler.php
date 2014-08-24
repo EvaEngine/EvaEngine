@@ -114,7 +114,7 @@ class ErrorHandler implements ErrorHandlerInterface
             return static::$logger = null;
         }
 
-        static::$logger = new FileLogger($config->error->logPath . '/' . 'system_error_' . date('Ymd') . '.log');
+        static::$logger = new FileLogger($config->error->logPath . '/' . 'system_error.log');
 
         return static::$logger;
     }
