@@ -21,6 +21,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         if ($this->tokenId) {
             return $this->tokenId;
         }
+
         $request = $this->getDI()->getRequest();
         $token = $request->getQuery('api_key');
         //$token = $request->getHeader('Authorization');
@@ -96,7 +97,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         $backendCacheClass = $adapterMapping[$backendCacheClassName];
         $storage = new $backendCacheClass($frontCache, array_merge(
             array(
-                'prefix' => $options['uniqueId'],
+                'prefix' => $options['uniqueId'] . '-',
             ),
             $options['backend']['options']
         ));
