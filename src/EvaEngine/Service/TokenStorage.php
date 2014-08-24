@@ -16,6 +16,11 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
     protected $lifetime;
 
+    public function getStorage()
+    {
+        return $this->storage;
+    }
+
     public function getId()
     {
         if ($this->tokenId) {
@@ -107,22 +112,24 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
     public function get($key, $defaultValue = null)
     {
-        return $this->storage->get($this->getId() . $key);
+        //p('get key:' . $this->getId() . '_' . $key);
+        return $this->storage->get($this->getId() . '_' . $key);
     }
 
     public function set($key, $value)
     {
-        return $this->storage->save($this->getId() . $key, $value);
+        //p('set key:' . $this->getId() . '_' . $key);
+        return $this->storage->save($this->getId() . '_' . $key, $value);
     }
 
     public function has($key)
     {
-        return $this->storage->exists($this->getId() . $key);
+        return $this->storage->exists($this->getId() . '_' . $key);
     }
 
     public function remove($key)
     {
-        return $this->storage->delete($this->getId(). $key);
+        return $this->storage->delete($this->getId() . '_' . $key);
     }
 
     public function destroy($id = null)
