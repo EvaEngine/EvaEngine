@@ -543,6 +543,7 @@ class Engine
                 $config = $di->getConfig();
                 $url = new UrlResolver();
                 $url->setBaseUri($config->baseUri);
+                $url->getStaticBaseUri($config->staticBaseUri);
                 return $url;
             }
         );
