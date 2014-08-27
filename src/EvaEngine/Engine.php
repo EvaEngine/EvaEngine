@@ -543,9 +543,10 @@ class Engine
                 $config = $di->getConfig();
                 $url = new UrlResolver();
                 $url->setBaseUri($config->baseUri);
-                $url->getStaticBaseUri($config->staticBaseUri);
+                $url->setStaticBaseUri($config->staticBaseUri);
                 return $url;
-            }
+            },
+            true
         );
 
         $di->set('escaper', 'Phalcon\Escaper');
