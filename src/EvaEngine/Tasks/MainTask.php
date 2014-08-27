@@ -20,7 +20,7 @@ class MainTask extends TaskBase
         $output = $this->output;
         $output->writeln("");
         $output->writelnComment('usage:');
-        $output->writeln('  ./console.php moduleName taskName[:actionName] [param1 ... paramN]     ');
+        $output->writeln('  ./console.php appName moduleName taskName[:actionName] [param1 ... paramN]     ');
 //        $output->writeln("");
 //        $output->writelnComment('默认可用命令:');
 //        $output->writeList(array(

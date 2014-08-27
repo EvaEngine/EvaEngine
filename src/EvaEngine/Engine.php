@@ -633,9 +633,6 @@ class Engine
                 $dispatcher = new CLIDispatcher();
                 $dispatcher->setDI($di);
 
-                // remove script name in argv
-                array_shift($argv);
-
                 $moduleName = array_shift($argv);
                 $taskName = array_shift($argv);
                 $actionName = 'main';
