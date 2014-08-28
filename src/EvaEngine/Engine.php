@@ -9,6 +9,7 @@
 namespace Eva\EvaEngine;
 
 use Eva\EvaEngine\CLI\Output\ConsoleOutput;
+use Eva\EvaEngine\Events\DispatchCacheListener;
 use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
 use Phalcon\Mvc\Url as UrlResolver;
@@ -339,8 +340,16 @@ class Engine
         //System global events manager
         $di->set(
             'eventsManager',
-            function () {
+            function () use ($di) {
                 $eventsManager = new EventsManager();
+                // dispatch caching event handler
+                $eventsManager->attach(
+                    "dispatch",
+                    new DispatchCacheListener()
+                );
+                $eventsManager->attach('application', function($event, $app) {
+                        dd($app);
+                    });
                 $eventsManager->enablePriorities(true);
                 return $eventsManager;
             },
@@ -1023,6 +1032,10 @@ class Engine
     public function run()
     {
         $response = $this->getApplication()->handle();
+        /** @var EventsManager $eventsManager */
+        $eventsManager = $this->getDI()->get('eventsManager');
+        $eventsManager->fire('evaengine:beforeSendResponse', $this->getApplication());
+
         echo $response->getContent();
     }
 
