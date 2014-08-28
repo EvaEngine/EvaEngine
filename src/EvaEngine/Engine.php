@@ -963,7 +963,7 @@ class Engine
         ));
         if (!$session->isStarted()) {
             //NOTICE: Get php warning here, not found reason
-            $session->start();
+            @$session->start();
         }
         return $session;
     }
@@ -1012,7 +1012,10 @@ class Engine
             $debugger = $this->getDebugger();
             $debugger->debugVar($this->getDI()->getModuleManager()->getModules(), 'modules');
         }
-        $this->getApplication()->setDI($this->getDI());
+        $this->getApplication()
+            ->setDI($this->getDI());
+        $this->getApplication()
+            ->setEventsManager($this->getDI()->getEventsManager());
         $this->attachModuleEvents();
         //Error Handler must run before router start
         if ($this->appMode == 'cli') {
