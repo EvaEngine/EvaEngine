@@ -32,7 +32,7 @@ class DispatchCacheListener
             return;
         }
         $dispatch_cache_config = $dispatcher->getParam('_dispatch_cache');
-        
+
         if (!$dispatch_cache_config) {
             return;
         }
@@ -79,7 +79,10 @@ class DispatchCacheListener
             );
             return;
         }
-        echo $contentCached;
+        /** @var \Phalcon\Http\ResponseInterface $response */
+        $response = $di->getResponse();
+        $response->setContent($contentCached);
+        $response->send();
         exit();
 
     }
