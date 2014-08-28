@@ -347,9 +347,6 @@ class Engine
                     "dispatch",
                     new DispatchCacheListener()
                 );
-                $eventsManager->attach('application', function($event, $app) {
-                        dd($app);
-                    });
                 $eventsManager->enablePriorities(true);
                 return $eventsManager;
             },
