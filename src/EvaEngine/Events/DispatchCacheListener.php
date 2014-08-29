@@ -87,9 +87,12 @@ class DispatchCacheListener
         $contentCached = unserialize($contentCached);
         if ($contentCached) {
             $response->setHeader('Eva-Dsp-Cache', date('Y-m-d H:i:s', $contentCached['time']));
-            foreach ($contentCached['headers'] as $_k => $_herder) {
-                $response->setHeader($_k, $_herder);
+            if ($contentCached['headers']) {
+                foreach ($contentCached['headers'] as $_k => $_herder) {
+                    $response->setHeader($_k, $_herder);
+                }
             }
+
             $response->setContent($contentCached['body']);
             $response->send();
             exit();
