@@ -63,27 +63,40 @@ class DispatchCacheListener
         $contentCached = $cache->get($cache_key);
 
         // cache missing
-        if ($contentCached === null) {
+        if ($di->getRequest()->getQuery('_eva_refresh_dispatch_cache') || $contentCached === null) {
             /** @var \Phalcon\Events\Manager $eventsManager */
             $eventsManager = $di->get('eventsManager');
             $eventsManager->attach(
-                'evaengine:beforeSendResponse',
+                'application:beforeSendResponse',
                 function ($event, $application) use ($di, $cache_key, $lifetime, $cache) {
                     /** @var \Phalcon\Http\ResponseInterface $response */
                     $response = $di->getResponse();
                     $content = $response->getContent();
-                    if ($content) {
-                        $cache->save($cache_key, $content, $lifetime);
-                    }
+                    $content2cache = array(
+                        'time' => time(),
+                        'headers' => $response->getHeaders()->toArray(),
+                        'body' => $content
+                    );
+                    $cache->save($cache_key, serialize($content2cache), $lifetime);
                 }
             );
             return;
         }
         /** @var \Phalcon\Http\ResponseInterface $response */
         $response = $di->getResponse();
-        $response->setContent($contentCached);
-        $response->send();
-        exit();
+        $contentCached = unserialize($contentCached);
+        if ($contentCached) {
+            $response->setHeader('Eva-Dsp-Cache', date('Y-m-d H:i:s', $contentCached['time']));
+            if ($contentCached['headers']) {
+                foreach ($contentCached['headers'] as $_k => $_herder) {
+                    $response->setHeader($_k, $_herder);
+                }
+            }
+
+            $response->setContent($contentCached['body']);
+            $response->send();
+            exit();
+        }
 
     }
 

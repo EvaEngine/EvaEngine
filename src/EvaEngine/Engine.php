@@ -1040,10 +1040,6 @@ class Engine
     public function run()
     {
         $response = $this->getApplication()->handle();
-        /** @var EventsManager $eventsManager */
-        $eventsManager = $this->getDI()->get('eventsManager');
-        $eventsManager->fire('evaengine:beforeSendResponse', $this->getApplication());
-
         echo $response->getContent();
     }
 
