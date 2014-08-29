@@ -67,7 +67,7 @@ class DispatchCacheListener
             /** @var \Phalcon\Events\Manager $eventsManager */
             $eventsManager = $di->get('eventsManager');
             $eventsManager->attach(
-                'evaengine:beforeSendResponse',
+                'application:beforeSendResponse',
                 function ($event, $application) use ($di, $cache_key, $lifetime, $cache) {
                     /** @var \Phalcon\Http\ResponseInterface $response */
                     $response = $di->getResponse();
