@@ -72,19 +72,28 @@ class DispatchCacheListener
                     /** @var \Phalcon\Http\ResponseInterface $response */
                     $response = $di->getResponse();
                     $content = $response->getContent();
-                    if ($content) {
-                        $cache->save($cache_key, $content, $lifetime);
-                    }
+                    $content2cache = array(
+                        'time' => time(),
+                        'headers' => $response->getHeaders()->toArray(),
+                        'body' => $content
+                    );
+                    $cache->save($cache_key, serialize($content2cache), $lifetime);
                 }
             );
             return;
         }
         /** @var \Phalcon\Http\ResponseInterface $response */
         $response = $di->getResponse();
-        $response->setHeader('Eva-Dsp-Cache', '1');
-        $response->setContent($contentCached);
-        $response->send();
-        exit();
+        $contentCached = unserialize($contentCached);
+        if ($contentCached) {
+            $response->setHeader('Eva-Dsp-Cache', date('Y-m-d H:i:s', $contentCached['time']));
+            foreach ($contentCached['headers'] as $_k => $_herder) {
+                $response->setHeader($_k, $_herder);
+            }
+            $response->setContent($contentCached['body']);
+            $response->send();
+            exit();
+        }
 
     }
 
