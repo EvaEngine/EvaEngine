@@ -63,7 +63,7 @@ class DispatchCacheListener
         $contentCached = $cache->get($cache_key);
 
         // cache missing
-        if ($contentCached === null) {
+        if ($di->getRequest()->getQuery('_eva_refresh_dispatch_cache') || $contentCached === null) {
             /** @var \Phalcon\Events\Manager $eventsManager */
             $eventsManager = $di->get('eventsManager');
             $eventsManager->attach(
@@ -81,6 +81,7 @@ class DispatchCacheListener
         }
         /** @var \Phalcon\Http\ResponseInterface $response */
         $response = $di->getResponse();
+        $response->setHeader('Eva-Dsp-Cache', '1');
         $response->setContent($contentCached);
         $response->send();
         exit();
