@@ -649,7 +649,12 @@ class Engine
                     $dispatcher->setTaskName(ucwords($taskName));
                     $dispatcher->setActionName($actionName);
                     $dispatcher->setParams($argv);
-                    $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+                    if ($moduleName == '_current') {
+                        $_appName = ucwords($this->getAppName());
+                        $dispatcher->setNamespaceName("{$_appName}\\Tasks");
+                    } else {
+                        $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+                    }
                 } else {
                     $dispatcher->setTaskName('Main');
                     $dispatcher->setParams($argv);
