@@ -349,10 +349,12 @@ class Engine
             'eventsManager',
             function () use ($di) {
                 $eventsManager = new EventsManager();
+                $eventsManager->enablePriorities(true);
                 // dispatch caching event handler
                 $eventsManager->attach(
                     "dispatch",
-                    new DispatchCacheListener()
+                    new DispatchCacheListener(),
+                    -1
                 );
                 $eventsManager->enablePriorities(true);
                 return $eventsManager;
