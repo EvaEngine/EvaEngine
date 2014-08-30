@@ -12,7 +12,7 @@ use Eva\EvaEngine\CLI\Output\ConsoleOutput;
 use Eva\EvaEngine\Events\DispatchCacheListener;
 use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
-use Phalcon\Mvc\Url as UrlResolver;
+use Eva\EvaEngine\Mvc\Url as UrlResolver;
 use Phalcon\DI\FactoryDefault;
 use Phalcon\Config;
 use Phalcon\Loader;
@@ -213,9 +213,16 @@ class Engine
             $moduleManager->setCacheFile($cacheFile);
         }
 
+
+
         $moduleManager
             ->setDefaultPath($this->getModulesPath())
             ->loadModules($moduleSettings, $this->getAppName());
+
+        if ($this->getDI()->getConfig()->debug) {
+            $cachePrefix = $this->getAppName();
+            $this->writeCache($this->getConfigPath() . "/_debug.$cachePrefix.modules.php", $moduleManager->getModules());
+        }
 
         $this->getApplication()->registerModules($moduleManager->getModules());
         //Overwirte default modulemanager
@@ -548,6 +555,7 @@ class Engine
             function () use ($di) {
                 $config = $di->getConfig();
                 $url = new UrlResolver();
+                $url->setVersionFile($config->staticBaseUriVersionFile);
                 $url->setBaseUri($config->baseUri);
                 $url->setStaticBaseUri($config->staticBaseUri);
                 return $url;
