@@ -36,7 +36,7 @@ class Url extends \Phalcon\Mvc\Url
         return $this;
     }
 
-    public function getStatic($url)
+    public function getStatic($url = null)
     {
         return parent::getStatic($url) . '?' . $this->getVersion();
     }
