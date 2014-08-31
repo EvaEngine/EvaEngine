@@ -55,7 +55,10 @@ class PurePaginator
     {
         return $this->query;
     }
-
+    public function getPaginate()
+    {
+        return $this;
+    }
     /**
      * @param int $pageSize
      * @param int $total_items
