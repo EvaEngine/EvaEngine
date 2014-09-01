@@ -86,7 +86,6 @@ class SendCloudMailer
                     'html' => $message->getBody()
                 )
             )
-
         );
 
         $result = curl_exec($ch);
@@ -97,7 +96,8 @@ class SendCloudMailer
         }
         curl_close($ch);
         $ret = json_decode($result);
-        if($ret->message != 'success') {
+        p($result);
+        if ($ret->message != 'success') {
             throw new \Exception($result);
         }
         return $result;
