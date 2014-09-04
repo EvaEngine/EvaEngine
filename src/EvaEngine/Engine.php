@@ -10,6 +10,7 @@ namespace Eva\EvaEngine;
 
 use Eva\EvaEngine\CLI\Output\ConsoleOutput;
 use Eva\EvaEngine\Events\DispatchCacheListener;
+use Eva\EvaEngine\SDK\SendCloudMailer;
 use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
 use Eva\EvaEngine\Mvc\Url as UrlResolver;
@@ -214,14 +215,16 @@ class Engine
         }
 
 
-
         $moduleManager
             ->setDefaultPath($this->getModulesPath())
             ->loadModules($moduleSettings, $this->getAppName());
 
         if ($this->getDI()->getConfig()->debug) {
             $cachePrefix = $this->getAppName();
-            $this->writeCache($this->getConfigPath() . "/_debug.$cachePrefix.modules.php", $moduleManager->getModules());
+            $this->writeCache(
+                $this->getConfigPath() . "/_debug.$cachePrefix.modules.php",
+                $moduleManager->getModules()
+            );
         }
 
         $this->getApplication()->registerModules($moduleManager->getModules());
@@ -349,10 +352,12 @@ class Engine
             'eventsManager',
             function () use ($di) {
                 $eventsManager = new EventsManager();
+                $eventsManager->enablePriorities(true);
                 // dispatch caching event handler
                 $eventsManager->attach(
                     "dispatch",
-                    new DispatchCacheListener()
+                    new DispatchCacheListener(),
+                    -1
                 );
                 $eventsManager->enablePriorities(true);
                 return $eventsManager;
@@ -657,7 +662,12 @@ class Engine
                     $dispatcher->setTaskName(ucwords($taskName));
                     $dispatcher->setActionName($actionName);
                     $dispatcher->setParams($argv);
-                    $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+                    if ($moduleName == '_current') {
+                        $_appName = ucwords($this->getAppName());
+                        $dispatcher->setNamespaceName("{$_appName}\\Tasks");
+                    } else {
+                        $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+                    }
                 } else {
                     $dispatcher->setTaskName('Main');
                     $dispatcher->setParams($argv);
@@ -944,7 +954,14 @@ class Engine
         } else {
             $transport = \Swift_SendmailTransport::newInstance($config->mailer->sendmailCommand);
         }
-        $mailer = \Swift_Mailer::newInstance($transport);
+        if ($config->mailer->transport == 'sendcloud') {
+            $mailer = SendCloudMailer::newInstance()
+                ->setHost($config->mailer->host)
+                ->setUsername($config->mailer->username)
+                ->setPassword($config->mailer->password);
+        } else {
+            $mailer = \Swift_Mailer::newInstance($transport);
+        }
         return $mailer;
     }
 
