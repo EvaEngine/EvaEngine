@@ -40,7 +40,8 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
             } else {
                 $ip = $_SERVER['REMOTE_ADDR'];
             }
-            return $this->tokenId = 'ip' . ip2long($ip);
+            //Generate random hash for even same IP
+            return $this->tokenId = 'ip' . ip2long($ip) . \Phalcon\Text::random(\Phalcon\Text::RANDOM_ALNUM, 6);
         }
     }
 
