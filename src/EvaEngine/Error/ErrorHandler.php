@@ -5,6 +5,7 @@ namespace Eva\EvaEngine\Error;
 use Phalcon\DI;
 use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger\AdapterInterface as LoggerInterface;
+use Phalcon\Events\Manager as EventsManager;
 
 class ErrorHandler implements ErrorHandlerInterface
 {
@@ -165,9 +166,11 @@ class ErrorHandler implements ErrorHandlerInterface
         }
 
         $di = DI::getDefault();
-        $dispatcher = $di->getShared('dispatcher');
-        $view = $di->getShared('view');
-        $response = $di->getShared('response');
+        $dispatcher = $di->getDispatcher();
+        //Clear old eventsmanager to void trigger dispatch again
+        $dispatcher->setEventsManager(new EventsManager());
+        $view = $di->getView();
+        $response = $di->getResponse();
         $response->setStatusCode($error->statusCode(), $error->statusMessage());
 
         $dispatcher->setNamespaceName(static::getErrorControllerNamespace());
