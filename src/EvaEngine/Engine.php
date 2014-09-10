@@ -258,6 +258,9 @@ class Engine
 
         $eventsManager = $this->getDI()->getEventsManager();
         foreach ($listeners as $moduleName => $moduleListeners) {
+            if (!$moduleListeners) {
+                continue;
+            }
             foreach ($moduleListeners as $eventType => $listener) {
                 $eventsManager->attach($eventType, new $listener);
             }
