@@ -5,6 +5,8 @@ namespace Eva\EvaEngine\Service;
 use Eva\EvaEngine\Exception;
 use Phalcon\Session\AdapterInterface as SessionInterface;
 use Phalcon\DI\InjectionAwareInterface;
+use Phalcon\Http\RequestInterface;
+use Phalcon\Text;
 
 class TokenStorage implements SessionInterface, InjectionAwareInterface
 {
@@ -15,6 +17,16 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
     protected $options;
 
     protected $lifetime;
+
+    const AUTH_QUERY_KEY = 'api_key';
+
+    public static function dicoverToken(RequestInterface $request)
+    {
+        if ($token = $request->getQuery(TokenStorage::AUTH_QUERY_KEY, 'string')) {
+            return $token;
+        }
+        return '';
+    }
 
     public function getStorage()
     {
@@ -28,7 +40,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         }
 
         $request = $this->getDI()->getRequest();
-        $token = $request->getQuery('api_key');
+        $token = TokenStorage::dicoverToken($this->getDI()->getRequest());
         //$token = $request->getHeader('Authorization');
         if ($token) {
             return $this->tokenId = $token;
@@ -41,7 +53,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
                 $ip = $_SERVER['REMOTE_ADDR'];
             }
             //Generate random hash for even same IP
-            return $this->tokenId = 'ip' . ip2long($ip) . \Phalcon\Text::random(\Phalcon\Text::RANDOM_ALNUM, 6);
+            return $this->tokenId = 'ip' . ip2long($ip) . Text::random(Text::RANDOM_ALNUM, 6);
         }
     }
 
