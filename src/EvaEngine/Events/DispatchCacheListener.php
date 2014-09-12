@@ -69,7 +69,7 @@ class DispatchCacheListener
         $bodyCached = $cache->get($bodyKey);
         $headersCached = $cache->get($headersKey);
 
-        $hasCached = $headersCached || $bodyCached;
+        $hasCached = $headersCached && $bodyCached;
         // cache missing
         if ($di->getRequest()->getQuery('_eva_refresh_dispatch_cache') || !$hasCached) {
             /** @var \Phalcon\Events\Manager $eventsManager */
