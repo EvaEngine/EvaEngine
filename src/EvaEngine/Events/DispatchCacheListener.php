@@ -63,11 +63,12 @@ class DispatchCacheListener
         $cache_key_prefix = md5($cache_key_prefix);
         /** @var \Phalcon\Cache\Backend\Memcache $cache */
         $cache = $di->getViewCache();
-        $headersKey = $cache_key_prefix . '_h';
         $bodyKey = $cache_key_prefix . '_b';
+        $headersKey = $cache_key_prefix . '_h';
 
-        $headersCached = $cache->get($headersKey);
         $bodyCached = $cache->get($bodyKey);
+        $headersCached = $cache->get($headersKey);
+
         $hasCached = $headersCached || $bodyCached;
         // cache missing
         if ($di->getRequest()->getQuery('_eva_refresh_dispatch_cache') || !$hasCached) {
