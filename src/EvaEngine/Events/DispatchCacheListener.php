@@ -56,10 +56,10 @@ class DispatchCacheListener
             return;
         }
         $cache_key_prefix = $_SERVER['HTTP_HOST'] . preg_replace(
-                '/[&?]_eva_refresh_dispatch_cache\=1/i',
-                '',
-                $_SERVER['REQUEST_URI']
-            ) . file_get_contents('php://input');
+            '/[&?]_eva_refresh_dispatch_cache\=1/i',
+            '',
+            $_SERVER['REQUEST_URI']
+        ) . file_get_contents('php://input');
         $cache_key_prefix = md5($cache_key_prefix);
         /** @var \Phalcon\Cache\Backend\Memcache $cache */
         $cache = $di->getViewCache();
