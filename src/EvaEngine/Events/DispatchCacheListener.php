@@ -68,7 +68,6 @@ class DispatchCacheListener
 
         $headersCached = $cache->get($headersKey);
         $bodyCached = $cache->get($bodyKey);
-
         $hasCached = $headersCached || $bodyCached;
         // cache missing
         if ($di->getRequest()->getQuery('_eva_refresh_dispatch_cache') || !$hasCached) {
@@ -83,6 +82,11 @@ class DispatchCacheListener
 
                     $headers = $response->getHeaders()->toArray();
                     !$headers && $headers = array();
+
+                    $headersByHeaderFunc = headers_list();
+                    if ($headersByHeaderFunc) {
+                        $headers = array_merge($headers, $headersByHeaderFunc);
+                    }
                     $headers['Eva-Dsp-Cache'] = time();
                     $cache->save($headersKey, serialize($headers), $lifetime);
                     $cache->save($bodyKey, $body, $lifetime);
@@ -100,7 +104,11 @@ class DispatchCacheListener
                     $headersCached['Eva-Dsp-Cache']
                 );
                 foreach ($headersCached as $_k => $_herder) {
-                    $response->setHeader($_k, $_herder);
+                    if (is_int($_k)) {
+                        $response->setRawHeader($_herder);
+                    } else {
+                        $response->setHeader($_k, $_herder);
+                    }
                 }
             }
 
@@ -110,6 +118,7 @@ class DispatchCacheListener
         }
 
     }
+
 
     private function parseParams($params)
     {
