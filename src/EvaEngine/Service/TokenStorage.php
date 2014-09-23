@@ -19,11 +19,30 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
     protected $lifetime;
 
     const AUTH_QUERY_KEY = 'api_key';
+    const AUTH_HEADER_KEY = 'Authorization';
 
     public static function dicoverToken(RequestInterface $request)
     {
         if ($token = $request->getQuery(TokenStorage::AUTH_QUERY_KEY, 'string')) {
             return $token;
+        }
+
+        //For apache
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            if (!isset($headers[TokenStorage::AUTH_HEADER_KEY])) {
+                return '';
+            }
+            $token = trim($headers[TokenStorage::AUTH_HEADER_KEY]);
+            $token = explode(' ', $token);
+            return isset($token[1]) ? $token[1] : '';
+        }
+
+        //For nginx
+        if ($token = $request->getHeader(strtoupper(TokenStorage::AUTH_HEADER_KEY))) {
+            $token = trim($token);
+            $token = explode(' ', $token);
+            return isset($token[1]) ? $token[1] : '';
         }
         return '';
     }
@@ -41,7 +60,6 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
         $request = $this->getDI()->getRequest();
         $token = TokenStorage::dicoverToken($this->getDI()->getRequest());
-        //$token = $request->getHeader('Authorization');
         if ($token) {
             return $this->tokenId = $token;
         } else {
