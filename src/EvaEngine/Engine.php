@@ -239,6 +239,7 @@ class Engine
         $cachePrefix = $this->getAppName();
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.events.php";
         $listeners = $this->readCache($cacheFile);
+        $cacheLoaded = false;
 
         if (!$listeners) {
             $moduleManager = $this->getDI()->getModuleManager();
@@ -250,6 +251,8 @@ class Engine
                     $listeners[$moduleName] = $moduleListeners;
                 }
             }
+        } else {
+            $cacheLoaded = true;
         }
 
         if (!is_array($listeners)) {
@@ -271,7 +274,7 @@ class Engine
             $debugger->debugVar($listeners, 'events');
         }
 
-        if (!$di->getConfig()->debug && $listeners) {
+        if (!$di->getConfig()->debug && false === $cacheLoaded && $listeners) {
             $this->writeCache($cacheFile, $listeners);
         }
         return $this;
