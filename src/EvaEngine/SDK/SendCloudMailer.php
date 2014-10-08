@@ -102,4 +102,4 @@ class SendCloudMailer
         }
         return $result;
     }
-} 
+}

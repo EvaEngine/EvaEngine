@@ -132,4 +132,4 @@ class DispatchCacheListener
         }
         return $paramsArray;
     }
-} 
+}

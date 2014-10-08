@@ -65,4 +65,4 @@ class IoC
         }
         self::$di->set($name, $definition, $shared);
     }
-} 
+}
