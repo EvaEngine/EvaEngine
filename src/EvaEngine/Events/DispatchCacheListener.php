@@ -88,7 +88,7 @@ class DispatchCacheListener
                     if ($headersByHeaderFunc) {
                         $headers = array_merge($headers, $headersByHeaderFunc);
                     }
-                    $headers['Eva-Dsp-Cache'] = time();
+                    $headers['X-Eva-Dsp-Cache'] = time();
                     $cache->save($bodyKey, $body, $lifetime);
                     $cache->save($headersKey, serialize($headers), $lifetime);
                 }
