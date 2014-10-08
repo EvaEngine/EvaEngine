@@ -61,7 +61,7 @@ class DispatchCacheListener
             $_SERVER['REQUEST_URI']
         ) . file_get_contents('php://input');
         $cache_key_prefix = md5($cache_key_prefix);
-        /** @var \Phalcon\Cache\Backend\Memcache $cache */
+        /** @var \Phalcon\Cache\Backend $cache */
         $cache = $di->getViewCache();
         $bodyKey = $cache_key_prefix . '_b';
         $headersKey = $cache_key_prefix . '_h';
@@ -100,9 +100,9 @@ class DispatchCacheListener
         if ($hasCached) {
             if ($headersCached) {
                 $headersCached = unserialize($headersCached);
-                isset($headersCached['Eva-Dsp-Cache']) && $headersCached['Eva-Dsp-Cache'] = date(
+                isset($headersCached['X-Eva-Dsp-Cache']) && $headersCached['X-Eva-Dsp-Cache'] = date(
                     'Y-m-d H:i:s',
-                    $headersCached['Eva-Dsp-Cache']
+                    $headersCached['X-Eva-Dsp-Cache']
                 );
                 foreach ($headersCached as $_k => $_herder) {
                     if (is_int($_k)) {
