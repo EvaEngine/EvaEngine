@@ -88,15 +88,13 @@ class DispatchCacheListener
                     if ($headersByHeaderFunc) {
                         $headers = array_merge($headers, $headersByHeaderFunc);
                     }
-                    if (isset($headers['Set-Cookie'])) {
-                        unset($headers['Set-Cookie']);
+                    $headers2cache = array();
+                    if(isset($headers['Content-Type'])) {
+                        $headers2cache['Content-Type'] = $headers['Content-Type'];
                     }
-                    if (isset($headers['X-Permission-Auth'])) {
-                        unset($headers['X-Permission-Auth']);
-                    }
-                    $headers['X-Eva-Dsp-Cache'] = time();
+                    $headers2cache['X-Eva-Dsp-Cache'] = time();
                     $cache->save($bodyKey, $body, $lifetime);
-                    $cache->save($headersKey, serialize($headers), $lifetime);
+                    $cache->save($headersKey, serialize($headers2cache), $lifetime);
                 }
             );
             return;
