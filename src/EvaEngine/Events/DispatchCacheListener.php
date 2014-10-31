@@ -89,7 +89,7 @@ class DispatchCacheListener
                         $headers = array_merge($headers, $headersByHeaderFunc);
                     }
                     $headers2cache = array();
-                    if(isset($headers['Content-Type'])) {
+                    if (isset($headers['Content-Type'])) {
                         $headers2cache['Content-Type'] = $headers['Content-Type'];
                     }
                     $headers2cache['X-Eva-Dsp-Cache'] = time();
