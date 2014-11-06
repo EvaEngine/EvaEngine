@@ -933,10 +933,14 @@ class Engine
             $cache = new \Eva\EvaEngine\Cache\Backend\Disable($frontCache);
         } else {
             $backendCacheClassName = strtolower($config->cache->$configKey->backend->adapter);
-            if (!isset($adapterMapping[$backendCacheClassName])) {
+            $backendCacheClass =
+                !empty($adapterMapping[$backendCacheClassName])
+                    ? $adapterMapping[$backendCacheClassName]
+                    : $config->cache->$configKey->backend->adapter;
+
+            if (!class_exists($backendCacheClass)) {
                 throw new Exception\RuntimeException(sprintf('No cache adapter found by %s', $backendCacheClassName));
             }
-            $backendCacheClass = $adapterMapping[$backendCacheClassName];
             $cache = new $backendCacheClass($frontCache, array_merge(
                 array(
                     'prefix' => $prefix,
