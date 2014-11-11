@@ -786,11 +786,13 @@ class Engine
             return new \Phalcon\Mvc\Model\MetaData\Memory();
         }
 
-        $adapterKey = strtolower($config->modelsMetadata->adapter);
-        if (!isset($adapterMapping[$adapterKey])) {
-            throw new Exception\RuntimeException(sprintf('No metadata adapter found by %s', $adapterKey));
+        $adapterKey = $config->modelsMetadata->adapter;
+        $adapterKey = false === strpos($adapterKey, '\\') ? strtolower($adapterKey) : $adapterKey;
+        //Allow full class name as adapter name
+        $adapterClass = empty($adapterMapping[$adapterKey]) ? $adapterKey : $adapterMapping[$adapterKey];
+        if (!class_exists($adapterClass)) {
+            throw new Exception\RuntimeException(sprintf('No metadata adapter found by %s', $adapterClass));
         }
-        $adapterClass = $adapterMapping[$adapterKey];
         return new $adapterClass($config->modelsMetadata->options->toArray());
     }
 
@@ -815,9 +817,9 @@ class Engine
     }
 
 
-    protected function diDbAdapter($adapterName, array $options)
+    protected function diDbAdapter($adapterKey, array $options)
     {
-        $adapterName = strtolower($adapterName);
+        $adapterKey = false === strpos($adapterKey, '\\') ? strtolower($adapterKey) : $adapterKey;
         $adapterMapping = array(
             'mysql' => 'Phalcon\Db\Adapter\Pdo\Mysql',
             'oracle' => 'Phalcon\Db\Adapter\Pdo\Oracle',
@@ -825,13 +827,14 @@ class Engine
             'sqlite' => 'Phalcon\Db\Adapter\Pdo\Sqlite',
         );
 
-        $options['charset'] = isset($options['charset']) && $options['charset'] ? $options['charset'] : 'utf8';
+        $adapterClass = empty($adapterMapping[$adapterKey]) ? $adapterKey : $adapterMapping[$adapterKey];
 
-        if (!isset($adapterMapping[$adapterName])) {
-            throw new Exception\RuntimeException(sprintf('No matched DB adapter found by %s', $adapterName));
+        if (false === class_exists($adapterClass)) {
+            throw new Exception\RuntimeException(sprintf('No matched DB adapter found by %s', $adapterClass));
         }
 
-        $dbAdapter = new $adapterMapping[$adapterName]($options);
+        $options['charset'] = isset($options['charset']) && $options['charset'] ? $options['charset'] : 'utf8';
+        $dbAdapter = new $adapterClass($options);
 
 
         $config = $this->getDI()->getConfig();
@@ -920,11 +923,12 @@ class Engine
             'output' => 'Phalcon\Cache\Frontend\Output',
         );
 
-        $frontCacheClassName = strtolower($config->cache->$configKey->frontend->adapter);
-        if (!isset($adapterMapping[$frontCacheClassName])) {
-            throw new Exception\RuntimeException(sprintf('No cache adapter found by %s', $frontCacheClassName));
+        $frontCacheClassName = $config->cache->$configKey->frontend->adapter;
+        $frontCacheClassName = false === strpos($frontCacheClassName, '\\') ? strtolower($frontCacheClassName) : $frontCacheClassName;
+        $frontCacheClass = empty($adapterMapping[$frontCacheClassName]) ? $frontCacheClassName : $adapterMapping[$frontCacheClassName];
+        if (false === class_exists($frontCacheClass)) {
+            throw new Exception\RuntimeException(sprintf('No cache adapter found by %s', $frontCacheClass));
         }
-        $frontCacheClass = $adapterMapping[$frontCacheClassName];
         $frontCache = new $frontCacheClass(
             $config->cache->$configKey->frontend->options->toArray()
         );
@@ -932,11 +936,12 @@ class Engine
         if (!$config->cache->enable || !$config->cache->$configKey->enable) {
             $cache = new \Eva\EvaEngine\Cache\Backend\Disable($frontCache);
         } else {
-            $backendCacheClassName = strtolower($config->cache->$configKey->backend->adapter);
+            $backendCacheClassName = $config->cache->$configKey->backend->adapter;
+            $backendCacheClassName = false === strpos($backendCacheClassName, '\\') ? strtolower($backendCacheClassName) : $backendCacheClassName;
             $backendCacheClass =
                 !empty($adapterMapping[$backendCacheClassName])
                     ? $adapterMapping[$backendCacheClassName]
-                    : $config->cache->$configKey->backend->adapter;
+                    : $backendCacheClassName;
 
             if (!class_exists($backendCacheClass)) {
                 throw new Exception\RuntimeException(sprintf('No cache adapter found by %s', $backendCacheClassName));
@@ -988,12 +993,13 @@ class Engine
         );
 
         $config = $this->getDI()->getConfig();
-        $adapterKey = strtolower($config->session->adapter);
-        if (!isset($adapterMapping[$adapterKey])) {
-            throw new Exception\RuntimeException(sprintf('No session adapter found by %s', $adapterKey));
+        $adapterKey = $config->session->adapter;
+        $adapterKey = false === strpos($adapterKey, '\\') ? strtolower($adapterKey) : $adapterKey;
+        $sessionClass = empty($adapterMapping[$adapterKey]) ? $adapterKey : $adapterMapping[$adapterKey];
+        if (false === class_exists($sessionClass)) {
+            throw new Exception\RuntimeException(sprintf('No session adapter found by %s', $sessionClass));
         }
 
-        $sessionClass = $adapterMapping[$adapterKey];
         $session = new $sessionClass(array_merge(
             array(
                 'uniqueId' => $this->getAppName(),
