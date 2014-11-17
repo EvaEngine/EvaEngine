@@ -5,6 +5,7 @@ namespace Eva\EvaEngine\Error;
 use Eva\EvaEngine\Exception\ExceptionInterface;
 use Phalcon\Mvc\Dispatcher\Exception as DispatcherException;
 use Phalcon\Dispatcher;
+use Eva\EvaEngine\Engine;
 
 class Error
 {
@@ -157,7 +158,7 @@ class Error
     {
         switch ($code) {
             case 0:
-                return 'Uncaught exception';
+                return 'UNCAUGHT_EXCEPTION';
             case E_ERROR:
                 return 'E_ERROR';
             case E_WARNING:
@@ -188,23 +189,78 @@ class Error
                 return 'E_DEPRECATED';
             case E_USER_DEPRECATED:
                 return 'E_USER_DEPRECATED';
+            default:
+                return $code;
         }
+    }
 
-        return $code;
+    public function logLevel()
+    {
+        $levelMapping = array(
+            'E_ALL' => 'info',
+            'E_USER_DEPRECATED' => 'notice',
+            'E_DEPRECATED' => 'notice',
+            'E_RECOVERABLE_ERROR' => 'notice',
+            'E_STRICT' => 'notice',
+            'E_USER_NOTICE' => 'notice',
+            'E_NOTICE' => 'notice',
+            'E_USER_WARNING' => 'warning',
+            'E_COMPILE_WARNING' => 'warning',
+            'E_CORE_WARNING' => 'warning',
+            'E_WARNING' => 'warning',
+            'E_USER_ERROR' => 'error',
+            'E_COMPILE_ERROR' => 'error',
+            'E_CORE_ERROR' => 'error',
+            'E_ERROR' => 'error',
+            'E_PARSE' => 'emergency',
+        );
+        $errorType = $this->errorType();
+        return empty($levelMapping[$errorType]) ? 'error' : $levelMapping[$errorType];
     }
 
     public function __toString()
     {
-        $errorOrException = $this->isException() ? 'EXCEPTION' : 'ERROR';
+        $exception = $this->isException() ? $this->exception() : false;
+        $errorOrException = $exception ? 'EXCEPTION' : 'ERROR';
+
+        /*
+        log_format upstream '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent" '
+                    '$http_x_forwarded_for $host $request_time $upstream_response_time $scheme '
+                    '$cookie_evalogin';
+        */
+
+        $trace = $this->isException() ? "\n#" . $this->exception()->__toString() :
+<<<ERROR_MSG
+
+# {$this->errorType()}
+# {$this->message()}
+# {$this->file()}
+# {$this->line()}
+ERROR_MSG;
+
+
+        $request = empty($_SERVER['REQUEST_METHOD']) || empty($_SERVER['REQUEST_URI']) ? '-' : $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'];
 
         return sprintf(
-            "[%s][%s][%s][%s][%s][%s]",
-            $errorOrException,
-            $this->errorType(),
-            $this->type(),
-            $this->message(),
-            $this->file(),
-            $this->line()
+            "%s %s %s [%s] \"%s\" %s %s \"%s\" \"%s\" %s %s %.5f %s %s %s %s",
+            empty($_SERVER['REMOTE_ADDR']) ? '-' : $_SERVER['REMOTE_ADDR'], //remote_addr
+            $errorOrException, //
+            '-', //remote_user
+            time(), //time_local
+            $request,
+            $this->statusCode(),
+            '-', //body_bytes_sent
+            empty($_SERVER['HTTP_REFERER']) ? '-' : $_SERVER['HTTP_REFERER'],
+            empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'],
+            empty($_SERVER['HTTP_X_FORWARDED_FOR']) ? '-' : $_SERVER['HTTP_X_FORWARDED_FOR'],
+            empty($_SERVER['HTTP_HOST']) ? '-' : $_SERVER['HTTP_HOST'],
+            microtime(true) - Engine::$appStartTime, //request_time
+            '-', //upstream_response_time
+            empty($_SERVER['HTTPS']) ? '-' : $_SERVER['HTTPS'], //scheme
+            empty($_COOKIE['evalogin']) ? '-' : $_COOKIE['evalogin'],
+            $trace
         );
     }
 }

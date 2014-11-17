@@ -133,7 +133,8 @@ class ErrorHandler implements ErrorHandlerInterface
             return;
         }
 
-        return $logger->log($error);
+        $logLevel = $error->logLevel();
+        return $logger->log($logLevel, $error);
     }
 
     protected static function errorProcess(Error $error)

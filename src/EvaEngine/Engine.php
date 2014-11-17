@@ -57,6 +57,8 @@ use Eva\EvaEngine\Service\TokenStorage;
  */
 class Engine
 {
+    public static $appStartTime;
+
     protected $appRoot;
 
     protected $appName; //for cache prefix
@@ -616,7 +618,7 @@ class Engine
             'logException',
             function () use ($di) {
                 $config = $di->getConfig();
-                return $logger = new FileLogger($config->logger->path . 'error.log');
+                return new FileLogger($config->logger->path . 'error.log');
             }
         );
         if ($this->appMode == 'cli') {
@@ -1160,6 +1162,7 @@ class Engine
      */
     public function __construct($appRoot = null, $appName = 'evaengine', $appMode = 'web')
     {
+        self::$appStartTime = microtime(true);
         $this->appRoot = $appRoot ? $appRoot : __DIR__;
         $this->appName = empty($_SERVER['APPLICATION_NAME']) ? $appName : $_SERVER['APPLICATION_NAME'];
         $this->environment = empty($_SERVER['APPLICATION_ENV']) ? 'development' : $_SERVER['APPLICATION_ENV'];
