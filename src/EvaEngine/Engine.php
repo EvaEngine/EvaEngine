@@ -988,7 +988,7 @@ class Engine
             'files' => 'Phalcon\Session\Adapter\Files',
             'database' => 'Phalcon\Session\Adapter\Database',
             'memcache' => 'Phalcon\Session\Adapter\Memcache',
-            'libmemcached' => 'Phalcon\Session\Adapter\Libmemcached',
+            'libmemcached' => 'Eva\EvaEngine\Session\Adapter\Libmemcached',
             'mongo' => 'Phalcon\Session\Adapter\Mongo',
             'redis' => 'Phalcon\Session\Adapter\Redis',
             'handlersocket' => 'Phalcon\Session\Adapter\HandlerSocket',
