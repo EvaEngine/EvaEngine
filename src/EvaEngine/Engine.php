@@ -748,6 +748,9 @@ class Engine
         $router = new Router(false);
         //Last extra slash
         $router->removeExtraSlashes(true);
+        //Set last module as default module
+        $router->setDefaultModule($moduleName);
+
         $config = $config->toArray();
         foreach ($config as $url => $route) {
             if (count($route) !== count($route, COUNT_RECURSIVE)) {
