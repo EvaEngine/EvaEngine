@@ -51,7 +51,8 @@ class DispatchCacheListener
         $methodsAllow = explode('|', strtolower($methodsAllow));
         $requestMethod = strtolower($request->getMethod());
 
-        if (!in_array($requestMethod, $methodsAllow)) {
+        // 不支持 POST
+        if ($requestMethod == 'post' || !in_array($requestMethod, $methodsAllow)) {
             return;
         }
         $cache_key_prefix = $_SERVER['HTTP_HOST'] . preg_replace(
