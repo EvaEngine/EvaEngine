@@ -9,7 +9,8 @@
 namespace Eva\EvaEngine;
 
 use Eva\EvaEngine\CLI\Output\ConsoleOutput;
-use Eva\EvaEngine\Events\DispatchCacheListener;
+//use Eva\EvaEngine\Events\DispatchCacheListener;
+use Eva\EvaEngine\Interceptor\Dispatch as DispatchInterceptor;
 use Eva\EvaEngine\SDK\SendCloudMailer;
 use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
@@ -364,7 +365,7 @@ class Engine
                 // dispatch caching event handler
                 $eventsManager->attach(
                     "dispatch",
-                    new DispatchCacheListener(),
+                    new DispatchInterceptor(),
                     -1
                 );
                 $eventsManager->enablePriorities(true);
