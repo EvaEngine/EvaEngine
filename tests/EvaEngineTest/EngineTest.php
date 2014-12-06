@@ -1,5 +1,5 @@
 <?php
-namespace EvaEngineTest;
+namespace Eva\EvaEngine\EvaEngineTest;
 
 use Eva\EvaEngine\Engine;
 use Eva\EvaEngine\Exception;

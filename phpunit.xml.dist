@@ -1,7 +1,7 @@
 <phpunit bootstrap="./tests/Bootstrap.php" colors="true">
     <testsuites>
         <testsuite name="EvaEngine Test Suite">
-            <directory>./tests/EvaEngineTest</directory>
+<directory>./tests/EvaEngineTest/Interceptor</directory>
         </testsuite>
     </testsuites>
     <filter>

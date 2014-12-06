@@ -25,7 +25,7 @@ class Dispatch
     protected $debugQueryKey = '_eva_refresh_dispatch_cache';
 
     protected $cachableHeaderKeys = array(
-        'Content-Type' => ''
+        'Content-Type'
     );
 
     protected $cacheHeadersKey;

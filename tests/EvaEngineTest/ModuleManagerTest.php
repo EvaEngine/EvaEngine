@@ -1,5 +1,5 @@
 <?php
-namespace ModuleManagerTest;
+namespace Eva\EvaEngine\EvaEngineTest;
 
 use Eva\EvaEngine\Module\Manager as ModuleManager;
 
