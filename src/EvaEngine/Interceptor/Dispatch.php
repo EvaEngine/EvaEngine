@@ -134,7 +134,7 @@ class Dispatch
         $config = $di->getConfig();
         // cache is disable
         if (!$config->cache->enable) {
-            return true; 
+            return true;
         }
 
         $interceptorConfig = strtolower($dispatcher->getParam(self::INTERCEPTOR_KEY));
@@ -206,7 +206,7 @@ class Dispatch
                 $allowHeaderKeys = $self->getCachableHeaderKeys();
                 if ($headers) {
                     $headersCache = array_filter($headers, function($key) use ($allowHeaderKeys) {
-                        return in_array($key, $allowHeaderKeys); 
+                        return in_array($key, $allowHeaderKeys);
                     });
                 }
                 $headersCache[Dispatch::CACHE_HEADER_FLAG] = time();
