@@ -82,7 +82,8 @@ class Dispatch
 
         if ($hasCache) {
             if ($headersCache) {
-                $headersCache = unserialize($headersCache);
+                //$headersCache = unserialize($headersCache);
+                $headersCache = json_decode($headersCache);
                 /** @var \Phalcon\Http\ResponseInterface $response */
                 $response = $request->getDI()->getResponse();
                 foreach ($headersCache as $key => $headerValue) {
@@ -216,6 +217,7 @@ class Dispatch
                     return true;
                 }
 
+
                 /** @var \Phalcon\Http\ResponseInterface $response */
                 $response = $application->getDI()->getResponse();
                 $body = $response->getContent();
@@ -236,9 +238,11 @@ class Dispatch
                     $body = Dispatch::changeJsonpToJson($body, $callbackValue);
                 }
                 $cache->save($bodyKey, $body, $params['lifetime']);
-                $cache->save($headersKey, serialize($headersCache), $params['lifetime']);
+                //$cache->save($headersKey, serialize($headersCache), $params['lifetime']);
+                $cache->save($headersKey, json_encode($headersCache), $params['lifetime']);
             }
         );
+        return true;
     }
 
     public static function changeJsonpToJson($body, $callback)

@@ -2,18 +2,32 @@
 namespace Eva\EvaEngine\EvaEngineTest\Interceptor;
 
 use Eva\EvaEngine\Interceptor\Dispatch as DispatchInterceptor;
-use Phalcon\Events\Event;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Http\Request;
-use Eva\EvaEngine\Engine;
-use Phalcon\Cache\BackendInterface as CacheInterface;
+use Phalcon\Http\Response;
+use Phalcon\DI;
+use Phalcon\Cache\Frontend\Output as FrontendCache;
+use Eva\EvaEngine\Cache\Backend\Memory as BackendCache;
+use Phalcon\Config;
+use Phalcon\Events\Manager;
+use Phalcon\Mvc\Application;
 
 class DispatchTest extends \PHPUnit_Framework_TestCase
 {
     protected $request;
 
+    protected $di;
+
+    protected $application;
+
+    /**
+     *
+     */
     public function setUp()
     {
+
+        $di = new DI();
+
         $_SERVER['HTTP_HOST'] = 'example.com';
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/path?foo=aaa&bar=bbb';
@@ -22,9 +36,38 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
             'foo' => 'aaa',
             'bar' => 'bbb'
         );
-        $this->request = new Request();
+        $request = new Request();
+        $request->setDI($di);
+        $this->request = $request;
 
+        $response = new Response();
+        $response->setDI($di);
 
+        $dispatcher = new Dispatcher();
+        $dispatcher->setDI($di);
+
+        $cache = new BackendCache(new FrontendCache());
+        $di->set('viewCache', $cache);
+
+        $config = new Config(array(
+            'cache' => array(
+                'enable' => true
+            )
+        ));
+        $di->set('config', $config);
+
+        $eventsManager = new Manager();
+
+        $di->set('request', $request, true);
+        $di->set('response', $response, true);
+        $di->set('dispatcher', $dispatcher, true);
+        $di->set('eventsManager', $eventsManager);
+        $this->di = $di;
+
+        $application = new Application();
+        $application->setDI($di);
+        $application->setEventsManager($eventsManager);
+        $this->application = $application;
     }
 
     public function testDispatcherParams()
@@ -44,6 +87,7 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
             'jsonp_callback_key' => 'callback',
             'format' => 'text',
         ));
+
 
         $dispatcher = new Dispatcher();
         $dispatcher->setParams(array(
@@ -100,8 +144,71 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('{"foo":"bar"}', DispatchInterceptor::changeJsonpToJson('  abc({"foo":"bar"});  ', 'abc'));
     }
 
-    public function testTextCache()
+
+    public function testTextCacheWithNoDispatchParams()
     {
+        $interceptor = new DispatchInterceptor();
+        $dispatcher = $this->di->getDispatcher();
+        $this->assertEquals(true, $interceptor->injectInterceptor($dispatcher));
+    }
+
+    public function testTextCacheMissing()
+    {
+        $interceptor = new DispatchInterceptor();
+        /** @var Dispatcher $dispatcher */
+        $dispatcher = $this->di->getDispatcher();
+        $dispatcher->setParams(array(
+           '_dispatch_cache' => 'lifetime=100'
+        ));
+        $this->assertEquals(true, $interceptor->injectInterceptor($dispatcher));
+    }
+
+    public function testTextCacheBodyOnly()
+    {
+        $this->di->getViewCache()->save('d6bd338ec8eb8666f3d054566f335039_b', 'foo');
+        $interceptor = new DispatchInterceptor();
+        /** @var Dispatcher $dispatcher */
+        $dispatcher = $this->di->getDispatcher();
+        $dispatcher->setParams(array(
+            '_dispatch_cache' => 'lifetime=100'
+        ));
+        $this->assertEquals(true, $interceptor->injectInterceptor($dispatcher));
+    }
+
+
+    public function testTextCacheHit()
+    {
+        $this->di->getViewCache()->save('d6bd338ec8eb8666f3d054566f335039_h', '{"foo":"header"}');
+        $this->di->getViewCache()->save('d6bd338ec8eb8666f3d054566f335039_b', 'bar');
+
+        $interceptor = new DispatchInterceptor();
+        /** @var Dispatcher $dispatcher */
+        $dispatcher = $this->di->getDispatcher();
+        $dispatcher->setParams(array(
+            '_dispatch_cache' => 'lifetime=100'
+        ));
+        $this->assertEquals(false, $interceptor->injectInterceptor($dispatcher));
+    }
+
+    public function testTextCacheGenerate()
+    {
+        $this->di->getViewCache()->flush();
+        $interceptor = new DispatchInterceptor();
+        /** @var Dispatcher $dispatcher */
+        $dispatcher = $this->di->getDispatcher();
+        $dispatcher->setParams(array(
+            '_dispatch_cache' => 'lifetime=100'
+        ));
+        $this->assertEquals(true, $interceptor->injectInterceptor($dispatcher));
+
+        $this->di->getResponse()->setContent('bar');
+        $this->di->getEventsManager()->fire('application:beforeSendResponse', $this->application);
+        $this->assertEquals('bar', $this->di->getViewCache()->get('d6bd338ec8eb8666f3d054566f335039_b'));
+    }
+
+    public function testTextCacheDisabledByUri()
+    {
+
     }
 
     public function testJsonpCache()
