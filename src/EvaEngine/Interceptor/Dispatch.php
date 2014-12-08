@@ -18,6 +18,7 @@ use Phalcon\Cache\BackendInterface as CacheInterface;
 
 class Dispatch
 {
+
     const INTERCEPTOR_KEY = '_dispatch_cache';
 
     const CACHE_HEADER_FLAG = 'X-EvaEngine-Interceptor-Cache';
@@ -64,13 +65,14 @@ class Dispatch
         return $this->cacheBodyKey;
     }
 
-    protected function textIntercept(Request $request, array $params, CacheInterface $cache)
+    protected function intercept(Request $request, array $params, CacheInterface $cache)
     {
-        $ignores = $params['ignore_query_keys'] ? explode('|', $params['ignore_query_keys']) : array();
-        array_push($ignores, $this->getDebugQueryKey());
+        $ignores = $params['ignore_query_keys'];
+        array_push($ignores, $params['jsonp_callback_key']);
+        $debugQueryKey = $this->getDebugQueryKey();
+        array_push($ignores, $debugQueryKey);
         list($headersKey, $bodyKey) = $this->generateCacheKeys($request, $ignores);
 
-        $debugQueryKey = $this->getDebugQueryKey();
         $hasCache = false;
         if (!$request->getQuery($debugQueryKey)) {
             $bodyCache = $cache->get($bodyKey);
@@ -91,6 +93,11 @@ class Dispatch
                     }
                 }
             }
+
+            $callbackKey = $params['jsonp_callback_key'];
+            if ($params['format'] == 'jsonp' && $callbackKey && ($callbackValue = $request->getQuery($callbackKey))) {
+                $bodyCache = $callbackValue . '(' . $bodyCache . ')';
+            }
             $response->setContent($bodyCache);
             return true;
         }
@@ -98,12 +105,11 @@ class Dispatch
         return false;
     }
 
-    protected function jsonpIntercept(Request $request, array $param, CacheInterface $cache)
-    {
-//        $params['ignore_query_keys'] = $params['ignore_query_keys'] ? :
-        $this->textIntercept($request, $param, $cache);
-    }
-
+    /**
+     * @param Request $request
+     * @param array $ignores
+     * @return array
+     */
     public function generateCacheKeys(Request $request, array $ignores = array())
     {
         list($urlPath) = explode('?', $request->getURI());
@@ -127,6 +133,43 @@ class Dispatch
         return array($headersKey, $bodyKey);
     }
 
+    /**
+     * @param DispatcherInterface $dispatcher
+     * @return array
+     */
+    public function getInterceptorParams(DispatcherInterface $dispatcher)
+    {
+        $interceptorConfig = strtolower($dispatcher->getParam(self::INTERCEPTOR_KEY));
+
+        if (!$interceptorConfig) {
+            return array();
+        }
+
+        parse_str($interceptorConfig, $interceptorParams);
+        //Make default
+        $interceptorParams = array_merge(array(
+            'lifetime' => 0,
+            'methods' => 'get',
+            'ignore_query_keys' => '_',
+            'jsonp_callback_key' => 'callback',
+            'format' => 'text', //allow text | jsonp
+        ), $interceptorParams);
+
+        $lifetime = $interceptorParams['lifetime'] = (int)$interceptorParams['lifetime'];
+        if ($lifetime <= 0) {
+            return array();
+        }
+
+        $methodsAllow = $interceptorParams['methods'] ? explode('|', $interceptorParams['methods']) : array('get');
+        $interceptorParams['methods'] = $methodsAllow;
+
+        $ignoreQueryKeys = $interceptorParams['ignore_query_keys'] ?
+            explode('|', $interceptorParams['ignore_query_keys']) : array();
+        $interceptorParams['ignore_query_keys'] = $ignoreQueryKeys;
+
+        return $interceptorParams;
+    }
+
     public function injectInterceptor(DispatcherInterface $dispatcher)
     {
         /** @var \Phalcon\DI $di */
@@ -137,29 +180,12 @@ class Dispatch
             return true;
         }
 
-        $interceptorConfig = strtolower($dispatcher->getParam(self::INTERCEPTOR_KEY));
-
-        if (!$interceptorConfig) {
+        $params = $this->getInterceptorParams($dispatcher);
+        if (!$params) {
             return true;
         }
 
-        parse_str($interceptorConfig, $interceptorParams);
-        //Make default
-        $interceptorParams = array_merge(array(
-            'lifetime' => 0,
-            'methods' => 'get',
-            'ignore_query_keys' => '',
-            'jsonp_callback_key' => '',
-            'format' => 'text', //allow text | jsonp
-        ), $interceptorParams);
-
-        $lifetime = (int) $interceptorParams['lifetime'];
-        if ($lifetime <= 0) {
-            return true;
-        }
-
-        $methods = $interceptorParams['methods'];
-        $methodsAllow = explode('|', $methods);
+        $methodsAllow = $params['methods'];
         /** @var \Phalcon\Http\Request $request */
         $request = $di->getRequest();
         $requestMethod = strtolower($request->getMethod());
@@ -167,16 +193,9 @@ class Dispatch
             return true;
         }
 
-        $format = $interceptorParams['format'];
-
         /** @var \Phalcon\Cache\Backend $cache */
         $cache = $di->getViewCache();
-
-        if ($format === 'jsonp') {
-            $interceptResult = $this->jsonpIntercept($request, $interceptorParams, $cache);
-        } else {
-            $interceptResult = $this->textIntercept($request, $interceptorParams, $cache);
-        }
+        $interceptResult = $this->intercept($request, $params, $cache);
 
         //cache key matched, response already prepared
         if (true === $interceptResult) {
@@ -190,7 +209,7 @@ class Dispatch
         $eventsManager = $di->getEventsManager();
         $eventsManager->attach(
             'application:beforeSendResponse',
-            function ($event, $application) use ($self, $format, $lifetime) {
+            function ($event, $application) use ($self, $params) {
                 $bodyKey = $self->getCacheBodyKey();
                 $headersKey = $self->getCacheHeadersKey();
                 if (!$bodyKey || !$headersKey) {
@@ -203,24 +222,42 @@ class Dispatch
 
                 $headers = $response->getHeaders()->toArray();
                 $headersCache = array();
-                $allowHeaderKeys = $self->getCachableHeaderKeys();
                 if ($headers) {
-                    $headersCache = array_filter($headers, function($key) use ($allowHeaderKeys) {
-                        return in_array($key, $allowHeaderKeys);
-                    });
+                    //Filter allowed headers
+                    $headersCache = array_intersect_key($headers, array_flip($this->getCachableHeaderKeys()));
                 }
-                $headersCache[Dispatch::CACHE_HEADER_FLAG] = time();
+                $headersCache[Dispatch::CACHE_HEADER_FLAG] = date(DATE_ISO8601);
                 $cache = $application->getDI()->getViewCache();
-                $cache->save($bodyKey, $body, $lifetime);
-                $cache->save($headersKey, serialize($headersCache), $lifetime);
+
+                $request = $application->getDI()->getRequest();
+                $callbackKey = $params['jsonp_callback_key'];
+                //Jsonp change to json
+                if ($params['format'] == 'jsonp' && $callbackKey && ($callbackValue = $request->getQuery($callbackKey))) {
+                    $body = Dispatch::changeJsonpToJson($body, $callbackValue);
+                }
+                $cache->save($bodyKey, $body, $params['lifetime']);
+                $cache->save($headersKey, serialize($headersCache), $params['lifetime']);
             }
         );
     }
 
+    public static function changeJsonpToJson($body, $callback)
+    {
+        $body = trim($body);
+        if (strpos($body, $callback) !== 0) {
+            return $body;
+        }
+
+        $body = substr($body, strlen($callback));
+        $body = rtrim($body, ';');
+        $body = ltrim($body, "(");
+        $body = rtrim($body, ")");
+        return $body;
+    }
+
+
     /**
-     *
-     *
-     * @param $event
+     * @param Event $event
      * @param DispatcherInterface $dispatcher
      */
     public function beforeExecuteRoute(Event $event, DispatcherInterface $dispatcher)

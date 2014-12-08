@@ -1,9 +1,9 @@
 <?php
-namespace Eva\EvaEngine\EvaEngineTest;
+namespace Eva\EvaEngine\EvaEngineTest\Module;
 
 use Eva\EvaEngine\Module\Manager as ModuleManager;
 
-class ModuleManagerTest extends \PHPUnit_Framework_TestCase
+class ManagerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {

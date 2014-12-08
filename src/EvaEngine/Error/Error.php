@@ -10,8 +10,8 @@ use Eva\EvaEngine\Engine;
 class Error
 {
     /**
-    * @var array
-    */
+     * @var array
+     */
     protected $attributes;
 
     /**
@@ -83,10 +83,10 @@ class Error
     );
 
     /**
-    * Class constructor sets the attributes.
-    *
-    * @param array $options
-    */
+     * Class constructor sets the attributes.
+     *
+     * @param array $options
+     */
     public function __construct(array $options = array())
     {
         $defaults = array(
@@ -137,23 +137,23 @@ class Error
     }
 
     /**
-    * Magic method to retrieve the attributes.
-    *
-    * @param string $method
-    * @param array $args
-    * @return mixed
-    */
+     * Magic method to retrieve the attributes.
+     *
+     * @param string $method
+     * @param array $args
+     * @return mixed
+     */
     public function __call($method, $args)
     {
         return isset($this->attributes[$method]) ? $this->attributes[$method] : null;
     }
 
     /**
-    * Maps error code to a string.
-    *
-    * @param integer $code
-    * @return string
-    */
+     * Maps error code to a string.
+     *
+     * @param integer $code
+     * @return string
+     */
     public function getErrorType($code)
     {
         switch ($code) {
@@ -232,7 +232,7 @@ class Error
         */
 
         $trace = $this->isException() ? "\n#" . $this->exception()->__toString() :
-<<<ERROR_MSG
+            <<<ERROR_MSG
 
 # {$this->errorType()}
 # {$this->message()}
