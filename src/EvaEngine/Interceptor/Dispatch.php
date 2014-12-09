@@ -16,6 +16,11 @@ use Phalcon\Http\Request;
 use Eva\EvaEngine\Engine;
 use Phalcon\Cache\BackendInterface as CacheInterface;
 
+/**
+ * Dispatch Interceptor for http cache
+ * Class Dispatch
+ * @package Eva\EvaEngine\Interceptor
+ */
 class Dispatch
 {
 
@@ -107,6 +112,7 @@ class Dispatch
     }
 
     /**
+     * Generate cache key pair (for response header / body) by Host + Uri + Allowed Queries
      * @param Request $request
      * @param array $ignores
      * @return array
@@ -135,6 +141,7 @@ class Dispatch
     }
 
     /**
+     * Parse Dispatcher params to array
      * @param DispatcherInterface $dispatcher
      * @return array
      */
@@ -171,6 +178,10 @@ class Dispatch
         return $interceptorParams;
     }
 
+    /**
+     * @param DispatcherInterface $dispatcher
+     * @return bool true if cache missed(intercepter injected), false if cache hit(intercepter not injected)
+     */
     public function injectInterceptor(DispatcherInterface $dispatcher)
     {
         /** @var \Phalcon\DI $di */
@@ -245,6 +256,12 @@ class Dispatch
         return true;
     }
 
+    /**
+     * Change jsonp string to json
+     * @param $body
+     * @param $callback
+     * @return string
+     */
     public static function changeJsonpToJson($body, $callback)
     {
         $body = trim($body);
@@ -263,6 +280,7 @@ class Dispatch
     /**
      * @param Event $event
      * @param DispatcherInterface $dispatcher
+     * @return bool
      */
     public function beforeExecuteRoute(Event $event, DispatcherInterface $dispatcher)
     {
