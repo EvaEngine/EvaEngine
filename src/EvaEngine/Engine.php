@@ -1,8 +1,9 @@
 <?php
 /**
  * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
  *
- * @copyright Copyright (c) 2014 AlloVince (allo.vince@gmail.com)
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -30,22 +31,10 @@ use Phalcon\CLI\Router as CLIRouter;
 use Phalcon\CLI\Dispatcher as CLIDispatcher;
 use Phalcon\DI\FactoryDefault\CLI;
 use Eva\EvaEngine\Service\TokenStorage;
+use Phalcon\DiInterface;
 
 /**
  * Core application configuration / bootstrap
- *
- * Default application folder structures as
- *
- * - AppRoot
- * -- apps
- * -- cache
- * -- config
- * -- logs
- * -- modules
- * -- public
- * -- tests
- * -- vendor
- * -- workers
  *
  * The most common workflow is:
  * <code>
@@ -55,70 +44,133 @@ use Eva\EvaEngine\Service\TokenStorage;
  *        ->run();
  * </code>
  *
+ * Class Engine
+ * @package Eva\EvaEngine
  */
 class Engine
 {
+    /**
+     * @var float
+     */
     public static $appStartTime;
 
+    /**
+     * @var null|string
+     */
     protected $appRoot;
 
+    /**
+     * @var string
+     */
     protected $appName; //for cache prefix
 
+    /**
+     * @var string
+     */
     protected $modulesPath;
 
+    /**
+     * @var DiInterface
+     */
     protected $di;
 
+    /**
+     * @var Application
+     */
     protected $application;
 
+    /**
+     * @var string
+     */
     protected $configPath;
 
+    /**
+     * @var bool
+     */
     protected $cacheEnable = false;
 
+    /**
+     * @var string
+     */
     protected $environment; //development | test | production
 
+    /**
+     * @var Debug
+     */
     protected $debugger;
 
+    /**
+     * @var string
+     */
     protected $appMode = 'web';
 
+    /**
+     * @return string
+     */
     public function getEnvironment()
     {
         return $this->environment;
     }
 
+    /**
+     * @param $environment
+     * @return $this
+     */
     public function setEnvironment($environment)
     {
         $this->environment = $environment;
         return $this;
     }
 
+    /**
+     * @param $appRoot
+     * @return $this
+     */
     public function setAppRoot($appRoot)
     {
         $this->appRoot = $appRoot;
         return $this;
     }
 
+    /**
+     * @return null|string
+     */
     public function getAppRoot()
     {
         return $this->appRoot;
     }
 
+    /**
+     * @param $name
+     * @return $this
+     */
     public function setAppName($name)
     {
         $this->appName = $name;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getAppName()
     {
         return $this->appName;
     }
 
+    /**
+     * @param $path
+     * @return $this
+     */
     public function setConfigPath($path)
     {
         $this->configPath = $path;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getConfigPath()
     {
         if ($this->configPath) {
@@ -128,12 +180,19 @@ class Engine
     }
 
 
+    /**
+     * @param $modulesPath
+     * @return $this
+     */
     public function setModulesPath($modulesPath)
     {
         $this->modulesPath = $modulesPath;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getModulesPath()
     {
         if ($this->modulesPath) {
@@ -143,6 +202,12 @@ class Engine
     }
 
 
+    /**
+     *
+     * @param $cacheFile cache file path
+     * @param bool $serialize
+     * @return mixed|null
+     */
     public function readCache($cacheFile, $serialize = false)
     {
         if (file_exists($cacheFile) && $cache = include($cacheFile)) {
@@ -151,6 +216,12 @@ class Engine
         return null;
     }
 
+    /**
+     * @param $cacheFile
+     * @param $content
+     * @param bool $serialize
+     * @return bool
+     */
     public function writeCache($cacheFile, $content, $serialize = false)
     {
         if ($cacheFile && $fh = fopen($cacheFile, 'w')) {
@@ -165,6 +236,9 @@ class Engine
         return false;
     }
 
+    /**
+     * @return Debug
+     */
     public function getDebugger()
     {
         if ($this->debugger) {
@@ -177,11 +251,17 @@ class Engine
         return $this->debugger = $debugger;
     }
 
+    /**
+     * @return string
+     */
     public function getAppMode()
     {
         return $this->appMode;
     }
 
+    /**
+     * @return Console|Application
+     */
     public function getApplication()
     {
         if (!$this->application) {
@@ -204,8 +284,7 @@ class Engine
      * - module:afterLoadModule
      *
      * @param array $moduleSettings
-     *
-     * @return Engine
+     * @return $this
      */
     public function loadModules(array $moduleSettings)
     {
@@ -236,6 +315,9 @@ class Engine
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function attachModuleEvents()
     {
         $di = $this->getDI();
@@ -284,6 +366,9 @@ class Engine
     }
 
 
+    /**
+     * @return $this
+     */
     public function registerViewHelpers()
     {
         $di = $this->getDI();
@@ -313,7 +398,11 @@ class Engine
     }
 
 
-    public function setDI(\Phalcon\DiInterface $di)
+    /**
+     * @param DiInterface $di
+     * @return $this
+     */
+    public function setDI(DiInterface $di)
     {
         $this->di = $di;
         return $this;
@@ -322,9 +411,7 @@ class Engine
     /**
      * Configuration application default DI
      *
-     * Most DI settings from config file
-     *
-     * @return FactoryDefault
+     * @return FactoryDefault| CLI
      */
     public function getDI()
     {
@@ -1057,6 +1144,10 @@ class Engine
         return $filesystem;
     }
 
+    /**
+     * Application Bootstrap, init DI, register Modules, init events, init ErrorHandler
+     * @return $this
+     */
     public function bootstrap()
     {
         if ($this->getDI()->getConfig()->debug) {
@@ -1077,12 +1168,20 @@ class Engine
         return $this;
     }
 
+    /**
+     * Run application
+     */
     public function run()
     {
         $response = $this->getApplication()->handle();
         echo $response->getContent();
     }
 
+    /**
+     * Register default error handler
+     * @param Error\ErrorHandlerInterface $errorHandler
+     * @return $this
+     */
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)
     {
         $this->getDI()->getEventsManager()->attach(
@@ -1105,6 +1204,10 @@ class Engine
     }
 
 
+    /**
+     * A custum version for Application->run()
+     * WARNING: This method not able to replace phalcon default run()
+     */
     public function runCustom()
     {
         if ($this->appMode == 'cli') {

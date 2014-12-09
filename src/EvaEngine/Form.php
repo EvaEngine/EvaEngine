@@ -1,31 +1,75 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine;
 
 use Phalcon\Annotations\Collection as Property;
 
+/**
+ * Class Form
+ * @package Eva\EvaEngine
+ */
 class Form extends \Phalcon\Forms\Form
 {
+    /**
+     * @var string
+     */
     protected $prefix;
 
+    /**
+     * @var
+     */
     protected $exclude;
 
+    /**
+     * @var
+     */
     protected $model;
 
+    /**
+     * @var
+     */
     protected $values;
 
+    /**
+     * @var
+     */
     protected $formset;
 
+    /**
+     * @var
+     */
     protected $relationKey;
 
+    /**
+     * @var Form
+     */
     protected $parentForm;
 
+    /**
+     * @var string
+     */
     protected $defaultModelClass;
 
+    /**
+     * @var bool
+     */
     protected $initializedWithModel = false;
 
+    /**
+     * @var array
+     */
     protected $rawPostData = array();
 
+    /**
+     * @var array
+     */
     protected $elementAlias = array(
         'check' => 'Phalcon\Forms\Element\Check',
         'date' => 'Phalcon\Forms\Element\Date',
@@ -41,6 +85,9 @@ class Form extends \Phalcon\Forms\Form
         'textarea' => 'Phalcon\Forms\Element\TextArea',
     );
 
+    /**
+     * @var array
+     */
     protected $validatorAlias = array(
         'between' => 'Phalcon\Validation\Validator\Between',
         'confirmation' => 'Phalcon\Validation\Validator\Confirmation',

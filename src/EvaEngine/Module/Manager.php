@@ -1,4 +1,11 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Module;
 
@@ -8,20 +15,48 @@ use Phalcon\Events\ManagerInterface;
 use Phalcon\Events\Manager as EventsManager;
 use Eva\EvaEngine\Mvc\Model;
 
+/**
+ * Module Manager for module register / load
+ *
+ * @package Eva\EvaEngine\Module
+ */
 class Manager implements EventsAwareInterface
 {
+
+    /**
+     * Loaded modules
+     * @var array
+     */
     protected $modules = array();
 
+    /**
+     * @var string
+     */
     protected $defaultPath;
 
+    /**
+     * @var Loader
+     */
     protected $loader;
 
+    /**
+     * @var string
+     */
     protected $cacheFile;
 
+    /**
+     * @var EventsManager
+     */
     protected $eventsManager;
 
+    /**
+     * @var bool
+     */
     protected $injectRelations = false;
 
+    /**
+     * @return Loader
+     */
     public function getLoader()
     {
         if ($this->loader) {
@@ -30,34 +65,55 @@ class Manager implements EventsAwareInterface
         return $this->loader = new Loader();
     }
 
+    /**
+     * @param Loader $loader
+     * @return $this
+     */
     public function setLoader(Loader $loader)
     {
         $this->loader = $loader;
         return $this;
     }
 
+    /**
+     * @return null|string
+     */
     public function getDefaultPath()
     {
         return $this->defaultPath;
     }
 
+    /**
+     * @param $defaultPath
+     * @return $this
+     */
     public function setDefaultPath($defaultPath)
     {
         $this->defaultPath = $defaultPath;
         return $this;
     }
 
+    /**
+     * @param $cacheFile
+     * @return $this
+     */
     public function setCacheFile($cacheFile)
     {
         $this->cacheFile = $cacheFile;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getCacheFile()
     {
         return $this->cacheFile;
     }
 
+    /**
+     * @return EventsManager
+     */
     public function getEventsManager()
     {
         if ($this->eventsManager) {
@@ -66,11 +122,19 @@ class Manager implements EventsAwareInterface
         return new EventsManager();
     }
 
+    /**
+     * @param ManagerInterface $eventsManager
+     * @return ManagerInterface
+     */
     public function setEventsManager($eventsManager)
     {
         return $this->eventsManager = $eventsManager;
     }
 
+    /**
+     * @param $cacheFile
+     * @return mixed|null
+     */
     public function readCache($cacheFile)
     {
         if (file_exists($cacheFile) && $cache = include($cacheFile)) {
@@ -79,6 +143,11 @@ class Manager implements EventsAwareInterface
         return null;
     }
 
+    /**
+     * @param $cacheFile
+     * @param array $content
+     * @return bool
+     */
     public function writeCache($cacheFile, array $content)
     {
         if ($cacheFile && $fh = fopen($cacheFile, 'w')) {
@@ -89,16 +158,28 @@ class Manager implements EventsAwareInterface
         return false;
     }
 
+    /**
+     * @param $moduleName
+     * @return bool
+     */
     public function hasModule($moduleName)
     {
         return isset($this->modules[$moduleName]) ? true : false;
     }
 
+    /**
+     * @return array
+     */
     public function getModules()
     {
         return $this->modules;
     }
 
+    /**
+     * @param array $moduleSettings
+     * @return $this
+     * @throws \Exception
+     */
     public function loadModules(array $moduleSettings)
     {
         //Trigger Event
@@ -216,6 +297,10 @@ class Manager implements EventsAwareInterface
         return $this;
     }
 
+    /**
+     * @param $moduleName
+     * @return string
+     */
     public function getModulePath($moduleName)
     {
         $modules = $this->getModules();
@@ -225,6 +310,10 @@ class Manager implements EventsAwareInterface
         return '';
     }
 
+    /**
+     * @param $moduleName
+     * @return array|mixed
+     */
     public function getModuleConfig($moduleName)
     {
         $modules = $this->getModules();
@@ -234,6 +323,10 @@ class Manager implements EventsAwareInterface
         return array();
     }
 
+    /**
+     * @param $moduleName
+     * @return array|mixed
+     */
     public function getModuleRoutesFrontend($moduleName)
     {
         $modules = $this->getModules();
@@ -242,6 +335,11 @@ class Manager implements EventsAwareInterface
         }
         return array();
     }
+
+    /**
+     * @param $moduleName
+     * @return array|mixed
+     */
     public function getModuleRoutesCommand($moduleName)
     {
         $modules = $this->getModules();
@@ -250,6 +348,11 @@ class Manager implements EventsAwareInterface
         }
         return array();
     }
+
+    /**
+     * @param $moduleName
+     * @return array|mixed
+     */
     public function getModuleRoutesBackend($moduleName)
     {
         $modules = $this->getModules();
@@ -259,6 +362,10 @@ class Manager implements EventsAwareInterface
         return array();
     }
 
+    /**
+     * @param $moduleName
+     * @return array
+     */
     public function getModuleListeners($moduleName)
     {
         $modules = $this->getModules();
@@ -268,6 +375,10 @@ class Manager implements EventsAwareInterface
         return array();
     }
 
+    /**
+     * @param $moduleName
+     * @return mixed|string
+     */
     public function getModuleAdminMenu($moduleName)
     {
         $modules = $this->getModules();
@@ -277,6 +388,10 @@ class Manager implements EventsAwareInterface
         return '';
     }
 
+    /**
+     * @param $moduleName
+     * @return array
+     */
     public function getModuleViewHelpers($moduleName)
     {
         $modules = $this->getModules();
@@ -286,6 +401,10 @@ class Manager implements EventsAwareInterface
         return array();
     }
 
+    /**
+     * @param Model $entity
+     * @return array
+     */
     public function getInjectRelations(Model $entity)
     {
         $relations = $this->injectRelations;
@@ -317,6 +436,9 @@ class Manager implements EventsAwareInterface
         return $entityRalations;
     }
 
+    /**
+     * @param null $defaultPath
+     */
     public function __construct($defaultPath = null)
     {
         if ($defaultPath) {

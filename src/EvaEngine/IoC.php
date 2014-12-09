@@ -1,20 +1,22 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
+
 
 namespace Eva\EvaEngine;
-
-// +----------------------------------------------------------------------
-// | [EvaEngine]
-// +----------------------------------------------------------------------
-// | Author: Mr.5 <mr5.simple@gmail.com>
-// +----------------------------------------------------------------------
-// + Datetime: 14-8-16 11:25
-// +----------------------------------------------------------------------
-// + IoC.php
-// +----------------------------------------------------------------------
 
 use Eva\EvaEngine\Exception\RuntimeException;
 use Phalcon\DI;
 
+/**
+ * Class IoC
+ * @package Eva\EvaEngine
+ */
 class IoC
 {
     /**
@@ -22,12 +24,17 @@ class IoC
      */
     private static $di;
 
+    /**
+     * @return DI
+     */
     public static function getDI()
     {
         return self::$di;
-
     }
 
+    /**
+     * @param DI $di
+     */
     public static function setDI(DI $di)
     {
         self::$di = $di;

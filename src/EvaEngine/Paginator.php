@@ -1,35 +1,72 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine;
 
-class Paginator extends \Phalcon\Paginator\Adapter\QueryBuilder
+use Phalcon\Paginator\Adapter\QueryBuilder as PhalconPaginator;
+
+/**
+ * Paginator class based Phalcon QueryBuilder Paginator, more parameters support.
+ * Class Paginator
+ * @package Eva\EvaEngine
+ */
+class Paginator extends PhalconPaginator
 {
+    /**
+     * @var array
+     */
     protected $query;
 
+    /**
+     * @var int
+     */
     protected $pagerRange = 3;
 
+    /**
+     * @param $number int
+     * @return $this
+     */
     public function setPagerRange($number)
     {
         $this->pagerRange = $number;
-
         return $this;
     }
 
+    /**
+     * @return int
+     */
     public function getPagerRange()
     {
         return $this->pagerRange;
     }
 
+    /**
+     * @param array $query
+     * @return $this
+     */
     public function setQuery(array $query)
     {
         $this->query = $query;
+        return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getQuery()
     {
         return $this->query;
     }
 
+    /**
+     * @return \Phalcon\Paginator\Adapter\stdClass
+     */
     public function getPaginate()
     {
         $paginate = parent::getPaginate();
