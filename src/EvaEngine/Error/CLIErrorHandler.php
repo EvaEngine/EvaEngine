@@ -1,16 +1,14 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Error;
 
-// +----------------------------------------------------------------------
-// | [phalcon]
-// +----------------------------------------------------------------------
-// | Author: Mr.5 <mr5.simple@gmail.com>
-// +----------------------------------------------------------------------
-// + Datetime: 14-7-16 18:55
-// +----------------------------------------------------------------------
-// + CLIErrorHandler.php
-// +----------------------------------------------------------------------
 use Eva\EvaEngine\CLI\Output\ConsoleOutput;
 use Eva\EvaEngine\CLI\Output\StreamOutput;
 use Eva\EvaEngine\CLI\Formatter\OutputFormatterInterface;
@@ -18,10 +16,24 @@ use Phalcon\DI;
 use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger\AdapterInterface as LoggerInterface;
 
+/**
+ * Error handler for CLI mode
+ * @package Eva\EvaEngine\Error
+ */
 class CLIErrorHandler implements ErrorHandlerInterface
 {
+    /**
+     * @var bool
+     */
     static protected $logger = false;
 
+    /**
+     * @param $errno
+     * @param $errstr
+     * @param $errfile
+     * @param $errline
+     * @return mixed|void
+     */
     public static function errorHandler($errno, $errstr, $errfile, $errline)
     {
         if (!($errno & error_reporting())) {
@@ -34,6 +46,10 @@ class CLIErrorHandler implements ErrorHandlerInterface
 
     }
 
+    /**
+     * @param \Exception $e
+     * @return mixed|void
+     */
     public static function exceptionHandler(\Exception $e)
     {
         $output = new ConsoleOutput();
@@ -42,11 +58,16 @@ class CLIErrorHandler implements ErrorHandlerInterface
 
     }
 
+    /**
+     * @return mixed|void
+     */
     public static function shutdownHandler()
     {
-//        var_dump('shutdownHandler');
-
     }
+
+    /**
+     * @return bool|null
+     */
     public static function getLogger()
     {
         if (static::$logger !== false) {
@@ -68,12 +89,20 @@ class CLIErrorHandler implements ErrorHandlerInterface
         return static::$logger;
     }
 
+    /**
+     * @param LoggerInterface $logger
+     * @return mixed
+     */
     public static function setLogger(LoggerInterface $logger)
     {
         static::$logger = $logger;
         return self;
     }
 
+    /**
+     * @param Error $error
+     * @return mixed
+     */
     protected static function logError(Error $error)
     {
         $logger = static::getLogger();
@@ -84,11 +113,13 @@ class CLIErrorHandler implements ErrorHandlerInterface
         return $logger->log($error);
     }
 
+    /**
+     * @param Error $error
+     */
     protected static function errorProcess(Error $error)
     {
 
         static::logError($error);
-
 
         $useErrorController = false;
 

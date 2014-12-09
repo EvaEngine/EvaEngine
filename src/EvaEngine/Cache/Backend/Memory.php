@@ -18,6 +18,7 @@ use Phalcon\Cache\Backend as CacheBackend;
 class Memory extends CacheBackend
 {
     /**
+     * Cache data container
      * @var array
      */
     public static $data = array();

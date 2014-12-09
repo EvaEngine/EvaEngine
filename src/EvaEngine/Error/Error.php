@@ -1,4 +1,11 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Error;
 
@@ -7,15 +14,21 @@ use Phalcon\Mvc\Dispatcher\Exception as DispatcherException;
 use Phalcon\Dispatcher;
 use Eva\EvaEngine\Engine;
 
+/**
+ * Defined system error construct
+ * @package Eva\EvaEngine\Error
+ */
 class Error
 {
     /**
+     * Error attributes container
      * @var array
      */
     protected $attributes;
 
     /**
-     * @var array Recommended Reason Phrases
+     * Recommended http Reason Phrases
+     * @var array
      */
     protected $recommendedReasonPhrases = array(
         // INFORMATIONAL CODES
@@ -194,6 +207,9 @@ class Error
         }
     }
 
+    /**
+     * @return string
+     */
     public function logLevel()
     {
         $levelMapping = array(
@@ -218,6 +234,9 @@ class Error
         return empty($levelMapping[$errorType]) ? 'error' : $levelMapping[$errorType];
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         $exception = $this->isException() ? $this->exception() : false;

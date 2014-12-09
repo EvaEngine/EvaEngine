@@ -1,26 +1,64 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Mvc;
 
 use Eva\EvaEngine\Exception;
+use Phalcon\Mvc\View as PhalconView;
 
-class View extends \Phalcon\Mvc\View
+/**
+ * EvaEngine view class
+ * Allow load view template cross modules
+ * @package Eva\EvaEngine\Mvc
+ */
+class View extends PhalconView
 {
+    /**
+     * @var string
+     */
     protected $moduleLayout;
 
+    /**
+     * @var string
+     */
     protected $moduleViewsDir;
 
+    /**
+     * @var string
+     */
     protected $moduleLayoutName;
 
+    /**
+     * @var string
+     */
     protected $modulePartialsDir;
 
-    protected static $components;
+    /**
+     * @var array
+     */
+    protected static $components = array();
 
+    /**
+     * @param $componentName
+     * @param $componentClass
+     */
     public static function registerComponent($componentName, $componentClass)
     {
         self::$components[$componentName] = $componentClass;
     }
 
+    /**
+     * @param $componentName
+     * @param $params
+     * @return mixed
+     * @throws Exception\BadMethodCallException
+     */
     public static function getComponent($componentName, $params)
     {
         if (!isset(self::$components[$componentName])) {
@@ -32,11 +70,19 @@ class View extends \Phalcon\Mvc\View
         return $component($params);
     }
 
+    /**
+     * @return string
+     */
     public function getModuleLayout()
     {
         return $this->moduleLayout;
     }
 
+    /**
+     * @param $moduleName
+     * @param $layoutPath
+     * @return $this
+     */
     public function setModuleLayout($moduleName, $layoutPath)
     {
         $moduleManager = $this->getDI()->getModuleManager();
@@ -54,11 +100,19 @@ class View extends \Phalcon\Mvc\View
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getModuleViewsDir()
     {
         return $this->moduleViewsDir;
     }
 
+    /**
+     * @param $moduleName
+     * @param $viewsDir
+     * @return $this
+     */
     public function setModuleViewsDir($moduleName, $viewsDir)
     {
         $moduleManager = $this->getDI()->getModuleManager();
@@ -79,6 +133,11 @@ class View extends \Phalcon\Mvc\View
         return $this;
     }
 
+    /**
+     * @param $moduleName
+     * @param $partialsDir
+     * @return $this
+     */
     public function setModulePartialsDir($moduleName, $partialsDir)
     {
         $moduleManager = $this->getDI()->getModuleManager();
@@ -95,6 +154,10 @@ class View extends \Phalcon\Mvc\View
         return $this;
     }
 
+    /**
+     * @param $renderName
+     * @return $this
+     */
     public function changeRender($renderName)
     {
         if (!$this->moduleLayoutName) {
@@ -106,6 +169,12 @@ class View extends \Phalcon\Mvc\View
         return $this;
     }
 
+    /**
+     * @param null $controllerName
+     * @param null $actionName
+     * @param null $params
+     * @return PhalconView
+     */
     public function render($controllerName = null, $actionName = null, $params = null)
     {
         //fixed render view name not match under linux
@@ -116,6 +185,9 @@ class View extends \Phalcon\Mvc\View
         return parent::render($controllerName, $actionName, $params);
     }
 
+    /**
+     * @return $this
+     */
     protected function caculatePartialsRelatedPath()
     {
         $moduleViewsDir = $this->moduleViewsDir;
@@ -125,6 +197,9 @@ class View extends \Phalcon\Mvc\View
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     protected function caculateLayoutRelatedPath()
     {
         $moduleViewsDir = $this->moduleViewsDir;
@@ -136,6 +211,12 @@ class View extends \Phalcon\Mvc\View
         return $this;
     }
 
+    /**
+     * @param $from
+     * @param $to
+     * @param string $ps
+     * @return string
+     */
     protected function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
     {
         $arFrom = explode($ps, rtrim($from, $ps));

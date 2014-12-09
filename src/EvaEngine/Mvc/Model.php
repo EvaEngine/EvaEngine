@@ -1,39 +1,83 @@
 <?php
-
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 namespace Eva\EvaEngine\Mvc;
 
 use Phalcon\Mvc\Model\Resultset\Simple as SimpleResultSet;
 use Eva\EvaEngine\Mvc\Model\Manager as ModelManager;
+use Phalcon\Mvc\Model as PhalconModel;
+use Eva\EvaEngine\Form;
 
-class Model extends \Phalcon\Mvc\Model
+/**
+ * EvaEngine Base Model
+ * - Support master / slave db
+ * - Support db table prefix
+ * - Support inject ORM relationships
+ * @package Eva\EvaEngine\Mvc
+ */
+class Model extends PhalconModel
 {
+    /**
+     * @var string
+     */
     protected $prefix;
 
+    /**
+     * @var string
+     */
     protected $tableName;
 
+    /**
+     * @var bool
+     */
     protected $useMasterSlave = true;
 
+    /**
+     * @var Form
+     */
     protected $modelForm;
 
+    /**
+     * @var array
+     */
     public static $injectRelations;
 
-    public function setModelForm($form)
+    /**
+     * @param Form $form
+     * @return $this
+     */
+    public function setModelForm(Form $form)
     {
         $this->modelForm = $form;
         return $this;
     }
 
+    /**
+     * @return Form
+     */
     public function getModelForm()
     {
         return $this->modelForm;
     }
 
+    /**
+     * @param $tablePrefix
+     * @return $this
+     */
     public function setPrefix($tablePrefix)
     {
         $this->prefix = $tablePrefix;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getPrefix()
     {
         if ($this->prefix) {
@@ -42,11 +86,20 @@ class Model extends \Phalcon\Mvc\Model
         return $this->prefix = ModelManager::getDefaultPrefix();
     }
 
+    /**
+     * Get db table full name
+     * @return string
+     */
     public function getSource()
     {
         return $this->getPrefix() . $this->tableName;
     }
 
+    /**
+     * Dump model entity data as an array
+     * @param array $dataStructure
+     * @return array|null
+     */
     public function dump(array $dataStructure = null)
     {
         $data = null;
@@ -83,6 +136,9 @@ class Model extends \Phalcon\Mvc\Model
         return $data;
     }
 
+    /**
+     * @return $this
+     */
     public function loadRelations()
     {
         $relations = $this->getDI()->getModuleManager()->getInjectRelations($this);
@@ -96,6 +152,10 @@ class Model extends \Phalcon\Mvc\Model
         return $this;
     }
 
+    /**
+     * Open master / slave mode
+     * Load ORM relationship injection
+     */
     public function initialize()
     {
         if (true === $this->useMasterSlave) {

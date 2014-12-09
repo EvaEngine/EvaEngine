@@ -1,4 +1,11 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Error;
 
@@ -7,22 +14,38 @@ use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger\AdapterInterface as LoggerInterface;
 use Phalcon\Events\Manager as EventsManager;
 
+/**
+ * ErrorHandler for http request
+ * @package Eva\EvaEngine\Error
+ */
 class ErrorHandler implements ErrorHandlerInterface
 {
+    /**
+     * @var string
+     */
     protected static $errorController = 'error';
 
+    /**
+     * @var string
+     */
     protected static $errorControllerNamespace = 'Eva\EvaEngine\Mvc\Controller';
 
+    /**
+     * @var string
+     */
     protected static $errorControllerAction = 'index';
 
-    protected static $errorLayout;
-
-    protected static $errorTemplate;
-
+    /**
+     * @var bool|LoggerInterface
+     */
     protected static $logger = false;
 
-    //protected static $errorLevel
-
+    /**
+     * @param $errno
+     * @param $errstr
+     * @param $errfile
+     * @param $errline
+     */
     public static function errorHandler($errno, $errstr, $errfile, $errline)
     {
         if (!($errno & error_reporting())) {
@@ -40,6 +63,9 @@ class ErrorHandler implements ErrorHandlerInterface
         static::errorProcess(new Error($options));
     }
 
+    /**
+     * @param \Exception $e
+     */
     public static function exceptionHandler(\Exception $e)
     {
         $options = array(
@@ -54,6 +80,9 @@ class ErrorHandler implements ErrorHandlerInterface
         static::errorProcess(new Error($options));
     }
 
+    /**
+     * Error handler callback for php shutdown processing
+     */
     public static function shutdownHandler()
     {
         if (!is_null($options = error_get_last())) {
@@ -61,44 +90,57 @@ class ErrorHandler implements ErrorHandlerInterface
         }
     }
 
+    /**
+     * @param $controller
+     */
     public static function setErrorController($controller)
     {
         static::$errorController = $controller;
     }
 
+    /**
+     * @return string
+     */
     public static function getErrorController()
     {
         return static::$errorController;
     }
 
+    /**
+     * @param $controllerNamespace
+     */
     public static function setErrorControllerNamespace($controllerNamespace)
     {
         static::$errorControllerNamespace = $controllerNamespace;
     }
 
+    /**
+     * @return string
+     */
     public static function getErrorControllerNamespace()
     {
         return static::$errorControllerNamespace;
     }
 
+    /**
+     * @param $action
+     */
     public static function setErrorControllerAction($action)
     {
         static::$errorControllerAction = $action;
     }
 
+    /**
+     * @return string
+     */
     public static function getErrorControllerAction()
     {
         return static::$errorControllerAction;
     }
 
-    public static function setErrorLayout()
-    {
-    }
-
-    public static function setErrorTemplate()
-    {
-    }
-
+    /**
+     * @return null|LoggerInterface
+     */
     public static function getLogger()
     {
         if (static::$logger !== false) {
@@ -120,12 +162,20 @@ class ErrorHandler implements ErrorHandlerInterface
         return static::$logger;
     }
 
+    /**
+     * @param LoggerInterface $logger
+     * @return mixed
+     */
     public static function setLogger(LoggerInterface $logger)
     {
         static::$logger = $logger;
         return self;
     }
 
+    /**
+     * @param Error $error
+     * @return LoggerInterface
+     */
     protected static function logError(Error $error)
     {
         $logger = static::getLogger();
@@ -137,6 +187,14 @@ class ErrorHandler implements ErrorHandlerInterface
         return $logger->log($logLevel, $error);
     }
 
+    /**
+     * Error process for default error handler. below steps will be processed:
+     * - save error to log
+     * - collected error controller info
+     * - re dispatch error controller
+     * @param Error $error
+     * @return mixed
+     */
     protected static function errorProcess(Error $error)
     {
         static::logError($error);

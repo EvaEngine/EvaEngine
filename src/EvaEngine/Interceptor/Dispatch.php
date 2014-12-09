@@ -1,14 +1,13 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Interceptor;
-
-// +----------------------------------------------------------------------
-// | [evaengine]
-// +----------------------------------------------------------------------
-// | Author: Mr.5 <mr5.simple@gmail.com>
-// +----------------------------------------------------------------------
-// + Datetime: 14-8-28 15:07
-// +----------------------------------------------------------------------
 
 use Phalcon\Mvc\DispatcherInterface;
 use Phalcon\Events\Event;
@@ -24,52 +23,102 @@ use Phalcon\Cache\BackendInterface as CacheInterface;
 class Dispatch
 {
 
+    /**
+     * default params key for dispatcher
+     */
     const INTERCEPTOR_KEY = '_dispatch_cache';
 
+    /**
+     * default debug flag in http header when cache hit
+     */
     const CACHE_HEADER_FLAG = 'X-EvaEngine-Interceptor-Cache';
 
+    /**
+     * default debug query key, url contains this key will make cache re-genrated
+     * @var string
+     */
     protected $debugQueryKey = '_eva_refresh_dispatch_cache';
 
+    /**
+     * HTTP header keys allow to cache
+     * WARNING: DONOT cache Set-Cookies!
+     * @var array
+     */
     protected $cachableHeaderKeys = array(
         'Content-Type'
     );
 
+    /**
+     * Cache key for http header
+     * @var string
+     */
     protected $cacheHeadersKey;
 
+    /**
+     * Cache key for http body
+     * @var string
+     */
     protected $cacheBodyKey;
 
+    /**
+     * @return string
+     */
     public function getDebugQueryKey()
     {
         return $this->debugQueryKey;
     }
 
+    /**
+     * @param $debugQueryKey
+     * @return $this
+     */
     public function setDebugQueryKey($debugQueryKey)
     {
         $this->debugQueryKey = $debugQueryKey;
         return $this;
     }
 
+    /**
+     * @param array $cachableHeaderKeys
+     * @return $this
+     */
     public function setCachableHeaderKeys(array $cachableHeaderKeys)
     {
         $this->cachableHeaderKeys = $cachableHeaderKeys;
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getCachableHeaderKeys()
     {
         return $this->cachableHeaderKeys;
     }
 
+    /**
+     * @return string
+     */
     public function getCacheHeadersKey()
     {
         return $this->cacheHeadersKey;
     }
 
+    /**
+     * @return string
+     */
     public function getCacheBodyKey()
     {
         return $this->cacheBodyKey;
     }
 
+    /**
+     * Intercept a input http request
+     * @param Request $request
+     * @param array $params
+     * @param CacheInterface $cache
+     * @return bool Will return true if cache hit.
+     */
     protected function intercept(Request $request, array $params, CacheInterface $cache)
     {
         $ignores = $params['ignore_query_keys'];

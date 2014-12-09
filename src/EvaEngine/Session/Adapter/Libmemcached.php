@@ -1,26 +1,18 @@
 <?php
 /**
- * Phalcon Framework
- * This source file is subject to the New BSD License that is bundled
- * with this package in the file docs/LICENSE.txt.
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@phalconphp.com so we can send you a copy immediately.
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
  *
- * @category    Phalcon
- * @package     Phalcon_Session_Adapter_Memcache
- * @copyright   Copyright (c) 2013 meets-ecommerce GmbH (http://meets-ecommerce.de)
- * @author      Daniel Matuschewsky <dm@meets-ecommerce.de>
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 namespace Eva\EvaEngine\Session\Adapter;
 
 use Phalcon;
 
 /**
- * Memcache session adapter for Phalcon framework
- *
- * @category    Phalcon
- * @package     Phalcon_Session_Adapter_Memcache
+ * Memcache session adapter
+ * @package Eva\EvaEngine\Session\Adapter
  */
 class Libmemcached extends Phalcon\Session\Adapter implements Phalcon\Session\AdapterInterface
 {
