@@ -1,4 +1,11 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Service;
 
@@ -8,19 +15,49 @@ use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Http\RequestInterface;
 use Phalcon\Text;
 
+/**
+ * A data abstraction layer to save API token data
+ * Providing same interface as Phalcon\Session
+ * @package Eva\EvaEngine\Service
+ */
 class TokenStorage implements SessionInterface, InjectionAwareInterface
 {
+    /**
+     * @var SessionInterface
+     */
     protected $storage;
 
+    /**
+     * @var string
+     */
     protected $tokenId;
 
+    /**
+     * @var array
+     */
     protected $options;
 
+    /**
+     * @var int
+     */
     protected $lifetime;
 
+    /**
+     * Token identify key in url query
+     */
     const AUTH_QUERY_KEY = 'api_key';
+
+    /**
+     * Token identify key in http header
+     */
     const AUTH_HEADER_KEY = 'Authorization';
 
+    /**
+     * Find token from http request, token may be in http header or url query
+     * If find both, use http header priority
+     * @param RequestInterface $request
+     * @return string
+     */
     public static function dicoverToken(RequestInterface $request)
     {
         if ($token = $request->getQuery(TokenStorage::AUTH_QUERY_KEY, 'string')) {
@@ -47,11 +84,17 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         return '';
     }
 
+    /**
+     * @return SessionInterface
+     */
     public function getStorage()
     {
         return $this->storage;
     }
 
+    /**
+     * @return string
+     */
     public function getId()
     {
         if ($this->tokenId) {
@@ -75,17 +118,29 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         }
     }
 
+    /**
+     * @param $id
+     * @return $this
+     */
     public function setId($id)
     {
         $this->tokenId = $id;
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getOptions()
     {
         return $this->options;
     }
 
+    /**
+     * @param array $options
+     * @return $this
+     * @throws Exception\RuntimeException
+     */
     public function setOptions($options)
     {
         $defaultOptions = array(
@@ -141,54 +196,93 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @param null $defaultValue
+     * @return mixed
+     */
     public function get($key, $defaultValue = null)
     {
         //p('get key:' . $this->getId() . '_' . $key);
         return $this->storage->get($this->getId() . '_' . $key);
     }
 
+    /**
+     * @param string $key
+     * @param string $value
+     * @return mixed
+     */
     public function set($key, $value)
     {
         //p('set key:' . $this->getId() . '_' . $key);
         return $this->storage->save($this->getId() . '_' . $key, $value);
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function has($key)
     {
         return $this->storage->exists($this->getId() . '_' . $key);
     }
 
+    /**
+     * @param string $key
+     * @return mixed
+     */
     public function remove($key)
     {
         return $this->storage->delete($this->getId() . '_' . $key);
     }
 
+    /**
+     * @param null $id
+     * @return bool
+     */
     public function destroy($id = null)
     {
         return $this->storage->flush();
     }
 
+    /**
+     * @return $this
+     */
     public function start()
     {
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isStarted()
     {
         return true;
     }
 
+    /**
+     * @return \Phalcon\DiInterface
+     */
     public function getDI()
     {
         return $this->di;
     }
 
+    /**
+     * @param \Phalcon\DiInterface $di
+     * @return $this
+     */
     public function setDI($di)
     {
         $this->di = $di;
         return $this;
     }
 
+    /**
+     * @param array $options
+     * @throws Exception\RuntimeException
+     */
     public function __construct(array $options)
     {
         $this->setOptions($options);

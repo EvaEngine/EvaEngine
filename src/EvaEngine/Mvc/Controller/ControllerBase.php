@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 namespace Eva\EvaEngine\Mvc\Controller;
 
 use Phalcon\Mvc\Controller;
@@ -7,10 +13,18 @@ use Eva\EvaEngine\Exception;
 use Phalcon\Forms\Form;
 use Phalcon\Mvc\Model;
 
+/**
+ * EvaEngine base controller
+ * - Automatic json / jsonp support
+ * - Redirect handler
+ * - Json output convert for exception
+ * @package Eva\EvaEngine\Mvc\Controller
+ */
 class ControllerBase extends Controller
 {
     /**
-     * @var array Recommended Reason Phrases
+     * Recommended Reason Phrases
+     * @var array
      */
     protected $recommendedReasonPhrases = array(
         // INFORMATIONAL CODES
@@ -77,6 +91,9 @@ class ControllerBase extends Controller
         511 => 'Network Authentication Required',
     );
 
+    /**
+     * @param $dispatcher
+     */
     public function afterExecuteRoute($dispatcher)
     {
         if ($this instanceof JsonControllerInterface) {
@@ -88,6 +105,13 @@ class ControllerBase extends Controller
         }
     }
 
+    /**
+     * @param null $defaultRedirect
+     * @param null $redirectType
+     * @param bool $securityCheck
+     * @return \Phalcon\Http\ResponseInterface
+     * @throws Exception\InvalidArgumentException
+     */
     public function redirectHandler($defaultRedirect = null, $redirectType = null, $securityCheck = false)
     {
         $redirectInputName = $redirectType ? "__redirect_$redirectType" : '__redirect';
@@ -102,7 +126,13 @@ class ControllerBase extends Controller
         return $this->response->redirect($redirectUri);
     }
 
-
+    /**
+     * @param $code
+     * @param $message
+     * @param string $messageType
+     * @return $this
+     * @throws Exception\InvalidArgumentException
+     */
     public function showErrorMessage($code, $message, $messageType = 'error')
     {
         if (!isset($this->recommendedReasonPhrases[$code])) {
@@ -114,7 +144,12 @@ class ControllerBase extends Controller
         return $this;
     }
 
-
+    /**
+     * @param $code
+     * @param $message
+     * @return \Phalcon\Http\ResponseInterface
+     * @throws Exception\InvalidArgumentException
+     */
     public function showErrorMessageAsJson($code, $message)
     {
         if (!isset($this->recommendedReasonPhrases[$code])) {
@@ -133,6 +168,13 @@ class ControllerBase extends Controller
         ));
     }
 
+    /**
+     * @param $exception
+     * @param null $messages
+     * @param string $messageType
+     * @return $this
+     * @throws
+     */
     public function showException($exception, $messages = null, $messageType = 'error')
     {
         $messageArray = array();
@@ -197,6 +239,11 @@ class ControllerBase extends Controller
         ));
     }
 
+    /**
+     * @param $exception
+     * @param null $messages
+     * @param string $messageType
+     */
     public function ignoreException($exception, $messages = null, $messageType = 'debug')
     {
         $messageArray = array();
@@ -220,7 +267,11 @@ class ControllerBase extends Controller
 
     }
 
-
+    /**
+     * @param Model $model
+     * @param string $messageType
+     * @return $this
+     */
     public function showModelMessages(Model $model, $messageType = 'warning')
     {
         $messages = $model->getMessages();
@@ -232,6 +283,10 @@ class ControllerBase extends Controller
         return $this;
     }
 
+    /**
+     * @param Model $model
+     * @return $this
+     */
     public function showModelMessagesAsJson(Model $model)
     {
         $messages = $model->getMessages();
@@ -243,6 +298,11 @@ class ControllerBase extends Controller
         return $this;
     }
 
+    /**
+     * @param Form $form
+     * @param string $messageType
+     * @return $this
+     */
     public function showInvalidMessages(Form $form, $messageType = 'warning')
     {
         $messages = $form->getMessages();
@@ -254,6 +314,11 @@ class ControllerBase extends Controller
         return $this;
     }
 
+    /**
+     * @param Form $form
+     * @param string $messageType
+     * @return \Phalcon\Http\ResponseInterface
+     */
     public function showInvalidMessagesAsJson(Form $form, $messageType = 'warning')
     {
         $messages = $form->getMessages();
@@ -270,7 +335,11 @@ class ControllerBase extends Controller
         ));
     }
 
-
+    /**
+     * @param $object
+     * @param int $code
+     * @return \Phalcon\Http\ResponseInterface
+     */
     public function showResponseAsJson($object, $code = 200)
     {
         $this->response->setContentType('application/json', 'utf-8');

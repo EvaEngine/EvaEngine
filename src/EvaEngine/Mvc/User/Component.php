@@ -1,11 +1,27 @@
 <?php
-
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 namespace Eva\EvaEngine\Mvc\User;
 
 use Phalcon\Http\ResponseInterface;
+use Phalcon\Mvc\User\Component as PhalconComponent;
 
-class Component extends \Phalcon\Mvc\User\Component
+/**
+ * Class Component
+ * @package Eva\EvaEngine\Mvc\User
+ */
+class Component extends PhalconComponent
 {
+    /**
+     * @param $location
+     * @param null $data
+     * @return string
+     */
     public function reDispatch($location, $data = null)
     {
         //Here must clone full DI for reset dispatcher
@@ -44,7 +60,7 @@ class Component extends \Phalcon\Mvc\User\Component
 
         $di->set('dispatcher', $dispatcher);
 
-        $controller = $dispatcher->dispatch();
+        $dispatcher->dispatch();
         $response = $dispatcher->getReturnedValue();
 
         if ($response instanceof ResponseInterface) {

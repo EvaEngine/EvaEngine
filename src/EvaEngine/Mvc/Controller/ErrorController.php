@@ -1,11 +1,25 @@
 <?php
+/**
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
+ *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
 
 namespace Eva\EvaEngine\Mvc\Controller;
 
 use Phalcon\Mvc\Controller;
 
+/**
+ * Class ErrorController
+ * @package Eva\EvaEngine\Mvc\Controller
+ */
 class ErrorController extends Controller
 {
+    /**
+     * @var string
+     */
     protected $contentDefault = <<<EOF
 <!doctype html>
 <html lang="en">
@@ -128,7 +142,9 @@ EOF;
 </html>
 EOF;
 
-
+    /**
+     * @var string
+     */
     protected $contentCode401 = <<<EOF
 <!doctype html>
 <html lang="en">
@@ -190,6 +206,9 @@ EOF;
 </html>
 EOF;
 
+    /**
+     * Print error based on http status code of exception
+     */
     public function indexAction()
     {
         $this->view->disable();
