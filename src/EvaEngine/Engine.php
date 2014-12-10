@@ -828,7 +828,7 @@ class Engine
         $moduleName = '';
         if ($moduleManager && $modulesArray = $moduleManager->getModules()) {
             foreach ($modulesArray as $moduleName => $module) {
-                //NOTICE: EvaEngine Load front-end router at last 
+                //NOTICE: EvaEngine Load front-end router at last
                 $config->merge(new Config($moduleManager->getModuleRoutesFrontend($moduleName)));
                 $config->merge(new Config($moduleManager->getModuleRoutesBackend($moduleName)));
             }
