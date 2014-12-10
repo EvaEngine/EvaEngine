@@ -227,10 +227,14 @@ class ErrorHandler implements ErrorHandlerInterface
         }
 
         $di = DI::getDefault();
+        /** @var \Phalcon\Dispatcher $dispatcher */
         $dispatcher = $di->getDispatcher();
         //Clear old eventsmanager to void trigger dispatch again
         $dispatcher->setEventsManager(new EventsManager());
+
+        /** @var \Eva\EvaEngine\Mvc\View $view */
         $view = $di->getView();
+        /** @var \Phalcon\Http\Response $response */
         $response = $di->getResponse();
         $response->setStatusCode($error->statusCode(), $error->statusMessage());
 

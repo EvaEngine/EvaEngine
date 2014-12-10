@@ -33,7 +33,7 @@ class Tag extends \Phalcon\Tag
 
     public function __call($helperName, $arguments)
     {
-        //Add alias for i18n heloer
+        //Add alias for i18n helper
         if ($helperName === '_') {
             return call_user_func_array(array(
                 __CLASS__,
