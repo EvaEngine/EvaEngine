@@ -9,6 +9,8 @@
 
 namespace Eva\EvaEngine;
 
+use Phalcon\Text;
+
 /**
  * Class Tag
  * @package Eva\EvaEngine
@@ -143,7 +145,7 @@ class Tag extends \Phalcon\Tag
         }
 
 
-        if (\Phalcon\Text::startsWith($uri, 'http://', false) || \Phalcon\Text::startsWith($uri, 'https://', false)) {
+        if (Text::startsWith($uri, 'http://', false) || Text::startsWith($uri, 'https://', false)) {
             return $uri;
         }
 
@@ -157,17 +159,13 @@ class Tag extends \Phalcon\Tag
     }
 
     /**
-    * Get either a Gravatar URL or complete image tag for a specified email address.
-    *
-    * @param string $email The email address
-    * @param string $s Size in pixels, defaults to 80px [ 1 - 2048 ]
-    * @param string $d Default imageset to use [ 404 | mm | identicon | monsterid | wavatar ]
-    * @param string $r Maximum rating (inclusive) [ g | pg | r | x ]
-    * @param boolean $img True to return a complete IMG tag False for just the URL
-    * @param array $atts Optional, additional key/value attributes to include in the IMG tag
-    * @return String containing either just a URL or a complete image tag
-    * @source http://gravatar.com/site/implement/images/php/
-    */
+     * Get either a Gravatar URL or complete image tag for a specified email address.
+     * @param $email
+     * @param int $s
+     * @param string $d
+     * @param string $r
+     * @return string
+     */
     public static function gravatar($email, $s = 80, $d = 'mm', $r = 'g')
     {
         $url = 'http://www.gravatar.com/avatar/';
@@ -176,12 +174,11 @@ class Tag extends \Phalcon\Tag
         return $url;
     }
 
+
     /**
      * Transform input time to time string which can be parsed by javascript
-     *
-     * @param int $time
-     * @access public
-     *
+     * @param string $time
+     * @param null $timezone
      * @return string javascript parse-able string
      */
     public static function jsTime($time = '', $timezone = null)
@@ -208,9 +205,8 @@ class Tag extends \Phalcon\Tag
      */
     public static function isoTime($time = null, $timezone = null)
     {
-        $timezone = $timezone ? $timezone : self::getDI()->getConfig()->datetime->defaultTimezone;
+        //$timezone = $timezone ? $timezone : self::getDI()->getConfig()->datetime->defaultTimezone;
         $time = $time ? $time : time();
-
         return $time = gmdate('c', $time);
     }
 

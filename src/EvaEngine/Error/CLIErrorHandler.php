@@ -107,7 +107,7 @@ class CLIErrorHandler implements ErrorHandlerInterface
     {
         $logger = static::getLogger();
         if (!$logger) {
-            return;
+            return null;
         }
 
         return $logger->log($error);

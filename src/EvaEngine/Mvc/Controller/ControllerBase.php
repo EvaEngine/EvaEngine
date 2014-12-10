@@ -283,11 +283,13 @@ class ControllerBase extends Controller
         return $this;
     }
 
+
     /**
      * @param Model $model
+     * @param string $messageType
      * @return $this
      */
-    public function showModelMessagesAsJson(Model $model)
+    public function showModelMessagesAsJson(Model $model, $messageType = 'warning')
     {
         $messages = $model->getMessages();
         if ($messages) {

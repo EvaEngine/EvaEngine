@@ -247,7 +247,7 @@ class Container extends ArrayObject
      * Set a single value
      *
      * @param  mixed $value
-     * @return void
+     * @return $this
      */
     public function set($value)
     {

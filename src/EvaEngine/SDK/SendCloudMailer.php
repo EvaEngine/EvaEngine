@@ -96,7 +96,7 @@ class SendCloudMailer
         }
         curl_close($ch);
         $ret = json_decode($result);
-        p($result);
+        //p($result);
         if ($ret->message != 'success') {
             throw new \Exception($result);
         }

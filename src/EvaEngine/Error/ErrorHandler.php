@@ -45,6 +45,7 @@ class ErrorHandler implements ErrorHandlerInterface
      * @param $errstr
      * @param $errfile
      * @param $errline
+     * @return void
      */
     public static function errorHandler($errno, $errstr, $errfile, $errline)
     {
@@ -65,6 +66,7 @@ class ErrorHandler implements ErrorHandlerInterface
 
     /**
      * @param \Exception $e
+     * @return void
      */
     public static function exceptionHandler(\Exception $e)
     {
@@ -180,7 +182,7 @@ class ErrorHandler implements ErrorHandlerInterface
     {
         $logger = static::getLogger();
         if (!$logger) {
-            return;
+            return null;
         }
 
         $logLevel = $error->logLevel();
@@ -221,7 +223,7 @@ class ErrorHandler implements ErrorHandlerInterface
         }
 
         if (!$useErrorController) {
-            return;
+            return false;
         }
 
         $di = DI::getDefault();

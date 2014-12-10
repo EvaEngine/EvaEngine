@@ -12,7 +12,6 @@ namespace Eva\EvaEngine\Interceptor;
 use Phalcon\Mvc\DispatcherInterface;
 use Phalcon\Events\Event;
 use Phalcon\Http\Request;
-use Eva\EvaEngine\Engine;
 use Phalcon\Cache\BackendInterface as CacheInterface;
 
 /**
@@ -128,6 +127,7 @@ class Dispatch
         list($headersKey, $bodyKey) = $this->generateCacheKeys($request, $ignores);
 
         $hasCache = false;
+        $headersCache = $bodyCache = '';
         if (!$request->getQuery($debugQueryKey)) {
             $bodyCache = $cache->get($bodyKey);
             $headersCache = $cache->get($headersKey);
@@ -135,11 +135,12 @@ class Dispatch
         }
 
         if ($hasCache) {
+            /** @var \Phalcon\Http\ResponseInterface $response */
+            $response = $request->getDI()->getResponse();
+
             if ($headersCache) {
                 //$headersCache = unserialize($headersCache);
                 $headersCache = json_decode($headersCache);
-                /** @var \Phalcon\Http\ResponseInterface $response */
-                $response = $request->getDI()->getResponse();
                 foreach ($headersCache as $key => $headerValue) {
                     if (is_int($key)) {
                         $response->setRawHeader($headerValue);
@@ -300,6 +301,7 @@ class Dispatch
                 $cache->save($bodyKey, $body, $params['lifetime']);
                 //$cache->save($headersKey, serialize($headersCache), $params['lifetime']);
                 $cache->save($headersKey, json_encode($headersCache), $params['lifetime']);
+                return true;
             }
         );
         return true;

@@ -101,8 +101,9 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
             return $this->tokenId;
         }
 
+        /** @var RequestInterface $request */
         $request = $this->getDI()->getRequest();
-        $token = TokenStorage::dicoverToken($this->getDI()->getRequest());
+        $token = TokenStorage::dicoverToken($request);
         if ($token) {
             return $this->tokenId = $token;
         } else {

@@ -16,7 +16,7 @@
         </paths>
     </logging>
     <transformations>
-        <template name="clean" />
+        <template name="responsive-twig" />
     </transformations>
     <files>
         <directory>src</directory>

@@ -262,7 +262,7 @@ class Manager implements EventsAwareInterface
         }
 
         $namespaces = array();
-        $listeners = array();
+        //$listeners = array();
         $loader->registerClasses($classes)->register();
         foreach ($modules as $key => $module) {
             if (!class_exists($module['className'])) {

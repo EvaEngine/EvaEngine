@@ -35,10 +35,10 @@ class Placeholder
 
     /**
      * Placeholder helper
-     *
-     * @param  string $name
+     * @param null $name
+     * @param null $default
+     * @return Container
      * @throws InvalidArgumentException
-     * @return Placeholder\Container\AbstractContainer
      */
     public function block($name = null, $default = null)
     {
@@ -59,7 +59,7 @@ class Placeholder
      *
      * @param  string $key
      * @param  array $value
-     * @return Container\AbstractContainer
+     * @return Container
      */
     public function createContainer($key, array $value = array())
     {
@@ -73,7 +73,7 @@ class Placeholder
      * Retrieve a placeholder container
      *
      * @param  string $key
-     * @return Container\AbstractContainer
+     * @return Container
      */
     public function getContainer($key)
     {

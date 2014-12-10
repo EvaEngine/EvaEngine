@@ -10,6 +10,9 @@
 namespace Eva\EvaEngine;
 
 use Phalcon\Annotations\Collection as Property;
+use Phalcon\Mvc\Model as PhalconModel;
+use Phalcon\Annotations\Adapter\Memory as Annotations;
+use Phalcon\Forms\ElementInterface;
 
 /**
  * Class Form
@@ -244,11 +247,11 @@ class Form extends \Phalcon\Forms\Form
         return $form;
     }
 
-    public function setModel(\Phalcon\Mvc\Model $model, $autoParse = true)
+    public function setModel(PhalconModel $model, $autoParse = true)
     {
         $this->model = $model;
         $this->setEntity($model);
-        $reader = new \Phalcon\Annotations\Adapter\Memory();
+        $reader = new Annotations();
         $modelProperties = $reader->getProperties($model);
         $formProperties = $reader->getProperties($this);
         foreach ($modelProperties as $key => $property) {
@@ -326,12 +329,12 @@ class Form extends \Phalcon\Forms\Form
 
     public function initializeFormAnnotations()
     {
-        $reader = new \Phalcon\Annotations\Adapter\Memory();
+        $reader = new Annotations();
         $formProperties = $reader->getProperties($this);
         foreach ($formProperties as $key => $property) {
-            $formProperty = isset($formProperties[$key]) ? $formProperties[$key] : null;
+            //$formProperty = isset($formProperties[$key]) ? $formProperties[$key] : null;
             $element = $this->createElementByProperty($key, $property);
-            if ($element && $element instanceof \Phalcon\Forms\ElementInterface) {
+            if ($element && $element instanceof ElementInterface) {
                 $this->add($element);
             }
         }
@@ -361,6 +364,8 @@ class Form extends \Phalcon\Forms\Form
         if ($this->getForm($modelName)) {
             return $this->getForm($modelName)->getModel();
         }
+
+        return $this->model;
     }
 
     public function render($name, $attributes = null)

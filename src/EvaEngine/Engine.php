@@ -825,6 +825,7 @@ class Engine
 
         $moduleManager = $di->getModuleManager();
         $config = new Config();
+        $moduleName = '';
         if ($moduleManager && $modulesArray = $moduleManager->getModules()) {
             foreach ($modulesArray as $moduleName => $module) {
                 $config->merge(new Config($moduleManager->getModuleRoutesBackend($moduleName)));
@@ -1215,10 +1216,12 @@ class Engine
         }
         $di = $this->getDI();
 
-        $debug = $di->getConfig()->debug;
+        //$debug = $di->getConfig()->debug;
+        /*
         if ($debug) {
             $debugger = $this->getDebugger();
         }
+        */
 
         //Roter
         $router = $di['router'];
@@ -1243,7 +1246,7 @@ class Engine
         //view
         $view = $di['view'];
         $view->start();
-        $controller = $dispatcher->dispatch();
+        $dispatcher->dispatch();
         //Not able to call render in controller or else will repeat output
         $view->render(
             $dispatcher->getControllerName(),

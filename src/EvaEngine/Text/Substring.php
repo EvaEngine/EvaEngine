@@ -15,15 +15,14 @@ namespace Eva\EvaEngine\Text;
  */
 class Substring
 {
+
     /**
-    * Cutting string without word break
-    *
-    * @access public
-    * @param string $str string
-    * @param int $length allowed length int
-    *
-    * @return string
-    */
+     * Cutting string without word break
+     * @param string $str
+     * @param int $length
+     * @param bool $withWrap
+     * @return string
+     */
     public static function substrEn($str = '', $length = 1, $withWrap = true)
     {
         $len = strlen($str);
