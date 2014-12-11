@@ -287,7 +287,7 @@ class Dispatch
                 $headersCache = array();
                 if ($headers) {
                     //Filter allowed headers
-                    $headersCache = array_intersect_key($headers, array_flip($this->getCachableHeaderKeys()));
+                    $headersCache = array_intersect_key($headers, array_flip($self->getCachableHeaderKeys()));
                 }
                 $headersCache[Dispatch::CACHE_HEADER_FLAG] = date(DATE_ISO8601);
                 $cache = $application->getDI()->getViewCache();
