@@ -182,6 +182,15 @@ class Manager implements EventsAwareInterface
     }
 
     /**
+     * @param $moduleName
+     * @return array
+     */
+    public function getModule($moduleName)
+    {
+        return empty($this->modules[$moduleName]) ? array() : $this->modules[$moduleName];
+    }
+
+    /**
      * Get full module settings by module name or module setting array
      * Module setting includes:
      * - className:     Required | Module bootstrap class full name, e.g. Eva\EvaCommon\Module
@@ -242,8 +251,16 @@ class Manager implements EventsAwareInterface
         $this->getLoader()->registerClasses(array(
             $moduleClass => $module['path']
         ))->register();
+
         if (false === class_exists($moduleClass)) {
             throw new \Exception(sprintf('Module %s load failed by not exist class', $moduleClass));
+        }
+
+        if (count(array_intersect(array(
+            'Phalcon\Mvc\ModuleDefinitionInterface',
+            'Eva\EvaEngine\Module\StandardInterface'
+        ), class_implements($moduleClass))) !== 2) {
+            throw new \Exception(sprintf('Module %s interfaces not correct', $moduleClass));
         }
 
         $module['dir'] = $moduleDir = dirname($module['path']);
@@ -253,6 +270,7 @@ class Manager implements EventsAwareInterface
             'routesBackend' => "$moduleDir{$ds}config{$ds}routes.backend.php", //module router backend path
             'routesCommand' => "$moduleDir{$ds}config{$ds}routes.command.php", // module router in CLI mode
             'adminMenu' => "$moduleDir{$ds}config{$ds}admin.menu.php", //admin menu
+            'autoloaders' => $moduleClass::registerGlobalAutoloaders(), //autoloaders
             'relations' => $moduleClass::registerGlobalRelations(), //entity relations for injection
             'listeners' => $moduleClass::registerGlobalEventListeners(), //module listeners list array
             'viewHelpers' => $moduleClass::registerGlobalViewHelpers(), //module view helpers
@@ -285,92 +303,24 @@ class Manager implements EventsAwareInterface
             return $this;
         }
 
-        $defaultModuleSetting = array(
-            'className' => '',
-            'path' => '',  //Module bootstrap file path
-            'dir' => '', //Module source codes dir
-            'moduleConfig' => '', //module config file path
-            'routesFrontend' => '', //module router frontend path
-            'routesBackend' => '', //module router backend path
-            'routesCommand' => '', // module router in CLI mode
-            'relations' => '', //entity relations for injection
-            'listeners' => '', //module listeners list array
-            'viewHelpers' => '', //module view helpers
-            'adminMenu' => '', //admin menu
-            'translatePath' => false,
-        );
-
         $modules = array();
+        //All Module.php map array for cache
         $classes = array();
-        $modulesPath = $this->getDefaultPath();
-        foreach ($moduleSettings as $key => $module) {
-            if (is_array($module)) {
-                $moduleKey = ucfirst($key);
-                $module = array_merge($defaultModuleSetting, $module);
-            } elseif (is_string($module)) {
-                $moduleKey = ucfirst($module);
-                $moduleClass = "Eva\\$moduleKey\\Module";
-                //Class already registered by composer
-                if (true === class_exists($moduleClass)) {
-                    $ref = new \ReflectionClass($moduleClass);
-                    $path = dirname($ref->getFileName());
-                    //Only Module Name means its a Eva Standard module
-                    $module = array_merge($defaultModuleSetting, array(
-                        'className' => $moduleClass,
-                        'path' => "$path/Module.php",
-                    ));
-
-                } else {
-                    //Only Module Name means its a Eva Standard module
-                    $module = array_merge($defaultModuleSetting, array(
-                        'className' => $moduleClass,
-                        'path' => "$modulesPath/$moduleKey/Module.php",
-                    ));
-                }
-            } else {
-                throw new \Exception(sprintf('Module %s load failed by incorrect format', $key));
+        foreach ($moduleSettings as $moduleName => $moduleSetting) {
+            if (true === is_int($moduleName)) {
+                $moduleName = $moduleSetting;
+                $moduleSetting = null;
             }
-
-            $module['className'] = $module['className'] ? $module['className'] : "Eva\\$key\\Module";
-            $module['path'] = $module['path'] ? $module['path'] : "$modulesPath/$key/Module.php";
-            $module['dir'] = dirname($module['path']);
-
-            //Disabled when value is false
-            $module['moduleConfig'] = false === $module['moduleConfig'] || $module['moduleConfig'] ? $module['moduleConfig'] : $module['dir'] . '/config/config.php';
-            $module['routesBackend'] = false === $module['routesBackend'] || $module['routesBackend'] ? $module['routesBackend'] : $module['dir'] . '/config/routes.backend.php';
-            $module['routesFrontend'] = false === $module['routesFrontend'] || $module['routesFrontend'] ? $module['routesFrontend'] : $module['dir'] . '/config/routes.frontend.php';
-            $module['routesCommand'] = false === $module['routesCommand'] || $module['routesCommand'] ? $module['routesCommand'] : $module['dir'] . '/config/routes.command.php';
-
-            $module['translatePath'] = false === $module['translatePath'] || $module['translatePath'] ? $module['translatePath'] : $module['dir'] . '/languages';
-            $module['adminMenu'] = false === $module['adminMenu'] || $module['adminMenu'] ? $module['adminMenu'] : $module['dir'] . '/config/admin.menu.php';
-
+            $module = $this->getModuleInfo($moduleName, $moduleSetting);
+            $modules[$moduleName] = $module;
             $classes[$module['className']] = $module['path'];
-            $modules[$moduleKey] = $module;
         }
-
-        $namespaces = array();
-        //$listeners = array();
-        $loader->registerClasses($classes)->register();
-        foreach ($modules as $key => $module) {
-            if (!class_exists($module['className'])) {
-                continue;
-            }
-            $moduleInstance = new $module['className'];
-            if (!($moduleInstance instanceof StandardInterface)) {
-                continue;
-            }
-
-            $namespace = $module['className']::registerGlobalAutoloaders();
-            if (is_array($namespace)) {
-                $namespaces += $namespace;
-            }
-            $modules[$key]['listeners'] = $module['className']::registerGlobalEventListeners();
-            $modules[$key]['viewHelpers'] = $module['className']::registerGlobalViewHelpers();
-            $modules[$key]['relations'] = $module['className']::registerGlobalRelations();
-        }
-        $loader->registerNamespaces($namespaces)->register();
-
         $this->modules = $modules;
+
+        $namespaces = $this->getMergedAutoloaders();
+        if ($namespaces) {
+            $loader->registerNamespaces($namespaces)->register();
+        }
 
         if ($cacheFile) {
             $this->writeCache($cacheFile, array(
@@ -382,6 +332,47 @@ class Manager implements EventsAwareInterface
         //Trigger Event
         $this->getEventsManager()->fire('module:afterLoadModule', $this);
         return $this;
+    }
+
+    private function getMergedArray($key)
+    {
+        if (!($modules = $this->modules)) {
+            return array();
+        }
+        $mergedArray = array();
+        foreach ($modules as $moduleName => $module) {
+            if (false === is_array($module[$key])) {
+                continue;
+            }
+            $mergedArray = array_merge($mergedArray, $module[$key]);
+            //$mergedArray += $module[$key];
+        }
+        return $mergedArray;
+    }
+
+    public function getMergedAutoloaders()
+    {
+        return $this->getMergedArray('autoloaders');
+    }
+
+    public function getMergedListeners()
+    {
+        return $this->getMergedArray('listeners');
+    }
+
+    public function getMergedViewHelpers()
+    {
+        return $this->getMergedArray('viewHelpers');
+    }
+
+    public function getMergedRelations()
+    {
+        return $this->getMergedArray('relations');
+    }
+
+    public function attachEvents()
+    {
+
     }
 
     /**

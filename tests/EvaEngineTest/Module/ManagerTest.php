@@ -6,14 +6,52 @@ use Phalcon\Loader;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
+    protected $fooModule;
+    protected $barModule;
     public function setUp()
     {
-        /*
-        $loader = new Loader();
-        $loader->registerNamespaces(array(
-            'Eva\FooModule'
-        ));
-        */
+        $ds = DIRECTORY_SEPARATOR;
+        $path = __DIR__ . "{$ds}TestAsset{$ds}FooModule";
+        $this->fooModule = array(
+            'className' => 'Eva\\FooModule\\Module',
+            'path' => "{$path}{$ds}Module.php",
+            'dir' => "{$path}",
+            'moduleConfig' => "{$path}{$ds}config{$ds}config.php",
+            'routesFrontend' => "{$path}{$ds}config{$ds}routes.frontend.php",
+            'routesBackend' => "{$path}{$ds}config{$ds}routes.backend.php",
+            'routesCommand' => "{$path}{$ds}config{$ds}routes.command.php",
+            'adminMenu' => "{$path}{$ds}config{$ds}admin.menu.php",
+            'autoloaders' => array(),
+            'relations' => array(),
+            'listeners' => array(),
+            'viewHelpers' => array(),
+            //'translators' =>  array(),
+        );
+
+        $path = __DIR__ . "{$ds}TestAsset{$ds}BarModule";
+        $this->barModule = array(
+            'className' => 'Eva\\BarModule\\Module',
+            'path' => "{$path}{$ds}Module.php",
+            'dir' => "{$path}",
+            'moduleConfig' => "{$path}{$ds}config{$ds}config.php",
+            'routesFrontend' => "{$path}{$ds}config{$ds}routes.frontend.php",
+            'routesBackend' => "{$path}{$ds}config{$ds}routes.backend.php",
+            'routesCommand' => "{$path}{$ds}config{$ds}routes.command.php",
+            'adminMenu' => "{$path}{$ds}config{$ds}admin.menu.php",
+            'autoloaders' => array(
+                'BarModuleAutoloadersKey' => 'BarModuleAutoloadersValue',
+            ),
+            'relations' => array(
+                'BarModuleRelationsKey' => 'BarModuleRelationsValue',
+            ),
+            'listeners' => array(
+                'BarModuleEventLisnersKey' => 'BarModuleEventLisnersValue',
+            ),
+            'viewHelpers' => array(
+                'BarModuleViewHelerKey' => 'BarModuleEventLisnersValue',
+            ),
+            //'translators' =>  array(),
+        );
 
     }
 
@@ -52,29 +90,82 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $ds = DIRECTORY_SEPARATOR;
         $moduleManager = new ModuleManager();
         $moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
-        $path = __DIR__ . "{$ds}TestAsset{$ds}FooModule";
-        $expectModule = array(
-            'className' => 'Eva\\FooModule\\Module',
-            'path' => "{$path}{$ds}Module.php",
-            'dir' => "{$path}",
-            'moduleConfig' => "{$path}{$ds}config{$ds}config.php",
-            'routesFrontend' => "{$path}{$ds}config{$ds}routes.frontend.php",
-            'routesBackend' => "{$path}{$ds}config{$ds}routes.backend.php",
-            'routesCommand' => "{$path}{$ds}config{$ds}routes.command.php",
-            'adminMenu' => "{$path}{$ds}config{$ds}admin.menu.php",
-            'relations' => array(),
-            'listeners' => array(),
-            'viewHelpers' => array(),
-            //'translators' =>  array(),
-        );
+        $expectModule = $this->fooModule;
         $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule'));
         $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule', 'Eva\\FooModule\\Module'));
         $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule', $expectModule));
     }
 
-    public function testSingleModuleDefault()
+    public function testTwoModuleLoadAndMerge()
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $moduleManager = new ModuleManager();
+        $moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
+        $moduleManager->loadModules(array(
+            'FooModule',
+            'BarModule',
+        ));
+        $this->assertEquals(true, $moduleManager->hasModule('FooModule'));
+        $this->assertEquals(true, $moduleManager->hasModule('BarModule'));
+        $this->assertEquals($this->barModule, $moduleManager->getModule('BarModule'));
+    }
+
+    public function testModuleLoadOrder()
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $moduleManager = new ModuleManager();
+        $moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
+        $moduleManager->loadModules(array(
+            'FooModule',
+            'BarModule',
+            'ThirdModule',
+        ));
+        $this->assertEquals(true, $moduleManager->hasModule('FooModule'));
+        $this->assertEquals(true, $moduleManager->hasModule('BarModule'));
+        $this->assertEquals(array(
+            'BarModuleEventLisnersKey' => 'BarModuleEventLisnersValue',
+            'ThirdModuleEventLisnersKey' => 'ThirdModuleEventLisnersValue',
+        ), $moduleManager->getMergedListeners());
+
+        $this->assertEquals(array(
+            'BarModuleViewHelerKey' => 'BarModuleEventLisnersValue',
+            'ThirdModuleViewHelerKey' => 'ThirdModuleEventLisnersValue',
+        ), $moduleManager->getMergedViewHelpers());
+
+        $this->assertEquals(array(
+            'BarModuleRelationsKey' => 'BarModuleRelationsValue',
+            'ThirdModuleRelationsKey' => 'ThirdModuleRelationsValue',
+        ), $moduleManager->getMergedRelations());
+
+        $this->assertEquals(array(
+            'BarModuleAutoloadersKey' => 'ThirdModuleAutoloadersValue',
+        ), $moduleManager->getMergedAutoloaders());
+    }
+
+
+    public function testModuleCache()
     {
 
+    }
+
+    public function testModuleEvents()
+    {
+
+    }
+
+    public function testModuleKeyValue()
+    {
+        $moduleManager = new ModuleManager();
+        $this->assertEquals('', $moduleManager->getModulePath('test'));
+        $this->assertEquals(array(), $moduleManager->getModuleConfig('test'));
+        $this->assertEquals(array(), $moduleManager->getModuleRoutesFrontend('test'));
+        $this->assertEquals(array(), $moduleManager->getModuleRoutesBackend('test'));
+        $this->assertEquals(array(), $moduleManager->getModuleRoutesCommand('test'));
+        $this->assertEquals(array(), $moduleManager->getModuleListeners('test'));
+        $this->assertEquals('', $moduleManager->getModuleAdminMenu('test'));
+        $this->assertEquals(array(), $moduleManager->getModuleViewHelpers('test'));
+
+        //$moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
     }
 
     /*
