@@ -57,7 +57,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Exception
-     * @expectedExceptionMessageRegExp /Module \w+ load failed by not exist class/
+     * @expectedExceptionMessageRegExp /Module [\w\\]+ load failed by not exist class/
      */
     public function testUnknowEvaModule()
     {
