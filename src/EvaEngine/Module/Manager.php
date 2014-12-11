@@ -461,7 +461,7 @@ class Manager implements EventsAwareInterface
     {
         $modules = $this->getModules();
         if (!empty($modules[$moduleName]['adminMenu']) && file_exists($modules[$moduleName]['adminMenu'])) {
-            return include $modules[$moduleName]['adminMenu'];
+            return file_get_contents($modules[$moduleName]['adminMenu']);
         }
         return '';
     }
