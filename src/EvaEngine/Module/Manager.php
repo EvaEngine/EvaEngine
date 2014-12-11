@@ -18,6 +18,12 @@ use Eva\EvaEngine\Mvc\Model;
 /**
  * Module Manager for module register / load
  *
+ * A standard module file structure is:
+ * - config | module config files
+ * - src    | module source codes
+ * - views  | module view files
+ * - tests  | module test files
+ *
  * @package Eva\EvaEngine\Module
  */
 class Manager implements EventsAwareInterface
@@ -173,6 +179,87 @@ class Manager implements EventsAwareInterface
     public function getModules()
     {
         return $this->modules;
+    }
+
+    /**
+     * Get full module settings by module name or module setting array
+     * Module setting includes:
+     * - className:     Required | Module bootstrap class full name, e.g. Eva\EvaCommon\Module
+     * - path :         Required | Module.php file path, e.g. /www/eva/modules/EvaCommon/Module.php
+     * - moduleConfig:  Optional | Module config file path, e.g. /www/eva/modules/EvaCommon/config/config.php , default is module_dir/config/config.php
+     * - routesFrontend Optional | Module front-end router config file path, e.g. /www/eva/modules/EvaCommon/config/routes.frontend.php
+     * - routesBackend  Optional | Module back-end router config file path, e.g. /www/eva/modules/EvaCommon/config/routes.backend.php
+     * - routesCommand  Optional | Module cli router config file path, e.g. /www/eva/modules/EvaCommon/config/routes.command.php
+     * - adminMenu      Optional | Admin sidebar menu
+     * - di :           Optional | Module global DI
+     * All optional setting could set as false to disable.
+     *
+     * @param $moduleName    MUST as same as module folder, keep moduleName unique
+     * @param $moduleSetting mixed Support 3 types:
+     *            - null, EvaEngine official module, module namespace MUST start with Eva\\, and source path MUST under application/modules
+     *            - string, Full module class, which is already loaded by composer
+     *            - array, Module setting array, require className and path at least, other options will be auto filled
+     * @return array Module
+     * @throws \Exception
+     */
+    public function getModuleInfo($moduleName, $moduleSetting = null)
+    {
+        $moduleName = ucfirst($moduleName);
+        $modulesPath = $this->getDefaultPath();
+        $ds = DIRECTORY_SEPARATOR;
+
+        //Get basic module info only contains className and path
+        if (true === is_null($moduleSetting)) {
+            $module = array(
+                'className' => "Eva\\$moduleName\\Module",
+                'path' => "$modulesPath{$ds}$moduleName{$ds}Module.php",
+            );
+        } elseif (true === is_string($moduleSetting) && strpos($moduleSetting, '\\') !== false) {
+            //Composer module
+            $moduleClass = $moduleSetting;
+            if (false === class_exists($moduleClass)) {
+                throw new \Exception(sprintf('Module %s load failed by not exist class', $moduleClass));
+            }
+
+            $ref = new \ReflectionClass($moduleClass);
+            $module = array(
+                'className' => $moduleClass,
+                'path' => $ref->getFileName(),
+            );
+        } elseif (true === is_array($moduleSetting)) {
+            $module = array_merge(array(
+                'className' => '',
+                'path' => '',
+            ), $moduleSetting);
+            $module['className'] = $module['className'] ?: "Eva\\$moduleSetting\\Module";
+            $module['path'] = $module['path'] ?: "$modulesPath{$ds}$moduleName{$ds}Module.php";
+        } else {
+            throw new \Exception(sprintf('Module %s load failed by incorrect format', $moduleName));
+        }
+
+        /** @var StandardInterface $moduleClass */
+        $moduleClass = $module['className'];
+        $this->getLoader()->registerClasses(array(
+            $moduleClass => $module['path']
+        ))->register();
+        if (false === class_exists($moduleClass)) {
+            throw new \Exception(sprintf('Module %s load failed by not exist class', $moduleClass));
+        }
+
+        $module['dir'] = $moduleDir = dirname($module['path']);
+        $module = array_merge(array(
+            'moduleConfig' => "$moduleDir{$ds}config{$ds}config.php", //module config file path
+            'routesFrontend' => "$moduleDir{$ds}config{$ds}routes.frontend.php", //module router frontend path
+            'routesBackend' => "$moduleDir{$ds}config{$ds}routes.backend.php", //module router backend path
+            'routesCommand' => "$moduleDir{$ds}config{$ds}routes.command.php", // module router in CLI mode
+            'adminMenu' => "$moduleDir{$ds}config{$ds}admin.menu.php", //admin menu
+            'relations' => $moduleClass::registerGlobalRelations(), //entity relations for injection
+            'listeners' => $moduleClass::registerGlobalEventListeners(), //module listeners list array
+            'viewHelpers' => $moduleClass::registerGlobalViewHelpers(), //module view helpers
+            //'translatePath' => false,
+        ), $module);
+
+        return $module;
     }
 
     /**
