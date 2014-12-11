@@ -7,8 +7,8 @@ php:
   - hhvm
 
 before_script:
-  - git clone -b 1.3.4 git://github.com/phalcon/cphalcon.git --depth=1 && cd cphalcon/build && sudo ./install
-  - cd ../../ && phpenv config-add ./tests/phalcon.ini
+  - git clone -b 1.3.4 git://github.com/phalcon/cphalcon.git --depth=1 && cd cphalcon/build/safe && phpize && ./configure --enable-phalcon && sudo make install
+  - cd ../../../ && phpenv config-add ./tests/phalcon.ini
   - composer self-update
   - composer install --dev --prefer-source
   - pyrus install pear/PHP_CodeSniffer
