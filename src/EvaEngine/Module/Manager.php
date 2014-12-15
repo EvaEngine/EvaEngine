@@ -240,7 +240,7 @@ class Manager implements EventsAwareInterface
                 'className' => '',
                 'path' => '',
             ), $moduleSetting);
-            $module['className'] = $module['className'] ?: "Eva\\$moduleSetting\\Module";
+            $module['className'] = $module['className'] ?: "Eva\\$moduleName\\Module";
             $module['path'] = $module['path'] ?: "$modulesPath{$ds}$moduleName{$ds}Module.php";
         } else {
             throw new \Exception(sprintf('Module %s load failed by incorrect format', $moduleName));

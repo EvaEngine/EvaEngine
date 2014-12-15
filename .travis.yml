@@ -18,4 +18,4 @@ script:
   phpcs --standard=PSR2 --extensions=php --ignore=vendor/*,tests/*,cphalcon/* --warning-severity=0 ./
 
 after_script:
-  - php vendor/bin/coveralls
+  - ./vendor/bin/coveralls -v

@@ -85,7 +85,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $moduleManager->getModuleInfo('Some_Unknow_Module', 1);
     }
 
-    public function testSingleEvaOfficialModule()
+    public function testOneModuleLoad()
     {
         $ds = DIRECTORY_SEPARATOR;
         $moduleManager = new ModuleManager();
@@ -93,6 +93,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $expectModule = $this->fooModule;
         $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule'));
         $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule', 'Eva\\FooModule\\Module'));
+        $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule', array()));
         $this->assertEquals($expectModule, $moduleManager->getModuleInfo('FooModule', $expectModule));
     }
 
