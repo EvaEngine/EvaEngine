@@ -100,8 +100,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     public function testTwoModuleLoadAndMerge()
     {
         $ds = DIRECTORY_SEPARATOR;
-        $moduleManager = new ModuleManager();
-        $moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
+        $moduleManager = new ModuleManager(__DIR__ . "{$ds}TestAsset");
         $moduleManager->loadModules(array(
             'FooModule',
             'BarModule',
@@ -175,7 +174,17 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('barModuleRouterBackend' => 1), $moduleManager->getModuleRoutesBackend('BarModule'));
         $this->assertEquals(array('barModuleRouterCommand' => 1), $moduleManager->getModuleRoutesCommand('BarModule'));
         $this->assertEquals(array('BarModuleEventLisnersKey' => 'BarModuleEventLisnersValue'), $moduleManager->getModuleListeners('BarModule'));
-        $this->assertEquals("barModuleAdminMenu", $moduleManager->getModuleAdminMenu('BarModule'));
+
+        ob_start();
+        $moduleManager->getModuleAdminMenu('BarModule');
+        $adminMenu = ob_get_contents();
+        ob_end_clean();
+        $this->assertEquals("barModuleAdminMenu", $adminMenu);
         $this->assertEquals(array('BarModuleViewHelerKey' => 'BarModuleEventLisnersValue'), $moduleManager->getModuleViewHelpers('BarModule'));
+    }
+
+    public function testInjectRelations()
+    {
+
     }
 }

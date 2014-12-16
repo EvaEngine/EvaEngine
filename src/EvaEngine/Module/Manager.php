@@ -461,7 +461,7 @@ class Manager implements EventsAwareInterface
     {
         $modules = $this->getModules();
         if (!empty($modules[$moduleName]['adminMenu']) && file_exists($modules[$moduleName]['adminMenu'])) {
-            return file_get_contents($modules[$moduleName]['adminMenu']);
+            return include $modules[$moduleName]['adminMenu'];
         }
         return '';
     }
@@ -488,16 +488,7 @@ class Manager implements EventsAwareInterface
         $relations = $this->injectRelations;
 
         if ($relations === false) {
-            $relations = array();
-            $modules = $this->getModules();
-            foreach ($modules as $moduleName => $module) {
-                if (empty($module['relations'])) {
-                    continue;
-                }
-                foreach ($module['relations'] as $relation) {
-                    $relations[$relation['entity']] = $relation;
-                }
-            }
+            $relations = $this->getMergedRelations();
             $this->injectRelations = $relations;
         }
 
