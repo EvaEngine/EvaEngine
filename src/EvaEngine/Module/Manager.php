@@ -125,7 +125,7 @@ class Manager implements EventsAwareInterface
         if ($this->eventsManager) {
             return $this->eventsManager;
         }
-        return new EventsManager();
+        return $this->eventsManager = new EventsManager();
     }
 
     /**
@@ -334,6 +334,10 @@ class Manager implements EventsAwareInterface
         return $this;
     }
 
+    /**
+     * @param $key
+     * @return array
+     */
     private function getMergedArray($key)
     {
         if (!($modules = $this->modules)) {
@@ -345,34 +349,77 @@ class Manager implements EventsAwareInterface
                 continue;
             }
             $mergedArray = array_merge($mergedArray, $module[$key]);
-            //$mergedArray += $module[$key];
         }
         return $mergedArray;
     }
 
+    /**
+     * @return array
+     */
     public function getMergedAutoloaders()
     {
         return $this->getMergedArray('autoloaders');
     }
 
-    public function getMergedListeners()
-    {
-        return $this->getMergedArray('listeners');
-    }
-
+    /**
+     * @return array
+     */
     public function getMergedViewHelpers()
     {
         return $this->getMergedArray('viewHelpers');
     }
 
+    /**
+     * @return array
+     */
     public function getMergedRelations()
     {
         return $this->getMergedArray('relations');
     }
 
-    public function attachEvents()
-    {
 
+    /**
+     * @param array $listeners
+     * @return $this
+     * @throws \Exception
+     */
+    public function attachEvents(array $listeners = array())
+    {
+        if (!$listeners) {
+            $modules = $this->getModules();
+            if (!$modules) {
+                return $this;
+            }
+
+            $listeners = array();
+            foreach ($modules as $moduleName => $module) {
+                $listeners[$moduleName] = $this->getModuleListeners($moduleName);
+            }
+        }
+
+        if (!$listeners) {
+            return $this;
+        }
+
+        $eventsManager = $this->getEventsManager();
+        foreach ($listeners as $moduleName => $moduleListeners) {
+            foreach ($moduleListeners as $eventType => $listener) {
+                $priority = 0;
+                if (is_string($listener)) {
+                    $listenerClass = $listener;
+                } elseif (true === is_array($listener) && count($listener) > 1) {
+                    $listenerClass = $listener[0];
+                    $priority = (int) $listener[1];
+                } else {
+                    throw new \Exception(sprintf("Module %s listener format not correct", $moduleName));
+                }
+                if (false === class_exists($listenerClass)) {
+                    throw new \Exception(sprintf("Module listener %s not exist", $listenerClass));
+                }
+                $eventsManager->attach($eventType, new $listenerClass, $priority);
+            }
+        }
+        return $this;
     }
 
     /**

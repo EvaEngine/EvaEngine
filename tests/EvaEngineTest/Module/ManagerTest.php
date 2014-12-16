@@ -122,10 +122,6 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertEquals(true, $moduleManager->hasModule('FooModule'));
         $this->assertEquals(true, $moduleManager->hasModule('BarModule'));
-        $this->assertEquals(array(
-            'BarModuleEventLisnersKey' => 'BarModuleEventLisnersValue',
-            'ThirdModuleEventLisnersKey' => 'ThirdModuleEventLisnersValue',
-        ), $moduleManager->getMergedListeners());
 
         $this->assertEquals(array(
             'BarModuleViewHelerKey' => 'BarModuleEventLisnersValue',
@@ -184,6 +180,25 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testInjectRelations()
+    {
+        /*
+        $ds = DIRECTORY_SEPARATOR;
+        $moduleManager = new ModuleManager(__DIR__ . "{$ds}TestAsset");
+        $moduleManager->loadModules(array('RealModule'));
+        $moduleManager->getInjectRelations(new \Eva\RealModule\Models\User());
+        */
+    }
+
+    public function testListeners()
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $moduleManager = new ModuleManager(__DIR__ . "{$ds}TestAsset");
+        $moduleManager->loadModules(array('RealModule'));
+        $moduleManager->attachEvents();
+        $this->assertTrue($moduleManager->getEventsManager()->hasListeners('module'));
+    }
+
+    public function testListenerPriorities()
     {
 
     }

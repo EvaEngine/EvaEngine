@@ -9,14 +9,14 @@ class Module extends AbstractModule
     public static function registerGlobalAutoloaders()
     {
         return array(
-            'BarModuleAutoloadersKey' => 'ThirdModuleAutoloadersValue',
+            'Eva\RealModule' => __DIR__ . '/src/RealModule',
         );
     }
 
     public static function registerGlobalEventListeners()
     {
         return array(
-            'ThirdModuleEventLisnersKey' => 'ThirdModuleEventLisnersValue',
+            'module' => 'Eva\RealModule\Events\ModuleListener',
         );
     }
 
@@ -30,7 +30,13 @@ class Module extends AbstractModule
     public static function registerGlobalRelations()
     {
         return array(
-            'ThirdModuleRelationsKey' => 'ThirdModuleRelationsValue',
+            'injectRelationTest1' => array(
+                'module' => 'RealModule',
+                'entity' => 'Eva\RealModule\Models\User',
+                'relationType' => 'hasManyToMany',
+                'parameters' => array(
+                )
+            ),
         );
     }
 
