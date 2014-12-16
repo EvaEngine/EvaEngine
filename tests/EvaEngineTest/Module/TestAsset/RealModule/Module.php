@@ -17,6 +17,7 @@ class Module extends AbstractModule
     {
         return array(
             'module' => 'Eva\RealModule\Events\ModuleListener',
+            'dispatch' => array('Eva\RealModule\Events\DispatchListener', 100),
         );
     }
 

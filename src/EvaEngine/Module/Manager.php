@@ -379,6 +379,12 @@ class Manager implements EventsAwareInterface
 
 
     /**
+     * Module Events could by key => value pairs like:
+     * 'module' => 'Eva\RealModule\Events\ModuleListener',
+     * Or could be key => array pairs like
+     * 'module' => array('Eva\RealModule\Events\ModuleListener', 100)
+     * Array[1] is listener priority
+     *
      * @param array $listeners
      * @return $this
      * @throws \Exception

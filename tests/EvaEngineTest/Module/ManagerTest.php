@@ -196,6 +196,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $moduleManager->loadModules(array('RealModule'));
         $moduleManager->attachEvents();
         $this->assertTrue($moduleManager->getEventsManager()->hasListeners('module'));
+        $this->assertTrue($moduleManager->getEventsManager()->hasListeners('dispatch'));
     }
 
     public function testListenerPriorities()
