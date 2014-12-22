@@ -271,8 +271,8 @@ class Form extends \Phalcon\Forms\Form
 
         $model->setModelForm($this);
         if ($modelSaveMethod == 'save') {
-            if(!$model->save()){
-                throw new Exception\RuntimeException(get_class($model).' save failed');
+            if (!$model->save()) {
+                throw new Exception\RuntimeException(get_class($model) . ' save failed');
             }
 
             return $model;
@@ -326,8 +326,8 @@ class Form extends \Phalcon\Forms\Form
             return parent::render($name, $attributes);
         }
         $attributes = array_merge(array(
-           'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
-        ), (array) $attributes);
+            'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
+        ), (array)$attributes);
 
         return parent::render($name, $attributes);
     }
@@ -354,7 +354,8 @@ class Form extends \Phalcon\Forms\Form
         }
 
         if (!($formClass instanceof Form)) {
-            throw new Exception\InvalidArgumentException(sprintf('Add formset failed by incorrect form class instance %s', $prefix));
+            throw new Exception\InvalidArgumentException(sprintf('Add formset failed by incorrect form class instance %s',
+                $prefix));
         }
 
         $formClass->setPrefix($prefix);
@@ -385,7 +386,8 @@ class Form extends \Phalcon\Forms\Form
         } else {
             $defaultModelClass = $this->getDefaultModelClass();
             if (!$defaultModelClass || false == class_exists($defaultModelClass)) {
-                throw new Exception\RuntimeException(sprintf('Form connected to incorrect model %s', $defaultModelClass));
+                throw new Exception\RuntimeException(sprintf('Form connected to incorrect model %s',
+                    $defaultModelClass));
             }
             $this->setModel(new $defaultModelClass());
         }
