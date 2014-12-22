@@ -271,7 +271,11 @@ class Form extends \Phalcon\Forms\Form
 
         $model->setModelForm($this);
         if ($modelSaveMethod == 'save') {
-            return $model->save();
+            if(!$model->save()){
+                throw new Exception\RuntimeException(get_class($model).' save failed');
+            }
+
+            return $model;
         } else {
             return $model->$modelSaveMethod($this->getRawPostData());
         }
