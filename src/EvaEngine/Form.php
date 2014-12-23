@@ -321,7 +321,11 @@ class Form extends \Phalcon\Forms\Form
 
         $model->setModelForm($this);
         if ($modelSaveMethod == 'save') {
-            return $model->save();
+            if (!$model->save()) {
+                throw new Exception\RuntimeException(get_class($model) . ' save failed');
+            }
+
+            return $model;
         } else {
             return $model->$modelSaveMethod($this->getRawPostData());
         }
@@ -374,8 +378,8 @@ class Form extends \Phalcon\Forms\Form
             return parent::render($name, $attributes);
         }
         $attributes = array_merge(array(
-           'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
-        ), (array) $attributes);
+            'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
+        ), (array)$attributes);
 
         return parent::render($name, $attributes);
     }
