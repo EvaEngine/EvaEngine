@@ -354,8 +354,7 @@ class Form extends \Phalcon\Forms\Form
         }
 
         if (!($formClass instanceof Form)) {
-            throw new Exception\InvalidArgumentException(sprintf('Add formset failed by incorrect form class instance %s',
-                $prefix));
+            throw new Exception\InvalidArgumentException(sprintf('Add formset failed by incorrect form class instance %s', $prefix));
         }
 
         $formClass->setPrefix($prefix);
@@ -386,8 +385,7 @@ class Form extends \Phalcon\Forms\Form
         } else {
             $defaultModelClass = $this->getDefaultModelClass();
             if (!$defaultModelClass || false == class_exists($defaultModelClass)) {
-                throw new Exception\RuntimeException(sprintf('Form connected to incorrect model %s',
-                    $defaultModelClass));
+                throw new Exception\RuntimeException(sprintf('Form connected to incorrect model %s', $defaultModelClass));
             }
             $this->setModel(new $defaultModelClass());
         }
