@@ -840,6 +840,8 @@ class Engine
         $router->removeExtraSlashes(true);
         //Set last module as default module
         $router->setDefaultModule($moduleName);
+        //NOTICE: Set a strange controller here to make router not match default index/index
+        $router->setDefaultController('EvaEngineDefaultController');
 
         $config = $config->toArray();
         foreach ($config as $url => $route) {
