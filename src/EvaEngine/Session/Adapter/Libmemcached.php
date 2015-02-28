@@ -205,7 +205,8 @@ class Libmemcached extends Phalcon\Session\Adapter implements Phalcon\Session\Ad
             $this->memcacheInstance = new Phalcon\Cache\Backend\Libmemcached(
                 new Phalcon\Cache\Frontend\Data(array("lifetime" => $this->getOption("lifetime"))),
                 array(
-                    'servers'       => $this->getOption('servers'),
+                    'statsKey'     => null, //Remove phalcon _PHCM key by force
+                    'servers'      => $this->getOption('servers'),
                     'client'       => $this->getOption('client')
                 )
             );
