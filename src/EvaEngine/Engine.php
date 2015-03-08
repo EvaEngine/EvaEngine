@@ -13,6 +13,7 @@ use Eva\EvaEngine\CLI\Output\ConsoleOutput;
 //use Eva\EvaEngine\Events\DispatchCacheListener;
 use Eva\EvaEngine\Interceptor\Dispatch as DispatchInterceptor;
 use Eva\EvaEngine\SDK\SendCloudMailer;
+use Eva\EvaSms\Sender;
 use Phalcon\CLI\Console;
 use Phalcon\Mvc\Router;
 use Eva\EvaEngine\Mvc\Url as UrlResolver;
@@ -648,6 +649,13 @@ class Engine
 
         $di->set('mailMessage', 'Eva\EvaEngine\MailMessage');
 
+        $di->set(
+            'smsSender',
+            function () use ($self) {
+                return $self->diSmsSender();
+            },
+            true
+        );
         /**********************************
          * DI initialize for helpers
          ***********************************/
@@ -1051,6 +1059,28 @@ class Engine
             ));
         }
         return $cache;
+    }
+
+    public function diSmsSender()
+    {
+        $config = $this->getDI()->getConfig();
+        $adapterMapping = array(
+            'submail' => 'Eva\EvaSms\Providers\Submail',
+        );
+        $adapterKey = $config->smsSender->provider;
+        $adapterKey = false === strpos($adapterKey, '\\') ? strtolower($adapterKey) : $adapterKey;
+        $adapterClass = empty($adapterMapping[$adapterKey]) ? $adapterKey : $adapterMapping[$adapterKey];
+        if (false === class_exists($adapterClass)) {
+            throw new Exception\RuntimeException(sprintf('No sms provider found by %s', $adapterClass));
+        }
+
+        $sender = new Sender();
+        $sender->setProvider(new $adapterClass($config->smsSender->appid, $config->smsSender->appkey));
+        if ($config->smsSender->timeout) {
+            $sender::setDefaultTimeout($config->smsSender->timeout);
+        }
+
+        return $sender;
     }
 
     public function diMailer()
