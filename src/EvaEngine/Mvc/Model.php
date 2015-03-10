@@ -92,6 +92,9 @@ class Model extends PhalconModel
      */
     public function getSource()
     {
+        if (!$this->tableName) {
+            $this->tableName = parent::getSource();
+        }
         return $this->getPrefix() . $this->tableName;
     }
 
