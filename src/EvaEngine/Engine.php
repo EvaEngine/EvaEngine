@@ -34,6 +34,7 @@ use Phalcon\DI\FactoryDefault\CLI;
 use Eva\EvaEngine\Service\TokenStorage;
 use Phalcon\DiInterface;
 use Phalcon\Mvc\View\Engine\Volt;
+use Phalcon\Mvc\View\Engine\Php;
 
 /**
  * Core application configuration / bootstrap
@@ -515,6 +516,12 @@ class Engine
                 $view = new View();
                 $view->setViewsDir(__DIR__ . '/views/');
                 $view->setEventsManager($di->getEventsManager());
+                $view->registerEngines(
+                    array(
+                        ".volt" => 'volt',
+                        ".phtml" => 'Phalcon\Mvc\View\Engine\Php'
+                    )
+                );
                 return $view;
             },
             true
