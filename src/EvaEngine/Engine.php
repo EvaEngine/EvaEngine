@@ -715,7 +715,8 @@ class Engine
             'volt',
             function () use ($self) {
                 return $self->diVolt();
-            }
+            },
+            true
         );
 
         $di->set(
