@@ -516,7 +516,8 @@ class Engine
                 $view->setViewsDir(__DIR__ . '/views/');
                 $view->setEventsManager($di->getEventsManager());
                 return $view;
-            }
+            },
+            true
         );
 
         $di->set(
