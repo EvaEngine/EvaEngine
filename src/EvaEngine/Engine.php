@@ -33,6 +33,7 @@ use Phalcon\CLI\Dispatcher as CLIDispatcher;
 use Phalcon\DI\FactoryDefault\CLI;
 use Eva\EvaEngine\Service\TokenStorage;
 use Phalcon\DiInterface;
+use Phalcon\Mvc\View\Engine\Volt;
 
 /**
  * Core application configuration / bootstrap
@@ -711,6 +712,13 @@ class Engine
         );
 
         $di->set(
+            'volt',
+            function () use ($self) {
+                return $self->diVolt();
+            }
+        );
+
+        $di->set(
             'logException',
             function () use ($di) {
                 $config = $di->getConfig();
@@ -1176,6 +1184,25 @@ class Engine
         $adapter = new $adapterClass($config->filesystem->default->uploadPath);
         $filesystem = new \Gaufrette\Filesystem($adapter);
         return $filesystem;
+    }
+
+    public function diVolt()
+    {
+        $di = $this->getDI();
+        $config = $di->getConfig();
+        $volt = new Volt($di->getView(), $di);
+        $volt->setOptions(
+            array(
+                "compiledPath" => $config->templateEngine->volt->compiledPath,
+                "compiledSeparator" => $config->templateEngine->volt->compiledSeparator,
+                "compileAlways" => $config->debug
+            )
+        );
+        $compiler = $volt->getCompiler();
+        $compiler->addFunction('number_format', function ($resolvedArgs) {
+            return 'number_format(' . $resolvedArgs . ')';
+        });
+        return $volt;
     }
 
     /**
