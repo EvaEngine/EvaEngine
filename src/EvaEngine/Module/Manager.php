@@ -398,11 +398,22 @@ class Manager implements EventsAwareInterface
         if ($cacheFile && $cache = $this->readCache($cacheFile)) {
             return $cache;
         }
-        $cache = $this->getMergedAdminMenu();
-        if ($cacheFile) {
-            $this->writeCache($cacheFile, $cache);
+
+        if (!($modules = $this->modules)) {
+            return array();
         }
-        return $cache;
+        $adminMenu = array();
+        foreach ($modules as $moduleName => $module) {
+            $moduleAdminMenu = $this->getModuleAdminMenu($moduleName);
+            if (false === is_array($moduleAdminMenu)) {
+                continue;
+            }
+            $adminMenu = array_merge($adminMenu, $moduleAdminMenu);
+        }
+        if ($cacheFile) {
+            $this->writeCache($cacheFile, $adminMenu);
+        }
+        return $adminMenu;
     }
 
     /**
