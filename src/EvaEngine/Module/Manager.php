@@ -377,6 +377,33 @@ class Manager implements EventsAwareInterface
         return $this->getMergedArray('relations');
     }
 
+    /**
+     * @return array
+     */
+    public function getMergedAdminMenu()
+    {
+        return $this->getMergedArray('adminMenu');
+    }
+
+    /**
+     * @return array
+     */
+    public function getAdminMenu()
+    {
+        $cacheFile = $this->getCacheFile();
+        if ($cacheFile && preg_match('/_cache\.(.*)\.modules\.php/', $cacheFile, $matches)) {
+            $cachePrefix = $matches[1];
+            $cacheFile = dirname($cacheFile) . "/_cache.$cachePrefix.adminmenu.php";
+        }
+        if ($cacheFile && $cache = $this->readCache($cacheFile)) {
+            return $cache;
+        }
+        $cache = $this->getMergedAdminMenu();
+        if ($cacheFile) {
+            $this->writeCache($cacheFile, $cache);
+        }
+        return $cache;
+    }
 
     /**
      * Module Events could by key => value pairs like:
