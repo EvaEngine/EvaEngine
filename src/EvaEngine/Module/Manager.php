@@ -408,7 +408,7 @@ class Manager implements EventsAwareInterface
             if (false === is_array($moduleAdminMenu)) {
                 continue;
             }
-            $adminMenu = array_merge($adminMenu, $moduleAdminMenu);
+            $adminMenu = array_merge_recursive($adminMenu, $moduleAdminMenu);
         }
         if ($cacheFile) {
             $this->writeCache($cacheFile, $adminMenu);
