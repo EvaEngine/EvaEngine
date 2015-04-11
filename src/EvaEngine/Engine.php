@@ -1211,6 +1211,9 @@ class Engine
         $compiler->addFunction('number_format', function ($resolvedArgs) {
             return 'number_format(' . $resolvedArgs . ')';
         });
+        $compiler->addFunction('_', function ($resolvedArgs) {
+            return 'Eva\EvaEngine\Tag::translate(' . $resolvedArgs . ')';
+        });
         return $volt;
     }
 
