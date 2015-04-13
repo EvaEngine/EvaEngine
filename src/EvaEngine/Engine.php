@@ -780,7 +780,6 @@ class Engine
                     @list($taskName, $actionName) = preg_split("/:/", $taskName);
                 }
                 if ($moduleName) {
-                    $dispatcher->setModuleName($moduleName);
                     $dispatcher->setTaskName(ucwords($taskName));
                     $dispatcher->setActionName($actionName);
                     $dispatcher->setParams($argv);
@@ -788,6 +787,7 @@ class Engine
                         $_appName = ucwords($this->getAppName());
                         $dispatcher->setNamespaceName("{$_appName}\\Tasks");
                     } else {
+                        $dispatcher->setModuleName($moduleName);
                         // Use module's Tasks namespace
                         $module = $di->getModuleManager()->getModule($moduleName);
                         $className = $module['className'];
