@@ -780,6 +780,7 @@ class Engine
                     @list($taskName, $actionName) = preg_split("/:/", $taskName);
                 }
                 if ($moduleName) {
+                    $dispatcher->setModuleName($moduleName);
                     $dispatcher->setTaskName(ucwords($taskName));
                     $dispatcher->setActionName($actionName);
                     $dispatcher->setParams($argv);
