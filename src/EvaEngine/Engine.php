@@ -787,7 +787,12 @@ class Engine
                         $_appName = ucwords($this->getAppName());
                         $dispatcher->setNamespaceName("{$_appName}\\Tasks");
                     } else {
-                        $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
+                        // Use module's Tasks namespace
+                        $module = $di->getModuleManager()->getModule($moduleName);
+                        $className = $module['className'];
+                        $taskNameSpace = str_replace('Module', 'Tasks', $className);
+                        $dispatcher->setNamespaceName($taskNameSpace);
+                        //$dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
                     }
                 } else {
                     $dispatcher->setTaskName('Main');
