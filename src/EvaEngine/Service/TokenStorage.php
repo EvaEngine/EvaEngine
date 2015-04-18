@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine\Service;
 
 use Eva\EvaEngine\Exception;
+use Phalcon\DiInterface;
 use Phalcon\Session\AdapterInterface as SessionInterface;
 use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Http\RequestInterface;
@@ -22,6 +23,8 @@ use Phalcon\Text;
  */
 class TokenStorage implements SessionInterface, InjectionAwareInterface
 {
+    protected $di;
+
     /**
      * @var SessionInterface
      */
@@ -274,7 +277,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      * @param \Phalcon\DiInterface $di
      * @return $this
      */
-    public function setDI($di)
+    public function setDI(DiInterface $di)
     {
         $this->di = $di;
         return $this;

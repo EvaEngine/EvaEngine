@@ -10,6 +10,7 @@ namespace Eva\EvaEngine\Mvc\Model\Validator;
 
 use Phalcon\Mvc\Model\Validator\Uniqueness as PhalconUniqueness;
 use Phalcon\Mvc\Model\ValidatorInterface;
+use Phalcon\Mvc\ModelInterface;
 
 /**
  * Class Uniqueness
@@ -21,7 +22,7 @@ class Uniqueness extends PhalconUniqueness implements ValidatorInterface
      * @param \Phalcon\Mvc\ModelInterface $model
      * @return bool
      */
-    public function validate($model)
+    public function validate(ModelInterface $model)
     {
         $conditions = $this->getOption('conditions');
         $bind = $this->getOption('bind');
