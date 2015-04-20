@@ -132,7 +132,7 @@ class Manager implements EventsAwareInterface
      * @param ManagerInterface $eventsManager
      * @return ManagerInterface
      */
-    public function setEventsManager($eventsManager)
+    public function setEventsManager(ManagerInterface $eventsManager)
     {
         return $this->eventsManager = $eventsManager;
     }

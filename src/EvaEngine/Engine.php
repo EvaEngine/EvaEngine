@@ -330,7 +330,7 @@ class Engine
         $cacheLoaded = false;
 
         if (!$listeners) {
-            $moduleManager = $this->getDI()->getModuleManager();
+            $moduleManager = $di->getModuleManager();
             $modules = $moduleManager->getModules();
             $listeners = array();
             foreach ($modules as $moduleName => $module) {
@@ -347,7 +347,7 @@ class Engine
             return $this;
         }
 
-        $eventsManager = $this->getDI()->getEventsManager();
+        $eventsManager = $di->getEventsManager();
         foreach ($listeners as $moduleName => $moduleListeners) {
             if (!$moduleListeners) {
                 continue;
@@ -427,6 +427,15 @@ class Engine
             $di = new FactoryDefault();
         }
 
+        // Fix 2.0.0, getEventsManager no longer a magic method
+        $di->setEventsManager($di->get('eventsManager'));
+        $di->getEventsManager()->enablePriorities(true);
+        $di->getEventsManager()->attach(
+            "dispatch",
+            new DispatchInterceptor(),
+            -1
+        );
+
         //PHP5.3 not support $this in closure
         $self = $this;
 
@@ -440,26 +449,9 @@ class Engine
             'moduleManager',
             function () use ($di) {
                 $moduleManager = new ModuleManager();
-                $moduleManager->setEventsManager($di->getEventsManager());
+                // No need any more, DI get() will do it by default
+                //$moduleManager->setEventsManager($di->getEventsManager());
                 return $moduleManager;
-            },
-            true
-        );
-
-        //System global events manager
-        $di->set(
-            'eventsManager',
-            function () use ($di) {
-                $eventsManager = new EventsManager();
-                $eventsManager->enablePriorities(true);
-                // dispatch caching event handler
-                $eventsManager->attach(
-                    "dispatch",
-                    new DispatchInterceptor(),
-                    -1
-                );
-                $eventsManager->enablePriorities(true);
-                return $eventsManager;
             },
             true
         );
@@ -480,15 +472,16 @@ class Engine
             true
         );
 
-        $di->set(
-            'dispatcher',
-            function () use ($di) {
-                $dispatcher = new Dispatcher();
-                $dispatcher->setEventsManager($di->getEventsManager());
-                return $dispatcher;
-            },
-            true
-        );
+//  不再需要，默认的dispatcher会自动设置 eventsManager
+//        $di->set(
+//            'dispatcher',
+//            function () use ($di) {
+//                $dispatcher = new Dispatcher();
+//                $dispatcher->setEventsManager($di->getEventsManager());
+//                return $dispatcher;
+//            },
+//            true
+//        );
 
         $di->set(
             'modelsMetadata',
@@ -498,6 +491,7 @@ class Engine
             true
         );
 
+        // Override default modelsManager service, use EvaEngine's
         $di->set(
             'modelsManager',
             function () use ($di) {
@@ -515,7 +509,6 @@ class Engine
             function () use ($di) {
                 $view = new View();
                 $view->setViewsDir(__DIR__ . '/views/');
-                $view->setEventsManager($di->getEventsManager());
                 $view->registerEngines(
                     array(
                         ".volt" => 'volt',
@@ -527,6 +520,7 @@ class Engine
             true
         );
 
+        // override default session service. make configurable with global config file
         $di->set(
             'session',
             function () use ($self) {
@@ -681,7 +675,8 @@ class Engine
             true
         );
 
-        $di->set('escaper', 'Phalcon\Escaper');
+        // NO Need, its default
+//        $di->set('escaper', 'Phalcon\Escaper');
 
         $di->set(
             'tag',
@@ -692,18 +687,20 @@ class Engine
             }
         );
 
-        $di->set('flash', 'Phalcon\Flash\Session');
+        // NO NEED, use flashSession, which was injected by default
+//        $di->set('flash', 'Phalcon\Flash\Session');
 
         $di->set('placeholder', 'Eva\EvaEngine\View\Helper\Placeholder');
 
-        $di->set(
-            'cookies',
-            function () {
-                $cookies = new \Phalcon\Http\Response\Cookies();
-                $cookies->useEncryption(false);
-                return $cookies;
-            }
-        );
+        // NO NEED, Its FactoryDefault()'s default
+//        $di->set(
+//            'cookies',
+//            function () {
+//                $cookies = new \Phalcon\Http\Response\Cookies();
+//                $cookies->useEncryption(false);
+//                return $cookies;
+//            }
+//        );
 
         $di->set(
             'translate',
@@ -734,6 +731,8 @@ class Engine
                 return new FileLogger($config->logger->path . 'error.log');
             }
         );
+
+        // reload cli mode di
         if ($this->appMode == 'cli') {
             $this->cliDI($di);
         }
@@ -752,11 +751,12 @@ class Engine
     {
         global $argv;
 
+        // override with \Phalcon\Cli\Router
         $di->set(
             'router',
             function () use ($di, $argv) {
                 $router = new CLIRouter();
-                $router->setDI($di);
+                // $router->setDI($di);
                 return $router;
             }
         );
@@ -767,11 +767,14 @@ class Engine
                 return new ConsoleOutput();
             }
         );
+
+        // override make module features enable
         $di->set(
             'dispatcher',
             function () use ($di, $argv) {
                 $dispatcher = new CLIDispatcher();
-                $dispatcher->setDI($di);
+                // setDI() is called by default if class implements InjectionAwareInterface.
+                //$dispatcher->setDI($di);
 
                 $moduleName = array_shift($argv);
                 $taskName = array_shift($argv);
@@ -1184,8 +1187,10 @@ class Engine
                 'content' => array()
             ));
         }
+
+        //Fixed: 2.0.0 use 'content' as file key
         $translate = new \Phalcon\Translate\Adapter\Csv(array(
-            'file' => $file,
+            'content' => $file,
             'delimiter' => ',',
         ));
         return $translate;
@@ -1213,13 +1218,17 @@ class Engine
                 "compileAlways" => $config->debug
             )
         );
+
         $compiler = $volt->getCompiler();
+
         $compiler->addFunction('number_format', function ($resolvedArgs) {
             return 'number_format(' . $resolvedArgs . ')';
         });
+
         $compiler->addFunction('_', function ($resolvedArgs) {
             return 'Eva\EvaEngine\Tag::translate(' . $resolvedArgs . ')';
         });
+
         return $volt;
     }
 

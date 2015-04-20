@@ -89,7 +89,7 @@ class Tag extends \Phalcon\Tag
 
     public static function flashOutput()
     {
-        $flash = self::getDI()->getFlash();
+        $flash = self::getDI()->getFlashSession();
         if (!$flash) {
             return '';
         }

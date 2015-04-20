@@ -192,7 +192,8 @@ class View extends PhalconView
     {
         $moduleViewsDir = $this->moduleViewsDir;
         $partialsDir = $this->modulePartialsDir;
-        $this->setPartialsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $partialsDir));
+        // fix: always add a trailing slash or backslash in 2.0.x
+        $this->setPartialsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $partialsDir) . DIRECTORY_SEPARATOR);
 
         return $this;
     }
@@ -205,7 +206,8 @@ class View extends PhalconView
         $moduleViewsDir = $this->moduleViewsDir;
         $moduleLayout = $this->moduleLayout;
         $layoutName = $this->moduleLayoutName;
-        $this->setLayoutsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $moduleLayout));
+        // FIX: in 2.0.0, always add a trailing slash or backslash
+        $this->setLayoutsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $moduleLayout) . DIRECTORY_SEPARATOR);
         $this->setLayout($layoutName);
 
         return $this;
