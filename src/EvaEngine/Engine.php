@@ -1126,7 +1126,9 @@ class Engine
         if (false === class_exists($sessionClass)) {
             throw new Exception\RuntimeException(sprintf('No session adapter found by %s', $sessionClass));
         }
-
+        if ($config->session->session_name) {
+            session_name($config->session->session_name);
+        }
         $session = new $sessionClass(array_merge(
             array(
                 'uniqueId' => $this->getAppName(),
