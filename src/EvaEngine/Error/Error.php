@@ -142,7 +142,10 @@ class Error
             $options['message'] = $exception->getMessage();
         }
 
-        $options['statusMessage'] = isset($this->recommendedReasonPhrases[$options['statusCode']]) ? $this->recommendedReasonPhrases[$options['statusCode']] : 'Internal Server Error';
+        $options['statusMessage'] =
+            isset($this->recommendedReasonPhrases[$options['statusCode']])
+                ? $this->recommendedReasonPhrases[$options['statusCode']]
+                : 'Internal Server Error';
 
         foreach ($options as $option => $value) {
             $this->attributes[$option] = $value;
@@ -152,8 +155,8 @@ class Error
     /**
      * Magic method to retrieve the attributes.
      *
-     * @param string $method
-     * @param array $args
+     * @param  string $method
+     * @param  array  $args
      * @return mixed
      */
     public function __call($method, $args)
@@ -164,7 +167,7 @@ class Error
     /**
      * Maps error code to a string.
      *
-     * @param integer $code
+     * @param  integer $code
      * @return string
      */
     public function getErrorType($code)
@@ -260,7 +263,10 @@ class Error
 ERROR_MSG;
 
 
-        $request = empty($_SERVER['REQUEST_METHOD']) || empty($_SERVER['REQUEST_URI']) ? '-' : $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'];
+        $request =
+            empty($_SERVER['REQUEST_METHOD']) || empty($_SERVER['REQUEST_URI'])
+            ? '-'
+            : $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'];
 
         return sprintf(
             "%s %s %s [%s] \"%s\" %s %s \"%s\" \"%s\" %s %s %.5f %s %s %s %s",

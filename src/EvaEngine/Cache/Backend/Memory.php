@@ -25,7 +25,7 @@ class Memory extends CacheBackend
 
     /**
      * @param int|string $keyName
-     * @param null|int $lifetime
+     * @param null|int   $lifetime
      * @return mixed|null
      */
     public function get($keyName, $lifetime = null)

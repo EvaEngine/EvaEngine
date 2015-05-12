@@ -21,14 +21,16 @@ class JsonerrorController extends Controller
     {
         $error = $this->dispatcher->getParam('error');
         $this->response->setContentType('application/json', 'utf-8');
-        $this->response->setJsonContent(array(
+        $this->response->setJsonContent(
+            array(
             'errors' => array(
                 array(
                     'code' => $error->type(),
                     'message' => $error->message()
                 )
             ),
-        ));
+            )
+        );
         $callback = $this->request->getQuery('callback');
         if ($callback) {
             $this->response->setContent($callback . '(' . $this->response->getContent() . ')');

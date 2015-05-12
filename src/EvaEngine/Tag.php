@@ -35,10 +35,13 @@ class Tag extends \Phalcon\Tag
     {
         //Add alias for i18n helper
         if ($helperName === '_') {
-            return call_user_func_array(array(
+            return call_user_func_array(
+                array(
                 __CLASS__,
                 'translate'
-            ), $arguments);
+                ),
+                $arguments
+            );
         }
 
         if (method_exists(__CLASS__, $helperName)) {
@@ -49,10 +52,13 @@ class Tag extends \Phalcon\Tag
         }
         $helperClass = self::$helpers[$helperName];
         $helper = new $helperClass();
-        return call_user_func_array(array(
+        return call_user_func_array(
+            array(
             $helper,
             '__invoke'
-        ), $arguments);
+            ),
+            $arguments
+        );
     }
 
     public static function config()
@@ -105,7 +111,14 @@ class Tag extends \Phalcon\Tag
         $escaper = self::getDI()->getEscaper();
         foreach ($messages as $type => $submessages) {
             foreach ($submessages as $message) {
-                $messageString .= '<div class="alert ' . $classMapping[$type] . '" data-raw-message="' . $escaper->escapeHtmlAttr($message) . '">' . self::translate($message) . '</div>';
+                $messageString .=
+                    '<div class="alert '
+                    . $classMapping[$type]
+                    . '" data-raw-message="'
+                    . $escaper->escapeHtmlAttr($message)
+                    . '">'
+                    . self::translate($message)
+                    . '</div>';
             }
         }
 
@@ -161,7 +174,7 @@ class Tag extends \Phalcon\Tag
     /**
      * Get either a Gravatar URL or complete image tag for a specified email address.
      * @param $email
-     * @param int $s
+     * @param int    $s
      * @param string $d
      * @param string $r
      * @return string
@@ -178,7 +191,7 @@ class Tag extends \Phalcon\Tag
     /**
      * Transform input time to time string which can be parsed by javascript
      * @param string $time
-     * @param null $timezone
+     * @param null   $timezone
      * @return string javascript parse-able string
      */
     public static function jsTime($time = '', $timezone = null)

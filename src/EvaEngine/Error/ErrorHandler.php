@@ -152,9 +152,9 @@ class ErrorHandler implements ErrorHandlerInterface
         $di = DI::getDefault();
         $config = $di->getConfig();
 
-        if (!isset($config->error->disableLog) ||
-            (isset($config->error->disableLog) && $config->error->disableLog) ||
-            empty($config->error->logPath)
+        if (!isset($config->error->disableLog)
+            || (isset($config->error->disableLog) && $config->error->disableLog)
+            || empty($config->error->logPath)
         ) {
             return static::$logger = null;
         }
@@ -227,14 +227,20 @@ class ErrorHandler implements ErrorHandlerInterface
         }
 
         $di = DI::getDefault();
-        /** @var \Phalcon\Dispatcher $dispatcher */
+        /**
+ * @var \Phalcon\Dispatcher $dispatcher
+*/
         $dispatcher = $di->getDispatcher();
         //Clear old eventsmanager to void trigger dispatch again
         $dispatcher->setEventsManager(new EventsManager());
 
-        /** @var \Eva\EvaEngine\Mvc\View $view */
+        /**
+ * @var \Eva\EvaEngine\Mvc\View $view
+*/
         $view = $di->getView();
-        /** @var \Phalcon\Http\Response $response */
+        /**
+ * @var \Phalcon\Http\Response $response
+*/
         $response = $di->getResponse();
         $response->setStatusCode($error->statusCode(), $error->statusMessage());
 

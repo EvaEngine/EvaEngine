@@ -19,7 +19,7 @@ class Component extends PhalconComponent
 {
     /**
      * @param $location
-     * @param null $data
+     * @param null     $data
      * @return string
      */
     public function reDispatch($location, $data = null)

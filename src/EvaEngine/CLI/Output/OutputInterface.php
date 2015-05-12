@@ -60,7 +60,7 @@ interface OutputInterface
     /**
      * Sets the verbosity of the output.
      *
-     * @param int     $level The level of verbosity (one of the VERBOSITY constants)
+     * @param int $level The level of verbosity (one of the VERBOSITY constants)
      *
      * @api
      */
@@ -78,7 +78,7 @@ interface OutputInterface
     /**
      * Sets the decorated flag.
      *
-     * @param bool    $decorated Whether to decorate the messages
+     * @param bool $decorated Whether to decorate the messages
      *
      * @api
      */
@@ -105,7 +105,7 @@ interface OutputInterface
     /**
      * Returns current output formatter instance.
      *
-     * @return  OutputFormatterInterface
+     * @return OutputFormatterInterface
      *
      * @api
      */

@@ -58,10 +58,10 @@ class PurePaginator
         return $this;
     }
     /**
-     * @param int $pageSize
-     * @param int $total_items
+     * @param int   $pageSize
+     * @param int   $total_items
      * @param array $items
-     * @param int $pageRange
+     * @param int   $pageRange
      */
     public function __construct($pageSize, $total_items, $items, $pageRange = 3)
     {

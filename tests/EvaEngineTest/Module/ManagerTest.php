@@ -101,10 +101,12 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     {
         $ds = DIRECTORY_SEPARATOR;
         $moduleManager = new ModuleManager(__DIR__ . "{$ds}TestAsset");
-        $moduleManager->loadModules(array(
+        $moduleManager->loadModules(
+            array(
             'FooModule',
             'BarModule',
-        ));
+            )
+        );
         $this->assertEquals(true, $moduleManager->hasModule('FooModule'));
         $this->assertEquals(true, $moduleManager->hasModule('BarModule'));
         $this->assertEquals($this->barModule, $moduleManager->getModule('BarModule'));
@@ -115,27 +117,38 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $ds = DIRECTORY_SEPARATOR;
         $moduleManager = new ModuleManager();
         $moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
-        $moduleManager->loadModules(array(
+        $moduleManager->loadModules(
+            array(
             'FooModule',
             'BarModule',
             'ThirdModule',
-        ));
+            )
+        );
         $this->assertEquals(true, $moduleManager->hasModule('FooModule'));
         $this->assertEquals(true, $moduleManager->hasModule('BarModule'));
 
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
             'BarModuleViewHelerKey' => 'BarModuleEventLisnersValue',
             'ThirdModuleViewHelerKey' => 'ThirdModuleEventLisnersValue',
-        ), $moduleManager->getMergedViewHelpers());
+            ),
+            $moduleManager->getMergedViewHelpers()
+        );
 
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
             'BarModuleRelationsKey' => 'BarModuleRelationsValue',
             'ThirdModuleRelationsKey' => 'ThirdModuleRelationsValue',
-        ), $moduleManager->getMergedRelations());
+            ),
+            $moduleManager->getMergedRelations()
+        );
 
-        $this->assertEquals(array(
+        $this->assertEquals(
+            array(
             'BarModuleAutoloadersKey' => 'ThirdModuleAutoloadersValue',
-        ), $moduleManager->getMergedAutoloaders());
+            ),
+            $moduleManager->getMergedAutoloaders()
+        );
     }
 
 
@@ -160,10 +173,12 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $ds = DIRECTORY_SEPARATOR;
         $moduleManager = new ModuleManager();
         $moduleManager->setDefaultPath(__DIR__ . "{$ds}TestAsset");
-        $moduleManager->loadModules(array(
+        $moduleManager->loadModules(
+            array(
             'BarModule',
             'ThirdModule',
-        ));
+            )
+        );
         $this->assertEquals($this->barModule['dir'], $moduleManager->getModulePath('BarModule'));
         $this->assertEquals(array('barModuleConfig' => 1), $moduleManager->getModuleConfig('BarModule'));
         $this->assertEquals(array('barModuleRouterFront' => 1), $moduleManager->getModuleRoutesFrontend('BarModule'));

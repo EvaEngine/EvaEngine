@@ -43,7 +43,8 @@ class Placeholder
     public function block($name = null, $default = null)
     {
         if ($name == null) {
-            throw new InvalidArgumentException('Placeholder: missing argument.  $name is required by placeholder($name)');
+            throw new
+            InvalidArgumentException('Placeholder: missing argument.  $name is required by placeholder($name)');
         }
 
         $name = (string) $name;
@@ -58,7 +59,7 @@ class Placeholder
      * createContainer
      *
      * @param  string $key
-     * @param  array $value
+     * @param  array  $value
      * @return Container
      */
     public function createContainer($key, array $value = array())

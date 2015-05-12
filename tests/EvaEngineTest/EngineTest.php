@@ -17,37 +17,51 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     public function testDiSession()
     {
         $engine = new Engine();
-        $engine->getDI()->setConfig(new Config(array(
-            'session' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'session' => array(
                 'adapter' => 'files',
                 'options' => array()
+                )
+                )
             )
-        )));
+        );
         $this->assertEquals(get_class($engine->getDI()->get('session')), 'Phalcon\Session\Adapter\Files');
 
         //Custom Name
-        $engine->getDI()->setConfig(new Config(array(
-            'session' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'session' => array(
                 'adapter' => 'Phalcon\Session\Adapter\Files',
                 'options' => array()
+                )
+                )
             )
-        )));
+        );
         $this->assertEquals(get_class($engine->getDI()->get('session')), 'Phalcon\Session\Adapter\Files');
 
-        $engine->getDI()->setConfig(new Config(array(
-            'session' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'session' => array(
                 'adapter' => 'foo',
                 'options' => array()
+                )
+                )
             )
-        )));
+        );
         $engine->getDI()->get('session');
     }
 
     public function testDiCache()
     {
         $engine = new Engine();
-        $engine->getDI()->setConfig(new Config(array(
-            'cache' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'cache' => array(
                 'enable' => false,
                 'globalCache' => array(
                     'frontend' => array(
@@ -55,15 +69,19 @@ class EngineTest extends \PHPUnit_Framework_TestCase
                         'options' => array(),
                     )
                 ),
-            ),
-        )));
+                ),
+                )
+            )
+        );
         $this->assertEquals(get_class($engine->getDI()->get('globalCache')), 'Eva\EvaEngine\Cache\Backend\Disable');
         $this->assertEquals(get_class($engine->getDI()->get('globalCache')->getFrontend()), 'Phalcon\Cache\Frontend\Data');
 
 
         $engine = new Engine();
-        $engine->getDI()->setConfig(new Config(array(
-            'cache' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'cache' => array(
                 'enable' => true,
                 'globalCache' => array(
                     'enable' => false,
@@ -72,15 +90,19 @@ class EngineTest extends \PHPUnit_Framework_TestCase
                         'options' => array(),
                     )
                 ),
-            ),
-        )));
+                ),
+                )
+            )
+        );
         $this->assertEquals(get_class($engine->getDI()->get('globalCache')), 'Eva\EvaEngine\Cache\Backend\Disable');
         $this->assertEquals(get_class($engine->getDI()->get('globalCache')->getFrontend()), 'Phalcon\Cache\Frontend\Json');
 
 
         $engine = new Engine();
-        $engine->getDI()->setConfig(new Config(array(
-            'cache' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'cache' => array(
                 'enable' => true,
                 'globalCache' => array(
                     'enable' => true,
@@ -95,15 +117,19 @@ class EngineTest extends \PHPUnit_Framework_TestCase
                         ),
                     ),
                 ),
-            ),
-        )));
+                ),
+                )
+            )
+        );
         $this->assertEquals(get_class($engine->getDI()->get('globalCache')), 'Phalcon\Cache\Backend\File');
         $this->assertEquals(get_class($engine->getDI()->get('globalCache')->getFrontend()), 'Phalcon\Cache\Frontend\Data');
 
 
         $engine = new Engine();
-        $engine->getDI()->setConfig(new Config(array(
-            'cache' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'cache' => array(
                 'enable' => true,
                 'modelsCache' => array(
                     'enable' => true,
@@ -118,15 +144,19 @@ class EngineTest extends \PHPUnit_Framework_TestCase
                         ),
                     ),
                 ),
-            ),
-        )));
+                ),
+                )
+            )
+        );
         $this->assertEquals(get_class($engine->getDI()->get('modelsCache')), 'Phalcon\Cache\Backend\File');
         $this->assertEquals(get_class($engine->getDI()->get('modelsCache')->getFrontend()), 'Phalcon\Cache\Frontend\None');
 
 
         $engine = new Engine();
-        $engine->getDI()->setConfig(new Config(array(
-            'cache' => array(
+        $engine->getDI()->setConfig(
+            new Config(
+                array(
+                'cache' => array(
                 'enable' => true,
                 'modelsCache' => array(
                     'enable' => true,
@@ -141,8 +171,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
                         ),
                     ),
                 ),
-            ),
-        )));
+                ),
+                )
+            )
+        );
         $this->assertEquals(get_class($engine->getDI()->get('modelsCache')), 'Phalcon\Cache\Backend\File');
         $this->assertEquals(get_class($engine->getDI()->get('modelsCache')->getFrontend()), 'Phalcon\Cache\Frontend\Base64');
 

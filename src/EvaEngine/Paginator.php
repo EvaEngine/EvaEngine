@@ -35,6 +35,7 @@ class Paginator extends PhalconPaginator
     public function setPagerRange($number)
     {
         $this->pagerRange = $number;
+
         return $this;
     }
 
@@ -53,6 +54,7 @@ class Paginator extends PhalconPaginator
     public function setQuery(array $query)
     {
         $this->query = $query;
+
         return $this;
     }
 
@@ -73,7 +75,9 @@ class Paginator extends PhalconPaginator
         $paginate->offset_start = 0;
         $paginate->offset_end = 0;
         if ($paginate->total_items > 0) {
-            $paginate->offset_start = ($paginate->current - 1) * ceil($paginate->total_items / $paginate->total_pages) + 1;
+            $paginate->offset_start = ($paginate->current - 1) * ceil(
+                $paginate->total_items / $paginate->total_pages
+            ) + 1;
             $paginate->offset_end = $paginate->offset_start + count($paginate->items) - 1;
         }
 

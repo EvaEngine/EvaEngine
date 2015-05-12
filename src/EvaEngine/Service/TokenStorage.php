@@ -101,7 +101,9 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
             return $this->tokenId;
         }
 
-        /** @var RequestInterface $request */
+        /**
+ * @var RequestInterface $request
+*/
         $request = $this->getDI()->getRequest();
         $token = TokenStorage::dicoverToken($request);
         if ($token) {
@@ -177,14 +179,18 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
         $frontCacheClassName = strtolower($options['frontend']['adapter']);
         if (!isset($adapterMapping[$frontCacheClassName])) {
-            throw new Exception\RuntimeException(sprintf('No frontend cache adapter found by %s', $frontCacheClassName));
+            throw new Exception\RuntimeException(
+                sprintf('No frontend cache adapter found by %s', $frontCacheClassName)
+            );
         }
         $frontCacheClass = $adapterMapping[$frontCacheClassName];
         $frontCache = new $frontCacheClass($options['frontend']['options']);
 
         $backendCacheClassName = strtolower($options['backend']['adapter']);
         if (!isset($adapterMapping[$backendCacheClassName])) {
-            throw new Exception\RuntimeException(sprintf('No backend cache adapter found by %s', $backendCacheClassName));
+            throw new Exception\RuntimeException(
+                sprintf('No backend cache adapter found by %s', $backendCacheClassName)
+            );
         }
         $backendCacheClass = $adapterMapping[$backendCacheClassName];
         $storage = new $backendCacheClass($frontCache, array_merge(
@@ -199,7 +205,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
     /**
      * @param string $key
-     * @param null $defaultValue
+     * @param null   $defaultValue
      * @return mixed
      */
     public function get($key, $defaultValue = null)

@@ -37,10 +37,12 @@ class Uniqueness extends PhalconUniqueness implements ValidatorInterface
         $conditionString .= $conditions;
         $bindArray = array($model->$field);
         $bindArray += $bind;
-        $item = $model->findFirst(array(
+        $item = $model->findFirst(
+            array(
             'conditions' => $conditionString,
             'bind' => $bindArray
-        ));
+            )
+        );
 
         if ($item) {
             $this->appendMessage(sprintf('Field %s not unique', $field));

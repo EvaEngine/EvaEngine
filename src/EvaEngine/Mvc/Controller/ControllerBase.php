@@ -160,14 +160,16 @@ class ControllerBase extends Controller
         $this->response->setContentType('application/json', 'utf-8');
         $this->response->setStatusCode($code, $this->recommendedReasonPhrases[$code]);
 
-        return $this->response->setJsonContent(array(
-            'errors' => array(
-                array(
-                    'code' => $code,
-                    'message' => $message
-                )
-            ),
-        ));
+        return $this->response->setJsonContent(
+            array(
+                'errors' => array(
+                    array(
+                        'code' => $code,
+                        'message' => $message
+                    )
+                ),
+            )
+        );
     }
 
     /**
@@ -213,14 +215,16 @@ class ControllerBase extends Controller
         if (!($exception instanceof Exception\ExceptionInterface)) {
             $this->response->setStatusCode('500', 'System Runtime Exception');
 
-            return $this->response->setJsonContent(array(
-                'errors' => array(
-                    array(
-                        'code' => $exception->getCode(),
-                        'message' => $exception->getMessage(),
-                    )
-                ),
-            ));
+            return $this->response->setJsonContent(
+                array(
+                    'errors' => array(
+                        array(
+                            'code' => $exception->getCode(),
+                            'message' => $exception->getMessage(),
+                        )
+                    ),
+                )
+            );
         }
 
         $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
@@ -238,9 +242,11 @@ class ControllerBase extends Controller
             'message' => $exception->getMessage(),
         );
 
-        return $this->response->setJsonContent(array(
-            'errors' => $errors
-        ));
+        return $this->response->setJsonContent(
+            array(
+                'errors' => $errors
+            )
+        );
     }
 
     /**
@@ -340,9 +346,11 @@ class ControllerBase extends Controller
         }
         $this->response->setStatusCode(400, $this->recommendedReasonPhrases[400]);
 
-        return $this->response->setJsonContent(array(
-            'errors' => $content
-        ));
+        return $this->response->setJsonContent(
+            array(
+                'errors' => $content
+            )
+        );
     }
 
     /**
@@ -367,7 +375,8 @@ class ControllerBase extends Controller
     public function cors(
         $allowCredentials = 'true',
         $allowMethods = '*',
-        $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
+        $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma,'
+        . 'Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
     ) {
         if (empty($_SERVER['HTTP_ORIGIN'])) {
             return;
@@ -397,6 +406,7 @@ class ControllerBase extends Controller
 
     public static function currentUrl()
     {
-        return 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+        return 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' .
+        "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
     }
 }

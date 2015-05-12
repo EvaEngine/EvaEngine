@@ -19,8 +19,8 @@ class Substring
     /**
      * Cutting string without word break
      * @param string $str
-     * @param int $length
-     * @param bool $withWrap
+     * @param int    $length
+     * @param bool   $withWrap
      * @return string
      */
     public static function substrEn($str = '', $length = 1, $withWrap = true)
@@ -44,7 +44,7 @@ class Substring
      * Cutting string support Chinese
      * @param $str
      * @param $length
-     * @param bool $withWrap
+     * @param bool   $withWrap
      * @param string $encoding
      * @return string
      */

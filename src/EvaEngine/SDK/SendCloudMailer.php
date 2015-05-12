@@ -62,7 +62,8 @@ class SendCloudMailer
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_URL, $this->host);
-        //不同于登录SendCloud站点的帐号，您需要登录后台创建发信子帐号，使用子帐号和密码才可以进行邮件的发送。
+        // 不同于登录SendCloud站点的帐号，您需要登录后台创建发信子帐号，
+        // 使用子帐号和密码才可以进行邮件的发送。
         $from = $message->getFrom();
         $to = '';
         foreach ($message->getTo() as $_mail => $_toName) {

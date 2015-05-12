@@ -32,10 +32,10 @@ class StandardException extends PhalconException implements ExceptionInterface
 
     /**
      *
-     * @param string $message
-     * @param int $code
-     * @param null|int|Exception $previous, when $previous is int,will use as status code
-     * @param null $statusCode
+     * @param string             $message
+     * @param int                $code
+     * @param null|int|Exception $previous,  when $previous is int,will use as status code
+     * @param null               $statusCode
      */
     public function __construct($message, $code = 10000, $previous = null, $statusCode = null)
     {

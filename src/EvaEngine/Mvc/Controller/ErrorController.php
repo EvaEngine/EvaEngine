@@ -76,7 +76,10 @@ class ErrorController extends Controller
 </head>
 <body>
     <h1>Looks like something went wrong!</h1>
-    <p>We track these errors automatically, but if the problem persists feel free to contact us. In the meantime, try refreshing.</p>
+    <p>
+        We track these errors automatically, but if the problem persists feel free to contact us.
+        In the meantime, try refreshing.
+    </p>
 </body>
 </html>
 EOF;

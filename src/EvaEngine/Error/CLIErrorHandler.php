@@ -77,9 +77,9 @@ class CLIErrorHandler implements ErrorHandlerInterface
         $di = DI::getDefault();
         $config = $di->get('config');
 
-        if (!isset($config->error->disableLog) ||
-            (isset($config->error->disableLog) && $config->error->disableLog) ||
-            empty($config->error->logPath)
+        if (!isset($config->error->disableLog)
+            || (isset($config->error->disableLog) && $config->error->disableLog)
+            || empty($config->error->logPath)
         ) {
             return static::$logger = null;
         }

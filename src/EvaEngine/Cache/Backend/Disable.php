@@ -19,7 +19,7 @@ class Disable extends CacheBackend
 {
     /**
      * @param int|string $keyName
-     * @param null $lifetime
+     * @param null       $lifetime
      * @return mixed|null
      */
     public function get($keyName, $lifetime = null)

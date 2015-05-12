@@ -65,7 +65,7 @@ class Libmemcached extends Phalcon\Session\Adapter implements Phalcon\Session\Ad
      *    'prefix' => 'my_'
      * ));
      *
-     * @param  null|array                $options
+     * @param  null|array $options
      * @throws Phalcon\Session\Exception
      */
     public function __construct($options = null)
@@ -82,9 +82,12 @@ class Libmemcached extends Phalcon\Session\Adapter implements Phalcon\Session\Ad
             if (empty($server['host'])) {
                 throw new Phalcon\Session\Exception("No session host given in options");
             }
-            $options['server'][$key] = array_merge(array(
+            $options['server'][$key] = array_merge(
+                array(
                 'port' => self::DEFAULT_OPTION_PORT
-            ), $server);
+                ),
+                $server
+            );
         }
 
         if (!isset($options["lifetime"])) {
@@ -159,7 +162,7 @@ class Libmemcached extends Phalcon\Session\Adapter implements Phalcon\Session\Ad
     /**
      * {@inheritdoc}
      *
-     * @param  string  $sessionId
+     * @param  string $sessionId
      * @return boolean
      */
     public function destroy($session_id = null)

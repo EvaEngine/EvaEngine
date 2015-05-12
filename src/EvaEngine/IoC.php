@@ -43,8 +43,8 @@ class IoC
     /**
      * Resolves the service based on its configuration
      *
-     * @param string $name
-     * @param array $parameters
+     * @param  string $name
+     * @param  array  $parameters
      * @throws RuntimeException
      * @return mixed
      */
@@ -59,9 +59,9 @@ class IoC
     /**
      * Registers a service in the services container
      *
-     * @param string $name
-     * @param mixed $definition
-     * @param boolean $shared
+     * @param  string  $name
+     * @param  mixed   $definition
+     * @param  boolean $shared
      * @throws RuntimeException
      * @return \Phalcon\DI\ServiceInterface
      */

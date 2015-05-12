@@ -377,9 +377,12 @@ class Form extends \Phalcon\Forms\Form
         if (!$this->prefix) {
             return parent::render($name, $attributes);
         }
-        $attributes = array_merge(array(
+        $attributes = array_merge(
+            array(
             'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
-        ), (array)$attributes);
+            ),
+            (array)$attributes
+        );
 
         return parent::render($name, $attributes);
     }
@@ -406,13 +409,23 @@ class Form extends \Phalcon\Forms\Form
         }
 
         if (!($formClass instanceof Form)) {
-            throw new Exception\InvalidArgumentException(sprintf('Add formset failed by incorrect form class instance %s', $prefix));
+            throw new Exception\InvalidArgumentException(
+                sprintf('Add formset failed by incorrect form class instance %s', $prefix)
+            );
         }
 
         $formClass->setPrefix($prefix);
-        $relationKey = is_array($formOptions) && isset($formOptions['relationKey']) ? $formOptions['relationKey'] : $prefix;
+        $relationKey =
+            is_array($formOptions)
+            && isset($formOptions['relationKey'])
+            ? $formOptions['relationKey']
+            : $prefix;
         $formClass->setRelationKey($relationKey);
-        $relationModel = is_array($formOptions) && isset($formOptions['relationModel']) ? $formOptions['relationModel'] : null;
+        $relationModel =
+            is_array($formOptions)
+            && isset($formOptions['relationModel'])
+            ? $formOptions['relationModel']
+            : null;
         if ($relationModel) {
             $formClass->setDefaultModelClass($relationModel);
         }
@@ -437,7 +450,9 @@ class Form extends \Phalcon\Forms\Form
         } else {
             $defaultModelClass = $this->getDefaultModelClass();
             if (!$defaultModelClass || false == class_exists($defaultModelClass)) {
-                throw new Exception\RuntimeException(sprintf('Form connected to incorrect model %s', $defaultModelClass));
+                throw new Exception\RuntimeException(
+                    sprintf('Form connected to incorrect model %s', $defaultModelClass)
+                );
             }
             $this->setModel(new $defaultModelClass());
         }

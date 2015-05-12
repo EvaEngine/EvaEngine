@@ -25,7 +25,6 @@ if (!function_exists('p')) {
     }
 }
 if (!function_exists('dd')) {
-
     /**
      * 打印指定的变量并结束程序运行
      *
@@ -41,7 +40,7 @@ if (!function_exists('dd')) {
 /**
  * 方便链式调用，避免过多的中间变量，例如：with(new Post())->findPosts()
  *
- * @param $obj
+ * @param  $obj
  * @return mixed
  */
 if (!function_exists('with')) {
@@ -51,7 +50,6 @@ if (!function_exists('with')) {
     }
 }
 if (!function_exists('array_pluck')) {
-
     function array_pluck($array, $itemKey, $keepItemKey = true)
     {
         $results = array();
@@ -68,7 +66,6 @@ if (!function_exists('array_pluck')) {
     }
 }
 if (!function_exists('starts_with')) {
-
     function starts_with($haystack, $needle)
     {
         // search backwards starting from haystack length characters from the end
@@ -79,8 +76,11 @@ if (!function_exists('ends_with')) {
     function ends_with($haystack, $needle)
     {
         // search forward starting from end minus needle length characters
-        return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle,
-                $temp) !== false);
+        return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos(
+            $haystack,
+            $needle,
+            $temp
+        ) !== false);
     }
 }
 
@@ -98,7 +98,6 @@ if (!function_exists('eva_url')) {
 
         $query = http_build_query($params);
         if ($query) {
-
             if (strpos($url, '?') !== false) {
                 $url .= '&';
             } else {

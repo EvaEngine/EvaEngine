@@ -143,7 +143,7 @@ class Manager implements EventsAwareInterface
      */
     public function readCache($cacheFile)
     {
-        if (file_exists($cacheFile) && $cache = include($cacheFile)) {
+        if (file_exists($cacheFile) && $cache = include $cacheFile) {
             return $cache;
         }
         return null;
@@ -151,7 +151,7 @@ class Manager implements EventsAwareInterface
 
     /**
      * @param $cacheFile
-     * @param array $content
+     * @param array     $content
      * @return bool
      */
     public function writeCache($cacheFile, array $content)
@@ -195,17 +195,22 @@ class Manager implements EventsAwareInterface
      * Module setting includes:
      * - className:     Required | Module bootstrap class full name, e.g. Eva\EvaCommon\Module
      * - path :         Required | Module.php file path, e.g. /www/eva/modules/EvaCommon/Module.php
-     * - moduleConfig:  Optional | Module config file path, e.g. /www/eva/modules/EvaCommon/config/config.php , default is module_dir/config/config.php
-     * - routesFrontend Optional | Module front-end router config file path, e.g. /www/eva/modules/EvaCommon/config/routes.frontend.php
-     * - routesBackend  Optional | Module back-end router config file path, e.g. /www/eva/modules/EvaCommon/config/routes.backend.php
-     * - routesCommand  Optional | Module cli router config file path, e.g. /www/eva/modules/EvaCommon/config/routes.command.php
+     * - moduleConfig:  Optional | Module config file path, e.g. /www/eva/modules/EvaCommon/config/config.php ,
+     *                              default is module_dir/config/config.php
+     * - routesFrontend Optional | Module front-end router config file path,
+     *                              e.g. /www/eva/modules/EvaCommon/config/routes.frontend.php
+     * - routesBackend  Optional | Module back-end router config file path,
+     *                              e.g. /www/eva/modules/EvaCommon/config/routes.backend.php
+     * - routesCommand  Optional | Module cli router config file path,
+     *                              e.g. /www/eva/modules/EvaCommon/config/routes.command.php
      * - adminMenu      Optional | Admin sidebar menu
      * - di :           Optional | Module global DI
      * All optional setting could set as false to disable.
      *
-     * @param $moduleName    MUST as same as module folder, keep moduleName unique
-     * @param $moduleSetting mixed Support 3 types:
-     *            - null, EvaEngine official module, module namespace MUST start with Eva\\, and source path MUST under application/modules
+     * @param  $moduleName    MUST as same as module folder, keep moduleName unique
+     * @param  $moduleSetting mixed Support 3 types:
+     *            - null, EvaEngine official module, module namespace MUST start with Eva\\,
+     *              and source path MUST under application/modules
      *            - string, Full module class, which is already loaded by composer
      *            - array, Module setting array, require className and path at least, other options will be auto filled
      * @return array Module
@@ -236,35 +241,48 @@ class Manager implements EventsAwareInterface
                 'path' => $ref->getFileName(),
             );
         } elseif (true === is_array($moduleSetting)) {
-            $module = array_merge(array(
+            $module = array_merge(
+                array(
                 'className' => '',
                 'path' => '',
-            ), $moduleSetting);
+                ),
+                $moduleSetting
+            );
             $module['className'] = $module['className'] ?: "Eva\\$moduleName\\Module";
             $module['path'] = $module['path'] ?: "$modulesPath{$ds}$moduleName{$ds}Module.php";
         } else {
             throw new \Exception(sprintf('Module %s load failed by incorrect format', $moduleName));
         }
 
-        /** @var StandardInterface $moduleClass */
+        /**
+ * @var StandardInterface $moduleClass
+*/
         $moduleClass = $module['className'];
-        $this->getLoader()->registerClasses(array(
+        $this->getLoader()->registerClasses(
+            array(
             $moduleClass => $module['path']
-        ))->register();
+            )
+        )->register();
 
         if (false === class_exists($moduleClass)) {
             throw new \Exception(sprintf('Module %s load failed by not exist class', $moduleClass));
         }
 
-        if (count(array_intersect(array(
-            'Phalcon\Mvc\ModuleDefinitionInterface',
-            'Eva\EvaEngine\Module\StandardInterface'
-        ), class_implements($moduleClass))) !== 2) {
+        if (count(
+            array_intersect(
+                array(
+                'Phalcon\Mvc\ModuleDefinitionInterface',
+                'Eva\EvaEngine\Module\StandardInterface'
+                ),
+                class_implements($moduleClass)
+            )
+        ) !== 2) {
             throw new \Exception(sprintf('Module %s interfaces not correct', $moduleClass));
         }
 
         $module['dir'] = $moduleDir = dirname($module['path']);
-        $module = array_merge(array(
+        $module = array_merge(
+            array(
             'moduleConfig' => "$moduleDir{$ds}config{$ds}config.php", //module config file path
             'routesFrontend' => "$moduleDir{$ds}config{$ds}routes.frontend.php", //module router frontend path
             'routesBackend' => "$moduleDir{$ds}config{$ds}routes.backend.php", //module router backend path
@@ -275,7 +293,9 @@ class Manager implements EventsAwareInterface
             'listeners' => $moduleClass::registerGlobalEventListeners(), //module listeners list array
             'viewHelpers' => $moduleClass::registerGlobalViewHelpers(), //module view helpers
             //'translatePath' => false,
-        ), $module);
+            ),
+            $module
+        );
 
         return $module;
     }
@@ -323,11 +343,14 @@ class Manager implements EventsAwareInterface
         }
 
         if ($cacheFile) {
-            $this->writeCache($cacheFile, array(
+            $this->writeCache(
+                $cacheFile,
+                array(
                 'classes' => $classes,
                 'namespaces' => $namespaces,
                 'modules' => $modules,
-            ));
+                )
+            );
         }
         //Trigger Event
         $this->getEventsManager()->fire('module:afterLoadModule', $this);
@@ -385,7 +408,7 @@ class Manager implements EventsAwareInterface
      * 'module' => array('Eva\RealModule\Events\ModuleListener', 100)
      * Array[1] is listener priority
      *
-     * @param array $listeners
+     * @param  array $listeners
      * @return $this
      * @throws \Exception
      */

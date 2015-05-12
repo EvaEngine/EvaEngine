@@ -5,4 +5,3 @@ if (!extension_loaded('phalcon')) {
 $loader = include __DIR__ . '/../vendor/autoload.php';
 
 $loader->addPsr4('Eva\\EvaEngine\\EvaEngineTest\\', __DIR__ . '/EvaEngineTest/');
-

@@ -41,8 +41,11 @@ class ConsoleOutput extends StreamOutput implements ConsoleOutputInterface
      *
      * @api
      */
-    public function __construct($verbosity = self::VERBOSITY_NORMAL, $decorated = null, OutputFormatterInterface $formatter = null)
-    {
+    public function __construct(
+        $verbosity = self::VERBOSITY_NORMAL,
+        $decorated = null,
+        OutputFormatterInterface $formatter = null
+    ) {
         $outputStream = 'php://stdout';
         if (!$this->hasStdoutSupport()) {
             $outputStream = 'php://output';
@@ -130,10 +133,12 @@ class ConsoleOutput extends StreamOutput implements ConsoleOutputInterface
     {
         $this->writeln("<comment>{$message} </comment>", $type);
     }
+
     public function writelnSuccess($message, $type = self::OUTPUT_NORMAL)
     {
         $this->writeln("<success>{$message} </success>", $type);
     }
+
     public function writeList(array $list)
     {
         $maxLength = 0;
@@ -159,6 +164,7 @@ class ConsoleOutput extends StreamOutput implements ConsoleOutputInterface
         for ($i = 0; $i < $length; $i++) {
             $str .= ' ';
         }
+
         return $str;
     }
 }
