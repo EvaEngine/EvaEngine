@@ -141,6 +141,7 @@ class ControllerBase extends Controller
 
         $this->flashSession->$messageType($message->getMessage());
         $this->response->setStatusCode($code, $this->recommendedReasonPhrases[$code]);
+
         return $this;
     }
 
@@ -158,6 +159,7 @@ class ControllerBase extends Controller
 
         $this->response->setContentType('application/json', 'utf-8');
         $this->response->setStatusCode($code, $this->recommendedReasonPhrases[$code]);
+
         return $this->response->setJsonContent(array(
             'errors' => array(
                 array(
@@ -188,7 +190,7 @@ class ControllerBase extends Controller
         $logger = $this->getDI()->get('logException');
         $logger->log(
             implode('', $messageArray) . "\n" .
-            get_class($exception) . ":" . $exception->getMessage(). "\n" .
+            get_class($exception) . ":" . $exception->getMessage() . "\n" .
             " File=" . $exception->getFile() . "\n" .
             " Line=" . $exception->getLine() . "\n" .
             $exception->getTraceAsString()
@@ -201,6 +203,7 @@ class ControllerBase extends Controller
 
         $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
         $this->flashSession->$messageType($exception->getMessage());
+
         return $this;
     }
 
@@ -209,6 +212,7 @@ class ControllerBase extends Controller
         $this->response->setContentType('application/json', 'utf-8');
         if (!($exception instanceof Exception\ExceptionInterface)) {
             $this->response->setStatusCode('500', 'System Runtime Exception');
+
             return $this->response->setJsonContent(array(
                 'errors' => array(
                     array(
@@ -280,6 +284,7 @@ class ControllerBase extends Controller
                 $this->flashSession->$messageType($message->getMessage());
             }
         }
+
         return $this;
     }
 
@@ -297,6 +302,7 @@ class ControllerBase extends Controller
                 $this->flashSession->$messageType($message->getMessage());
             }
         }
+
         return $this;
     }
 
@@ -313,6 +319,7 @@ class ControllerBase extends Controller
                 $this->flashSession->$messageType($message->getMessage());
             }
         }
+
         return $this;
     }
 
@@ -332,6 +339,7 @@ class ControllerBase extends Controller
             );
         }
         $this->response->setStatusCode(400, $this->recommendedReasonPhrases[400]);
+
         return $this->response->setJsonContent(array(
             'errors' => $content
         ));
@@ -345,6 +353,50 @@ class ControllerBase extends Controller
     public function showResponseAsJson($object, $code = 200)
     {
         $this->response->setContentType('application/json', 'utf-8');
+
         return $this->response->setJsonContent($object);
+    }
+
+    /**
+     * handler cross domain request
+     *
+     * @param bool $allowCredentials Access-Control-Allow-Credentials
+     * @param string $allowMethods Access-Control-Allow-Methods
+     * @param string $allowHeaders Access-Control-Allow-Headers
+     */
+    public function cors(
+        $allowCredentials = 'true',
+        $allowMethods = '*',
+        $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
+    ) {
+        if (empty($_SERVER['HTTP_ORIGIN'])) {
+            return;
+        }
+        $config = $this->getDI()->getConfig();
+        $checked = false;
+        // 白名单检测
+        foreach ($config->cors as $domain) {
+            if (ends_with($_SERVER['HTTP_ORIGIN'], $domain['domain'])) {
+                $checked = true;
+                break;
+            }
+        }
+        if (!$checked) {
+            return;
+        }
+        $this->response->setHeader('Access-Control-Allow-Credentials', (string)$allowCredentials);
+        $this->response->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+        $this->response->setHeader('Access-Control-Allow-Methods', $allowMethods);
+        $this->response->setHeader('Access-Control-Allow-Headers', $allowHeaders);
+        if (strtoupper($this->request->getMethod()) == 'OPTIONS') {
+            $this->response->send();
+
+            return;
+        }
+    }
+
+    public static function currentUrl()
+    {
+        return 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
     }
 }

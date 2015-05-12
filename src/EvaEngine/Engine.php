@@ -1172,11 +1172,11 @@ class Engine
         if (!empty($config->session->cookie_params)) {
             $cookie_params = $config->session->cookie_params;
             session_set_cookie_params(
-                $cookie_params->lifetime,
-                $cookie_params->path,
-                $cookie_params->domain,
-                $cookie_params->secure,
-                $cookie_params->httponly
+                @$cookie_params->lifetime,
+                @$cookie_params->path,
+                @$cookie_params->domain,
+                @$cookie_params->secure,
+                @$cookie_params->httponly
             );
         }
         $session = new $sessionClass(array_merge(
