@@ -1,36 +1,37 @@
 {
-    "name": "evaengine/evaengine",
-    "description": "A development engine based on Phalcon Framework",
-    "license": "BSD-3-Clause",
-    "authors": [
-        {
-        "name": "AlloVince",
-        "email": "allo.vince@gmail.com",
-        "homepage": "http://avnpc.com"
+  "name": "evaengine/evaengine",
+  "description": "A development engine based on Phalcon Framework",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "AlloVince",
+      "email": "allo.vince@gmail.com",
+      "homepage": "http://avnpc.com"
     }
-    ],
-    "require": {
-        "php": ">=5.3.10",
-        "ext-phalcon": ">=1.3.2",
-        "phalcon/incubator" : "~1.3",
-        "swiftmailer/swiftmailer" : "v5.3.0",
-        "knplabs/gaufrette" : "v0.1.8",
-        "evaengine/eva-sms" : "0.1.*"
-    },
-    "require-dev": {
-        "satooshi/php-coveralls": "dev-master"
-    },
-    "suggest": {
-        "ext-redis": "*",
-        "ext-gearman": "*"
-    },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/EvaEngine/incubator.git"
-        }
-    ],
-    "autoload": {
-        "psr-4": {"Eva\\EvaEngine\\": "src/EvaEngine"}
+  ],
+  "require": {
+    "php": ">=5.3.10",
+    "ext-phalcon": ">=1.3.2",
+    "phalcon/incubator": "~1.3",
+    "swiftmailer/swiftmailer": "v5.3.0",
+    "knplabs/gaufrette": "v0.1.8",
+    "evaengine/eva-sms": "0.1.*"
+  },
+  "require-dev": {
+    "satooshi/php-coveralls": "dev-master"
+  },
+  "suggest": {
+    "ext-redis": "*",
+    "ext-gearman": "*"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/EvaEngine/incubator.git"
     }
+  ],
+  "autoload": {
+    "psr-4": {"Eva\\EvaEngine\\": "src/EvaEngine"},
+    "files": ["src/EvaEngine/helpers.php"]
+  }
 }
