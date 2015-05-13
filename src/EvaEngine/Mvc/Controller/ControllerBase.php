@@ -368,18 +368,21 @@ class ControllerBase extends Controller
     /**
      * handler cross domain request
      *
-     * @param bool $allowCredentials Access-Control-Allow-Credentials
+     * @param string $allowCredentials Access-Control-Allow-Credentials
      * @param string $allowMethods Access-Control-Allow-Methods
      * @param string $allowHeaders Access-Control-Allow-Headers
      */
     public function cors(
         $allowCredentials = 'true',
         $allowMethods = '*',
-        $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma,'
-        . 'Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
+        $allowHeaders = null
     ) {
         if (empty($_SERVER['HTTP_ORIGIN'])) {
             return;
+        }
+        if ($allowHeaders == null) {
+            $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma,'
+                . 'Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With';
         }
         $config = $this->getDI()->getConfig();
         $checked = false;
