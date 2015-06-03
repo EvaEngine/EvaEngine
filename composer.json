@@ -18,6 +18,7 @@
     "evaengine/eva-sms": "~0.1"
   },
   "require-dev": {
+    "mockery/mockery": "dev-master",
     "satooshi/php-coveralls": "dev-master"
   },
   "suggest": {
