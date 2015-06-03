@@ -10,12 +10,13 @@
 namespace Eva\EvaEngine\Cache\Backend;
 
 use Phalcon\Cache\Backend as CacheBackend;
+use Phalcon\Cache\BackendInterface;
 
 /**
  * Keep all input data in php memory, this class usually used to verify data in unit test.
  * @package Eva\EvaEngine\Cache\Backend
  */
-class Memory extends CacheBackend
+class Memory extends CacheBackend implements BackendInterface
 {
     /**
      * Cache data container

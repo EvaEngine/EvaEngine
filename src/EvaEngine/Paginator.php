@@ -67,7 +67,7 @@ class Paginator extends PhalconPaginator
     }
 
     /**
-     * @return \Phalcon\Paginator\Adapter\stdClass
+     * @return \Phalcon\Paginator\Adapter|\stdClass
      */
     public function getPaginate()
     {

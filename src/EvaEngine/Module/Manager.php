@@ -9,9 +9,9 @@
 
 namespace Eva\EvaEngine\Module;
 
+use Phalcon\Events\ManagerInterface;
 use Phalcon\Loader;
 use Phalcon\Events\EventsAwareInterface;
-use Phalcon\Events\ManagerInterface;
 use Phalcon\Events\Manager as EventsManager;
 use Eva\EvaEngine\Mvc\Model;
 
@@ -132,7 +132,7 @@ class Manager implements EventsAwareInterface
      * @param ManagerInterface $eventsManager
      * @return ManagerInterface
      */
-    public function setEventsManager($eventsManager)
+    public function setEventsManager(ManagerInterface $eventsManager)
     {
         return $this->eventsManager = $eventsManager;
     }

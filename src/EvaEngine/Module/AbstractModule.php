@@ -9,6 +9,7 @@
 
 namespace Eva\EvaEngine\Module;
 
+use Phalcon\DiInterface;
 use Phalcon\Mvc\ModuleDefinitionInterface;
 
 /**
@@ -51,8 +52,9 @@ abstract class AbstractModule implements StandardInterface, ModuleDefinitionInte
 
     /**
      * Registers the module auto-loader
+     * @param DiInterface $di
      */
-    public function registerAutoloaders()
+    public function registerAutoloaders(DiInterface $di = null)
     {
     }
 
@@ -61,7 +63,7 @@ abstract class AbstractModule implements StandardInterface, ModuleDefinitionInte
      *
      * @param \Phalcon\DiInterface $di
      */
-    public function registerServices($di)
+    public function registerServices(DiInterface $di)
     {
     }
 }

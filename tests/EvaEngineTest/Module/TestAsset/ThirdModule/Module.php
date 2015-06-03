@@ -34,10 +34,4 @@ class Module extends AbstractModule
         );
     }
 
-    /**
-     * Registers the module auto-loader
-     */
-    public function registerAutoloaders()
-    {
-    }
 }

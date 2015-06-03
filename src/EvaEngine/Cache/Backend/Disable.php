@@ -10,12 +10,13 @@
 namespace Eva\EvaEngine\Cache\Backend;
 
 use Phalcon\Cache\Backend as CacheBackend;
+use Phalcon\Cache\BackendInterface;
 
 /**
- * A virtual cache class to make cache disabled, all data passed in will be dropped
+ * A virtual cache class to make cache disabled, all data processed will do nothing
  * @package Eva\EvaEngine\Cache\Backend
  */
-class Disable extends CacheBackend
+class Disable extends CacheBackend implements BackendInterface
 {
     /**
      * @param int|string $keyName
