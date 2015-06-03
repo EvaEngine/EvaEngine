@@ -192,7 +192,7 @@ class View extends PhalconView
     {
         $moduleViewsDir = $this->moduleViewsDir;
         $partialsDir = $this->modulePartialsDir;
-        $this->setPartialsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $partialsDir));
+        $this->setPartialsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $partialsDir) . DIRECTORY_SEPARATOR);
 
         return $this;
     }
@@ -205,7 +205,7 @@ class View extends PhalconView
         $moduleViewsDir = $this->moduleViewsDir;
         $moduleLayout = $this->moduleLayout;
         $layoutName = $this->moduleLayoutName;
-        $this->setLayoutsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $moduleLayout));
+        $this->setLayoutsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $moduleLayout) . DIRECTORY_SEPARATOR);
         $this->setLayout($layoutName);
 
         return $this;

@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine\Service;
 
 use Eva\EvaEngine\Exception;
+use Phalcon\DiInterface;
 use Phalcon\Session\AdapterInterface as SessionInterface;
 use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Http\RequestInterface;
@@ -102,8 +103,8 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         }
 
         /**
- * @var RequestInterface $request
-*/
+         * @var RequestInterface $request
+         */
         $request = $this->getDI()->getRequest();
         $token = TokenStorage::dicoverToken($request);
         if ($token) {
@@ -144,7 +145,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      * @return $this
      * @throws Exception\RuntimeException
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $defaultOptions = array(
             'uniqueId' => 'evaengine',
@@ -205,7 +206,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
     /**
      * @param string $key
-     * @param null   $defaultValue
+     * @param null $defaultValue
      * @return mixed
      */
     public function get($key, $defaultValue = null)
@@ -280,7 +281,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      * @param \Phalcon\DiInterface $di
      * @return $this
      */
-    public function setDI($di)
+    public function setDI(DiInterface $di)
     {
         $this->di = $di;
         return $this;

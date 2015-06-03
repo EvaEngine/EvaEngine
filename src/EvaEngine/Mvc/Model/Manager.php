@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine\Mvc\Model;
 
 use Phalcon\Mvc\Model\Manager as ModelManager;
+use Phalcon\Mvc\ModelInterface;
 
 /**
  * EvaEngine Model Manager, to inject master / slave db connections
@@ -42,7 +43,7 @@ class Manager extends ModelManager
      * @param \Phalcon\Mvc\ModelInterface $model
      * @return \Phalcon\Db\AdapterInterface
      */
-    public function getReadConnection($model)
+    public function getReadConnection(ModelInterface $model)
     {
         if ($this->getDI()->offsetExists($model->getReadConnectionService())) {
             $this->setReadConnectionService($model, $model->getReadConnectionService());
@@ -58,7 +59,7 @@ class Manager extends ModelManager
      * @param \Phalcon\Mvc\ModelInterface $model
      * @return \Phalcon\Db\AdapterInterface
      */
-    public function getWriteConnection($model)
+    public function getWriteConnection(ModelInterface $model)
     {
         if ($this->getDI()->offsetExists($model->getWriteConnectionService())) {
             $this->setWriteConnectionService($model, $model->getWriteConnectionService());

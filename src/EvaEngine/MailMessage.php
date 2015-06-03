@@ -10,6 +10,7 @@
 
 namespace Eva\EvaEngine;
 
+use Phalcon\DiInterface;
 use Phalcon\Mvc\View;
 use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Mvc\View\Simple as PhalconView;
@@ -76,7 +77,7 @@ class MailMessage implements InjectionAwareInterface
     /**
      * @param \Phalcon\DiInterface $di
      */
-    public function setDI($di)
+    public function setDI(DiInterface $di)
     {
         $this->di = $di;
     }

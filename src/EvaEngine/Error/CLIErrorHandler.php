@@ -10,8 +10,6 @@
 namespace Eva\EvaEngine\Error;
 
 use Eva\EvaEngine\CLI\Output\ConsoleOutput;
-use Eva\EvaEngine\CLI\Output\StreamOutput;
-use Eva\EvaEngine\CLI\Formatter\OutputFormatterInterface;
 use Phalcon\DI;
 use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger\AdapterInterface as LoggerInterface;
