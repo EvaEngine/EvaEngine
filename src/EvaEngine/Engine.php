@@ -214,7 +214,7 @@ class Engine
     /**
      *
      * @param $cacheFile cache file path
-     * @param bool                      $serialize
+     * @param bool $serialize
      * @return mixed|null
      */
     public function readCache($cacheFile, $serialize = false)
@@ -229,7 +229,7 @@ class Engine
     /**
      * @param $cacheFile
      * @param $content
-     * @param bool      $serialize
+     * @param bool $serialize
      * @return bool
      */
     public function writeCache($cacheFile, $content, $serialize = false)
@@ -539,7 +539,8 @@ class Engine
             }
         );
 
-        $di->set(
+        //Make Session as shared service to keep it as singleton
+        $di->setShared(
             'session',
             function () use ($self) {
                 return $self->diSession();
@@ -1196,7 +1197,7 @@ class Engine
         ));
         if (!$session->isStarted()) {
             //NOTICE: Get php warning here, not found reason
-            @$session->start();
+            $session->start();
         }
 
         return $session;
@@ -1209,7 +1210,7 @@ class Engine
         return new TokenStorage(
             array_merge(
                 array(
-                'uniqueId' => $this->getAppName(),
+                    'uniqueId' => $this->getAppName(),
                 ),
                 $config->tokenStorage->toArray()
             )
@@ -1222,18 +1223,14 @@ class Engine
         $file = $config->translate->path . $config->translate->forceLang . '.csv';
         if (false === file_exists($file)) {
             //empty translator
-            return new \Phalcon\Translate\Adapter\NativeArray(
-                array(
-                'content' => array()
-                )
-            );
+            return new \Phalcon\Translate\Adapter\NativeArray([
+                'content' => []
+            ]);
         }
-        $translate = new \Phalcon\Translate\Adapter\Csv(
-            array(
-            'file' => $file,
+        $translate = new \Phalcon\Translate\Adapter\Csv([
+            'content' => $file,
             'delimiter' => ',',
-            )
-        );
+        ]);
 
         return $translate;
     }
