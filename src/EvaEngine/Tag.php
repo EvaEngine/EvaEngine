@@ -95,11 +95,14 @@ class Tag extends \Phalcon\Tag
 
     public static function flashOutput()
     {
-        $flash = self::getDI()->getFlash();
+        $flash = self::getDI()->getFlashSession();
         if (!$flash) {
             return '';
         }
         $messages = $flash->getMessages();
+        if (!$messages) {
+            return '';
+        }
         $classMapping = array(
             'error' => 'alert alert-danger',
             'warning' => 'alert alert-warning',

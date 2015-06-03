@@ -709,8 +709,6 @@ class Engine
             }
         );
 
-        $di->set('flash', 'Phalcon\Flash\Session');
-
         $di->set('placeholder', 'Eva\EvaEngine\View\Helper\Placeholder');
 
         $di->set(
