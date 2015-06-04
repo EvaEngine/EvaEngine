@@ -252,8 +252,8 @@ class Form extends \Phalcon\Forms\Form
         $this->model = $model;
         $this->setEntity($model);
         $reader = new Annotations();
-        $modelProperties = $reader->getProperties($model);
-        $formProperties = $reader->getProperties($this);
+        $modelProperties = $reader->getProperties(get_class($model));
+        $formProperties = $reader->getProperties(get_class($this));
         foreach ($modelProperties as $key => $property) {
             //already added in initialize
             if ($this->has($key)) {
@@ -334,7 +334,7 @@ class Form extends \Phalcon\Forms\Form
     public function initializeFormAnnotations()
     {
         $reader = new Annotations();
-        $formProperties = $reader->getProperties($this);
+        $formProperties = $reader->getProperties(get_class($this));
         foreach ($formProperties as $key => $property) {
             //$formProperty = isset($formProperties[$key]) ? $formProperties[$key] : null;
             $element = $this->createElementByProperty($key, $property);
