@@ -37,7 +37,10 @@ class Dispatch
      * @var string
      */
     protected $debugQueryKey = '_eva_refresh_dispatch_cache';
-
+    /**
+     * @var string 在 url 中加入时间戳，以阻挡网络传输中可能存在的缓存
+     */
+    protected $timestampQueryKey = '_eva_t';
     /**
      * HTTP header keys allow to cache
      * WARNING: DONOT cache Set-Cookies!
@@ -74,6 +77,7 @@ class Dispatch
     public function setDebugQueryKey($debugQueryKey)
     {
         $this->debugQueryKey = $debugQueryKey;
+
         return $this;
     }
 
@@ -84,6 +88,7 @@ class Dispatch
     public function setCachableHeaderKeys(array $cachableHeaderKeys)
     {
         $this->cachableHeaderKeys = $cachableHeaderKeys;
+
         return $this;
     }
 
@@ -113,14 +118,15 @@ class Dispatch
 
     /**
      * Intercept a input http request
-     * @param Request        $request
-     * @param array          $params
+     * @param Request $request
+     * @param array $params
      * @param CacheInterface $cache
      * @return bool Will return true if cache hit.
      */
     protected function intercept(Request $request, array $params, CacheInterface $cache)
     {
         $ignores = $params['ignore_query_keys'];
+        array_push($ignores, $this->timestampQueryKey);
         array_push($ignores, $params['jsonp_callback_key']);
         $debugQueryKey = $this->getDebugQueryKey();
         array_push($ignores, $debugQueryKey);
@@ -136,8 +142,8 @@ class Dispatch
 
         if ($hasCache) {
             /**
- * @var \Phalcon\Http\ResponseInterface $response
-*/
+             * @var \Phalcon\Http\ResponseInterface $response
+             */
             $response = $request->getDI()->getResponse();
 
             if ($headersCache) {
@@ -157,8 +163,10 @@ class Dispatch
                 $bodyCache = $callbackValue . '(' . $bodyCache . ')';
             }
             $response->setContent($bodyCache);
+
             return true;
         }
+
         // cache missing
         return false;
     }
@@ -166,7 +174,7 @@ class Dispatch
     /**
      * Generate cache key pair (for response header / body) by Host + Uri + Allowed Queries
      * @param Request $request
-     * @param array   $ignores
+     * @param array $ignores
      * @return array
      */
     public function generateCacheKeys(Request $request, array $ignores = array())
@@ -189,6 +197,7 @@ class Dispatch
         $headersKey = $cacheKeyPrefix . '_h';
         $this->cacheHeadersKey = $headersKey;
         $this->cacheBodyKey = $bodyKey;
+
         return array($headersKey, $bodyKey);
     }
 
@@ -209,11 +218,11 @@ class Dispatch
         //Make default
         $interceptorParams = array_merge(
             array(
-            'lifetime' => 0,
-            'methods' => 'get',
-            'ignore_query_keys' => '_',
-            'jsonp_callback_key' => 'callback',
-            'format' => 'text', //allow text | jsonp
+                'lifetime' => 0,
+                'methods' => 'get',
+                'ignore_query_keys' => '_',
+                'jsonp_callback_key' => 'callback',
+                'format' => 'text', //allow text | jsonp
             ),
             $interceptorParams
         );
@@ -240,8 +249,8 @@ class Dispatch
     public function injectInterceptor(DispatcherInterface $dispatcher)
     {
         /**
- * @var \Phalcon\DI $di
-*/
+         * @var \Phalcon\DI $di
+         */
         $di = $dispatcher->getDI();
         $config = $di->getConfig();
         // cache is disable
@@ -256,8 +265,8 @@ class Dispatch
 
         $methodsAllow = $params['methods'];
         /**
- * @var \Phalcon\Http\Request $request
-*/
+         * @var \Phalcon\Http\Request $request
+         */
         $request = $di->getRequest();
         $requestMethod = strtolower($request->getMethod());
         if (false === in_array($requestMethod, $methodsAllow)) {
@@ -265,22 +274,23 @@ class Dispatch
         }
 
         /**
- * @var \Phalcon\Cache\Backend $cache
-*/
+         * @var \Phalcon\Cache\Backend $cache
+         */
         $cache = $di->getViewCache();
         $interceptResult = $this->intercept($request, $params, $cache);
 
         //cache key matched, response already prepared
         if (true === $interceptResult) {
             $di->getResponse()->send();
+
             return false;
         }
 
         $self = $this;
         //Cache missed
         /**
- * @var \Phalcon\Events\Manager $eventsManager
-*/
+         * @var \Phalcon\Events\Manager $eventsManager
+         */
         $eventsManager = $di->getEventsManager();
         $eventsManager->attach(
             'application:beforeSendResponse',
@@ -293,8 +303,8 @@ class Dispatch
 
 
                 /**
-            * @var \Phalcon\Http\ResponseInterface $response
-            */
+                 * @var \Phalcon\Http\ResponseInterface $response
+                 */
                 $response = $application->getDI()->getResponse();
                 $body = $response->getContent();
 
@@ -319,9 +329,11 @@ class Dispatch
                 $cache->save($bodyKey, $body, $params['lifetime']);
                 //$cache->save($headersKey, serialize($headersCache), $params['lifetime']);
                 $cache->save($headersKey, json_encode($headersCache), $params['lifetime']);
+
                 return true;
             }
         );
+
         return true;
     }
 
@@ -342,12 +354,13 @@ class Dispatch
         $body = rtrim($body, ';');
         $body = ltrim($body, "(");
         $body = rtrim($body, ")");
+
         return $body;
     }
 
 
     /**
-     * @param Event               $event
+     * @param Event $event
      * @param DispatcherInterface $dispatcher
      * @return bool
      */
