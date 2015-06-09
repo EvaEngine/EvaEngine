@@ -10,18 +10,20 @@
 namespace Eva\EvaEngine\Mvc\Model\Validator;
 
 use Phalcon\Mvc\Model\Validator;
+use Phalcon\Mvc\Model\ValidatorInterface;
+use Phalcon\Mvc\ModelInterface;
 
 /**
  * Class Between
  * @package Eva\EvaEngine\Mvc\Model\Validator
  */
-class Between extends Validator
+class Between extends Validator implements ValidatorInterface
 {
     /**
      * @param \Phalcon\Mvc\ModelInterface $model
      * @return bool
      */
-    public function validate($model)
+    public function validate(ModelInterface $model)
     {
         $field = $this->getOption('field');
         $minimum = $this->getOption('minimum');

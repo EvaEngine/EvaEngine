@@ -209,22 +209,27 @@ class ControllerBase extends Controller
         return $this;
     }
 
-    public function showExceptionAsJson($exception, $messages = null)
+    /**
+     * @param \Exception $exception
+     * @param array $messages
+     * @return \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
+     */
+    public function showExceptionAsJson(\Exception $exception, $messages = [])
     {
         $this->response->setContentType('application/json', 'utf-8');
+        $debug = $this->config->debug;
         if (!($exception instanceof Exception\ExceptionInterface)) {
             $this->response->setStatusCode('500', 'System Runtime Exception');
 
-            return $this->response->setJsonContent(
-                array(
-                    'errors' => array(
-                        array(
-                            'code' => $exception->getCode(),
-                            'message' => $exception->getMessage(),
-                        )
-                    ),
-                )
-            );
+            return $this->response->setJsonContent([
+                'errors' => [
+                    [
+                        'code' => $exception->getCode(),
+                        'message' => $exception->getMessage(),
+                        'traces' => $debug ? json_encode($exception->getTrace()) : '',
+                    ]
+                ]
+            ]);
         }
 
         $this->response->setStatusCode($exception->getStatusCode(), $exception->getMessage());
