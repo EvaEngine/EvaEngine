@@ -142,7 +142,8 @@ class View extends PhalconView
         $viewsDir = self::normalizePath($moduleManager->getModulePath($moduleName) . $viewsDir);
         $this->setViewsDir($viewsDir);
 
-        //In Phalcon, layouts dir & partials dir are related to views dir. If here reset views, others need to reset either.
+        //In Phalcon, layouts dir & partials dir are related to views dir.
+        //If here reset views, others need to reset either.
         if ($this->moduleLayout) {
             $this->setModuleLayout($this->moduleLayout[0], $this->moduleLayout[1]);
         }
@@ -308,6 +309,10 @@ class View extends PhalconView
         $pathTarget = $ds . trim(self::normalizePath($pathTarget, $ds), $ds);
         if ($pathSrc == $pathTarget) {
             return '';
+        }
+
+        if ($pathSrc == '/') {
+            return ltrim($pathTarget, $ds) . $ds;
         }
 
         $pathSrcArr = explode($ds, $pathSrc);
