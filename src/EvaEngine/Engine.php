@@ -532,8 +532,17 @@ class Engine
             'view',
             function () use ($di) {
                 $view = new View();
-                $view->setViewsDir(__DIR__ . '/views/');
+                //$view->setViewsDir(__DIR__ . '/views/');
                 $view->setEventsManager($di->getEventsManager());
+
+                //Disabled unusual view levels
+                $view->disableLevel([
+                    View::LEVEL_AFTER_TEMPLATE => true,
+                    View::LEVEL_BEFORE_TEMPLATE => true,
+                    View::LEVEL_MAIN_LAYOUT => true,
+                ]);
+                //Changed phalcon default behavior, when view not found, an excption will be throw
+                View::enableRenderException();
 
                 return $view;
             }
@@ -699,6 +708,8 @@ class Engine
         );
 
         $di->set('escaper', 'Phalcon\Escaper');
+
+        //$di->set('flash', 'Phalcon\Flash\Session');
 
         $di->set(
             'tag',

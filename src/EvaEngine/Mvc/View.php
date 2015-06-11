@@ -11,6 +11,8 @@ namespace Eva\EvaEngine\Mvc;
 
 use Eva\EvaEngine\Exception;
 use Phalcon\Mvc\View as PhalconView;
+use Phalcon\Http\Response;
+use Phalcon\Events\Event;
 
 /**
  * EvaEngine view class
@@ -19,6 +21,17 @@ use Phalcon\Mvc\View as PhalconView;
  */
 class View extends PhalconView
 {
+    /**
+     * Whether throw exception when view not exists
+     * @var bool
+     */
+    protected static $renderException = false;
+
+    /**
+     * @var string
+     */
+    protected $layoutsAbsoluteDir;
+
     /**
      * @var string
      */
@@ -42,7 +55,15 @@ class View extends PhalconView
     /**
      * @var array
      */
-    protected static $components = array();
+    protected static $components = [];
+
+    /**
+     * After enabled, an exception will be throw if view is missing
+     */
+    public static function enableRenderException()
+    {
+        self::$renderException = true;
+    }
 
     /**
      * @param $componentName
@@ -90,13 +111,11 @@ class View extends PhalconView
             return $this;
         }
 
+        $this->moduleLayout = [$moduleName, $layoutPath];
         $moduleLayout = $moduleManager->getModulePath($moduleName) . $layoutPath;
-        $this->moduleLayout = realpath(dirname($moduleLayout));
-        $this->moduleLayoutName = basename($moduleLayout);
-        if ($this->moduleViewsDir) {
-            $this->caculateLayoutRelatedPath();
-        }
 
+        $this->setLayout(basename($moduleLayout));
+        $this->setLayoutsAbsoluteDir(dirname($moduleLayout));
         return $this;
     }
 
@@ -120,14 +139,16 @@ class View extends PhalconView
             return $this;
         }
 
-        $modulePath = $moduleManager->getModulePath($moduleName);
-        $this->moduleViewsDir = $moduleViewsDir = realpath($modulePath . $viewsDir);
-        $this->setViewsDir($moduleViewsDir);
+        $viewsDir = self::normalizePath($moduleManager->getModulePath($moduleName) . $viewsDir);
+        $this->setViewsDir($viewsDir);
+
+        //In Phalcon, layouts dir & partials dir are related to views dir. If here reset views, others need to reset either.
         if ($this->moduleLayout) {
-            $this->caculateLayoutRelatedPath();
+            $this->setModuleLayout($this->moduleLayout[0], $this->moduleLayout[1]);
         }
+
         if ($this->modulePartialsDir) {
-            $this->caculatePartialsRelatedPath();
+            $this->setModulePartialsDir($this->modulePartialsDir[0], $this->modulePartialsDir[1]);
         }
 
         return $this;
@@ -145,12 +166,10 @@ class View extends PhalconView
             return $this;
         }
 
-        $modulePath = $moduleManager->getModulePath($moduleName);
-        $this->modulePartialsDir = $modulePartialsDir = realpath($modulePath . $partialsDir);
-        if ($this->moduleViewsDir) {
-            $this->caculatePartialsRelatedPath();
-        }
+        $this->modulePartialsDir = [$moduleName, $partialsDir];
 
+        $partialsDir = self::normalizePath($moduleManager->getModulePath($moduleName) . $partialsDir);
+        $this->setPartialsAbsoluteDir($partialsDir);
         return $this;
     }
 
@@ -160,12 +179,9 @@ class View extends PhalconView
      */
     public function changeRender($renderName)
     {
-        if (!$this->moduleLayoutName) {
-            return $this;
-        }
-        $this->setTemplateAfter($this->moduleLayoutName);
+        //NOTE:after pick, View will append layout to _pickView automatic
         $this->pick($renderName);
-
+        array_pop($this->_pickView);
         return $this;
     }
 
@@ -177,55 +193,134 @@ class View extends PhalconView
      */
     public function render($controllerName = null, $actionName = null, $params = null)
     {
+        //TODO: contribute to phalcon
         //fixed render view name not match under linux
         if ($controllerName && false !== strpos($controllerName, '\\')) {
-            $controllerName = strtolower(str_replace('\\', '/', $controllerName));
+            $controllerName = strtolower(str_replace('\\', DIRECTORY_SEPARATOR, $controllerName));
         }
 
+        if (self::$renderException) {
+            $this->getEventsManager()->attach('view:notFoundView', function ($event, $view, $path) {
+                throw new Exception\IOException(sprintf('View not found in path %s', $path));
+            });
+        }
+
+        if ($this->getDI()->getConfig()->debug) {
+            $i = 0;
+            $debugCallback = function ($event, $view, $path) use (&$i) {
+                /** @var Event $event */
+                /** @var View $view */
+                /** @var Response $response */
+                $response = $view->getDI()->getResponse();
+                $response->setHeader("X-DEBUG-VIEW$i", json_encode([
+                    'type' => $event->getType(),
+                    'activeRenderPath' => $view->getActiveRenderPath(),
+                    'layoutsDir' => $view->getLayoutsDir(),
+                    'layout' => $view->getLayout(),
+                    'viewDir' => $view->getViewsDir(),
+                    'mainView' => $view->getMainView(),
+                    'controllerName' => $view->getControllerName(),
+                    'actionName' => $view->getActionName(),
+                    'pickView' => $this->_pickView,
+                ]));
+                $i++;
+            };
+            $this->getEventsManager()->attach('view:notFoundView', $debugCallback);
+            //$this->getEventsManager()->attach('view:beforeRenderView', $debugCallback);
+            $this->getEventsManager()->attach('view:afterRenderView', $debugCallback);
+        }
         return parent::render($controllerName, $actionName, $params);
     }
 
     /**
+     * Set the current layouts directory, input dir NOT related to view path
+     * @param $layoutsDir
      * @return $this
      */
-    protected function caculatePartialsRelatedPath()
+    public function setLayoutsAbsoluteDir($layoutsDir)
     {
-        $moduleViewsDir = $this->moduleViewsDir;
-        $partialsDir = $this->modulePartialsDir;
-        $this->setPartialsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $partialsDir) . DIRECTORY_SEPARATOR);
-
+        $this->layoutsAbsoluteDir = $layoutsDir;
+        $this->setLayoutsDir(self::relativePath($this->getViewsDir(), $layoutsDir));
         return $this;
     }
 
     /**
-     * @return $this
-     */
-    protected function caculateLayoutRelatedPath()
-    {
-        $moduleViewsDir = $this->moduleViewsDir;
-        $moduleLayout = $this->moduleLayout;
-        $layoutName = $this->moduleLayoutName;
-        $this->setLayoutsDir(DIRECTORY_SEPARATOR . $this->relativePath($moduleViewsDir, $moduleLayout) . DIRECTORY_SEPARATOR);
-        $this->setLayout($layoutName);
-
-        return $this;
-    }
-
-    /**
-     * @param $from
-     * @param $to
-     * @param string $ps
      * @return string
      */
-    protected function relativePath($from, $to, $ps = DIRECTORY_SEPARATOR)
+    public function getLayoutAbsoluteDir()
     {
-        $arFrom = explode($ps, rtrim($from, $ps));
-        $arTo = explode($ps, rtrim($to, $ps));
-        while (count($arFrom) && count($arTo) && ($arFrom[0] == $arTo[0])) {
-            array_shift($arFrom);
-            array_shift($arTo);
+        return $this->layoutsAbsoluteDir;
+    }
+
+    /**
+     * @param $partialsDir
+     * @return $this
+     */
+    public function setPartialsAbsoluteDir($partialsDir)
+    {
+        $this->setPartialsDir(self::relativePath($this->getViewsDir(), $partialsDir));
+        return $this;
+    }
+
+    /**
+     * @param $path
+     * @param string $ds
+     * @return string
+     */
+    public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR)
+    {
+        if (!$path) {
+            return '';
         }
 
-        return str_pad("", count($arFrom) * 3, '..' . $ps) . implode($ps, $arTo);
+        $path = str_replace(array('/', '\\'), $ds, $path);
+        $parts = array_filter(explode($ds, $path), 'strlen');
+        $absolutes = array();
+        foreach ($parts as $part) {
+            if ('.' == $part) {
+                continue;
+            }
+            if ('..' == $part) {
+                array_pop($absolutes);
+            } else {
+                $absolutes[] = $part;
+            }
+        }
+        return $absolutes ? $ds . implode($ds, $absolutes) . $ds : $ds;
+    }
+
+    /**
+     * Get relative path from pathSrc to pathTarget
+     * Notice:
+     * - Same paths will return empty string
+     * - Result ALWAYS end with /
+     * - Require input paths are absolute paths, if not will be convert to absolute paths by force
+     *
+     * @param string $pathSrc
+     * @param string $pathTarget
+     * @param string $ds
+     * @return string
+     */
+    public static function relativePath($pathSrc, $pathTarget, $ds = DIRECTORY_SEPARATOR)
+    {
+        //Convert relative paths to absolute paths
+        $pathSrc = $ds . trim(self::normalizePath($pathSrc, $ds), $ds);
+        $pathTarget = $ds . trim(self::normalizePath($pathTarget, $ds), $ds);
+        if ($pathSrc == $pathTarget) {
+            return '';
+        }
+
+        $pathSrcArr = explode($ds, $pathSrc);
+        $pathTargetArr = explode($ds, $pathTarget);
+
+        while (count($pathSrcArr) && count($pathTargetArr) && ($pathSrcArr[0] == $pathTargetArr[0])) {
+            array_shift($pathSrcArr);
+            array_shift($pathTargetArr);
+        }
+
+        if ($pathTargetArr) {
+            return str_pad("", count($pathSrcArr) * 3, '..' . $ds) . implode($ds, $pathTargetArr) . $ds;
+        }
+        return str_pad("", count($pathSrcArr) * 3, '..' . $ds);
     }
 }

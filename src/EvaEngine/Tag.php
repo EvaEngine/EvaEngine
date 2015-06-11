@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine;
 
 use Phalcon\Text;
+use Phalcon\Flash;
 
 /**
  * Class Tag
@@ -95,6 +96,7 @@ class Tag extends \Phalcon\Tag
 
     public static function flashOutput()
     {
+        /** @var Flash $flash */
         $flash = self::getDI()->getFlashSession();
         if (!$flash) {
             return '';
