@@ -156,7 +156,7 @@ class Error
      * Magic method to retrieve the attributes.
      *
      * @param  string $method
-     * @param  array  $args
+     * @param  array $args
      * @return mixed
      */
     public function __call($method, $args)
@@ -265,8 +265,8 @@ ERROR_MSG;
 
         $request =
             empty($_SERVER['REQUEST_METHOD']) || empty($_SERVER['REQUEST_URI'])
-            ? '-'
-            : $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'];
+                ? '-'
+                : $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'];
 
         return sprintf(
             "%s %s %s [%s] \"%s\" %s %s \"%s\" \"%s\" %s %s %.5f %s %s %s %s",

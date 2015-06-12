@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine\Mvc\Controller;
 
 use Phalcon\Mvc\Controller;
+use Eva\EvaEngine\Error\Error;
 
 /**
  * Class JsonerrorController
@@ -17,20 +18,24 @@ use Phalcon\Mvc\Controller;
  */
 class JsonerrorController extends Controller
 {
+    public function onConstruct()
+    {
+        $this->view->disable();
+    }
+
     public function indexAction()
     {
+        /** @var Error $error */
         $error = $this->dispatcher->getParam('error');
         $this->response->setContentType('application/json', 'utf-8');
-        $this->response->setJsonContent(
-            array(
-            'errors' => array(
-                array(
+        $this->response->setJsonContent([
+            'errors' => [
+                [
                     'code' => $error->type(),
                     'message' => $error->message()
-                )
-            ),
-            )
-        );
+                ]
+            ]
+        ]);
         $callback = $this->request->getQuery('callback');
         if ($callback) {
             $this->response->setContent($callback . '(' . $this->response->getContent() . ')');

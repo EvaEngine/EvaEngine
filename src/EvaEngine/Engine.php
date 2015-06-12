@@ -542,7 +542,7 @@ class Engine
                     View::LEVEL_MAIN_LAYOUT => true,
                 ]);
                 //Changed phalcon default behavior, when view not found, an excption will be throw
-                View::enableRenderException();
+                //View::enableRenderException();
 
                 return $view;
             }
