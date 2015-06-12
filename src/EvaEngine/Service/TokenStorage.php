@@ -45,6 +45,18 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
     /**
      * Token identify key in url query
+     * @var string
+     */
+    protected static $authQueryKey = 'api_key';
+
+    /**
+     * Token identify key in http header
+     * @var string
+     */
+    protected static $authHeaderKey = 'Authorization';
+
+    /**
+     * Token identify key in url query
      */
     const AUTH_QUERY_KEY = 'api_key';
 
@@ -54,6 +66,38 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
     const AUTH_HEADER_KEY = 'Authorization';
 
     /**
+     * @param string $key
+     */
+    public static function setAuthQueryKey($key)
+    {
+        self::$authQueryKey = (string) $key;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getAuthQueryKey()
+    {
+        return self::$authQueryKey;
+    }
+
+    /**
+     * @param string $key
+     */
+    public static function setAuthHeaderKey($key)
+    {
+        self::$authHeaderKey = (string) $key;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getAuthHeaderKey()
+    {
+        return self::$authHeaderKey;
+    }
+
+    /**
      * Find token from http request, token may be in http header or url query
      * If find both, use http header priority
      * @param RequestInterface $request
@@ -61,23 +105,24 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      */
     public static function dicoverToken(RequestInterface $request)
     {
-        if ($token = $request->getQuery(TokenStorage::AUTH_QUERY_KEY, 'string')) {
+        if ($token = $request->getQuery(self::$authQueryKey, 'string')) {
             return $token;
         }
 
+        $headerKey = self::$authHeaderKey;
         //For apache
         if (function_exists('getallheaders')) {
             $headers = getallheaders();
-            if (!isset($headers[TokenStorage::AUTH_HEADER_KEY])) {
+            if (!isset($headers[$headerKey])) {
                 return '';
             }
-            $token = trim($headers[TokenStorage::AUTH_HEADER_KEY]);
+            $token = trim($headers[$headerKey]);
             $token = explode(' ', $token);
             return isset($token[1]) ? $token[1] : '';
         }
 
         //For nginx
-        if ($token = $request->getHeader(strtoupper(TokenStorage::AUTH_HEADER_KEY))) {
+        if ($token = $request->getHeader(strtoupper($headerKey))) {
             $token = trim($token);
             $token = explode(' ', $token);
             return isset($token[1]) ? $token[1] : '';
