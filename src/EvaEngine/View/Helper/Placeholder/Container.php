@@ -135,7 +135,7 @@ class Container extends ArrayObject
      * @throws Exception\RuntimeException if nested captures detected
      * @return void
      */
-    public function captureStart($type = AbstractContainer::APPEND, $key = null)
+    public function captureStart($type = self::APPEND, $key = null)
     {
         if ($this->captureLock) {
             throw new Exception\RuntimeException(

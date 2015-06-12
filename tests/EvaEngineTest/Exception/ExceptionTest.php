@@ -24,10 +24,11 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(500, $exception->getStatusCode());
     }
 
-    /*
     public function testCodeGroup()
     {
-        $exception = \Mockery::mock('Eva\EvaEngine\Exception\StandardException');
+        $exception = \Mockery::mock('Eva\EvaEngine\Exception\StandardException[getCode]', ['test']);
+        $code = (string) $exception->getCode();
+        $this->assertEquals(9, strlen($code));
+        $this->assertEquals('00', $code[3] . $code[4]);
     }
-    */
 }

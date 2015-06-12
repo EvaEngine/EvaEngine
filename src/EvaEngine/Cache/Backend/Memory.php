@@ -87,6 +87,6 @@ class Memory extends CacheBackend implements BackendInterface
      */
     public function flush()
     {
-        Memory::$data = array();
+        Memory::$data = [];
     }
 }
