@@ -10,7 +10,6 @@
 namespace Eva\EvaEngine\Http;
 
 use Eva\EvaEngine\Exception;
-use Phalcon\Http\Request;
 
 /**
  * Build a fake http request
@@ -20,21 +19,27 @@ class RequestFactory
 {
     public static function reset()
     {
+        $_GET = null;
+        $_POST = null;
+        $_COOKIE = null;
+        $_FILES = null;
+        $_REQUEST = null;
         foreach ($_SERVER as $key => $value) {
             $_SERVER[$key] = null;
         }
     }
 
     /**
-     * Provider params as same as Guzzle
+     * Build Phalcon http request object
      *
-     * @param $method
-     * @param $uri
+     * @param string $method
+     * @param string $uri
      * @param array $headers
-     * @param string $body
+     * @param mixed $body if array will use as $_POST, if string will use as rawBody
+     * @param array $files
      * @return Request
      */
-    public static function build($method, $uri, array $headers = [], $body = null)
+    public static function build($method, $uri, array $headers = [], $body = null, array $files = [])
     {
         self::reset();
 
@@ -75,11 +80,39 @@ class RequestFactory
             return new Request();
         }
 
-        /*
+        $request = new Request();
         if (is_string($body)) {
-        }
-        */
+            $request->setRawBody($body);
+            parse_str($body, $bodyArray);
 
-        return new Request();
+            $contentType = empty($_SERVER['HTTP_CONTENT_TYPE']) ? '' : $_SERVER['HTTP_CONTENT_TYPE'];
+            if ($method === 'POST' && true === in_array($contentType, [
+                    'application/x-www-form-urlencoded',
+                    'multipart/form-data'
+                ])
+            ) {
+                $_POST = $bodyArray;
+            }
+
+            if ($method === 'PUT' && $bodyArray) {
+                $request->setPutCache($bodyArray);
+            }
+        }
+
+        if (true === is_array($body)) {
+            $request = new Request();
+            if ($method == 'POST') {
+                $_SERVER['HTTP_CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
+                $_POST = $body;
+                $request->setRawBody(http_build_query($body));
+            }
+
+            if ($method == 'PUT') {
+                $request->setPutCache($body);
+                $request->setRawBody(http_build_query($body));
+            }
+        }
+
+        return $request;
     }
 }
