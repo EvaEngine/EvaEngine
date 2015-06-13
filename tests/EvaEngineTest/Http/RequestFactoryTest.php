@@ -43,6 +43,14 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('POST', $request->getMethod());
         $this->assertEquals('some string', $request->getRawBody());
         $this->assertEmpty($request->getPost());
+
+        $request = RequestFactory::build('POST', 'http://evaengine.com/', [
+            'Content-Type' => 'application/x-www-form-urlencoded'
+        ], 'foo_key=foo_value&bar_key=bar_value');
+        $this->assertEquals('POST', $request->getMethod());
+        $this->assertEquals('foo_value', $request->getPost('foo_key'));
+        $this->assertEquals('bar_value', $request->getPost('bar_key'));
+        $this->assertEmpty($request->getPut());
     }
 
     public function testBuildPut()
@@ -60,5 +68,15 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('PUT', $request->getMethod());
         $this->assertEquals('some string', $request->getRawBody());
         $this->assertEmpty($request->getPost());
+    }
+
+    public function testOverWrite()
+    {
+        $request = RequestFactory::build('POST', 'http://example.com/?key=query_value', [], [
+            'key' => 'post_value',
+        ]);
+        $this->assertEquals('query_value', $request->getQuery('key'));
+        $this->assertEquals('post_value', $request->get('key'));
+        $this->assertEquals('post_value', $request->getPost('key'));
     }
 }

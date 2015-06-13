@@ -63,10 +63,14 @@ class RequestFactory
 
         $path = empty($url['path']) ? '' : $url['path'];
         $query = empty($url['query']) ? '' : $url['query'];
+        $queryArray = [];
         $_SERVER['REQUEST_URI'] = $query ? $path . '?' . $query : $path;
         if ($query) {
             parse_str($query, $queryArray);
             $_GET = $queryArray;
+
+            //REQUEST effects Phalcon Request->get() method
+            $_REQUEST = $queryArray;
         }
 
         if ($headers) {
@@ -92,6 +96,7 @@ class RequestFactory
                 ])
             ) {
                 $_POST = $bodyArray;
+                $_REQUEST = $bodyArray + $queryArray;
             }
 
             if ($method === 'PUT' && $bodyArray) {
@@ -104,6 +109,7 @@ class RequestFactory
             if ($method == 'POST') {
                 $_SERVER['HTTP_CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
                 $_POST = $body;
+                $_REQUEST = $body + $queryArray;
                 $request->setRawBody(http_build_query($body));
             }
 
