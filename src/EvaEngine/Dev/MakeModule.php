@@ -58,8 +58,12 @@ class MakeModule extends Command
         return $this;
     }
 
+    /**
+     * CLI configure
+     */
     protected function configure()
     {
+        $this->target = getcwd() . '/modules';
         $this
             ->setName('make:module')
             ->setDescription('Create a EvaEngine module')
@@ -82,6 +86,11 @@ class MakeModule extends Command
             );
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->name = $input->getArgument('name');
@@ -90,26 +99,39 @@ class MakeModule extends Command
         $this->namespace = $namespace;
 
         $target = $input->getOption('target');
-        $this->target = $target ?: getcwd() . '/modules';
+        $this->target = $target ?: $this->target;
         $this->templatesDir = realpath(__DIR__ . '/../../../templates/module');
         $this->output = $output;
 
         $res = $this->createModule($this->name, $this->namespace, $this->target);
         if (true === $res) {
-            $output->writeln(sprintf("Created module %s in %s", $this->name, $this->target));
+            $output->writeln(sprintf("<info>Created module %s in %s</info>", $this->name, $this->target));
         }
     }
 
-    public function loadTemplate($path, $vars)
+    /**
+     * Load template and extract parameters
+     * @param string $path
+     * @param array $vars
+     * @return string
+     */
+    public function loadTemplate($path, array $vars = [])
     {
         ob_start();
         extract($vars);
         include $path;
         $content = ob_get_clean();
-        $content = str_replace('\\<\\?php', '<?php', $content);
+        $content = str_replace('\\<\\?', '<?', $content);
         return $content;
     }
 
+    /**
+     * Create a module from a template dir
+     * @param string $moduleName
+     * @param string $moduleNamespace
+     * @param string $root
+     * @return bool true if create success
+     */
     public function createModule($moduleName, $moduleNamespace, $root)
     {
         /**

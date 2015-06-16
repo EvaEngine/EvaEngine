@@ -4,20 +4,20 @@ if (!ini_get('date.timezone')) {
     ini_set('date.timezone', 'UTC');
 }
 
-foreach (array(
+foreach ([
+             __DIR__ . '/vendor/autoload.php',
              __DIR__ . '/../../autoload.php',
              __DIR__ . '/../vendor/autoload.php',
-             __DIR__ . '/vendor/autoload.php'
-         ) as $file) {
+         ] as $file) {
     if (file_exists($file)) {
-        define('PHPUNIT_COMPOSER_INSTALL', $file);
+        define('ENGINE_AUTOLOAD', $file);
         break;
     }
 }
 
 unset($file);
 
-if (!defined('PHPUNIT_COMPOSER_INSTALL')) {
+if (!defined('ENGINE_AUTOLOAD')) {
     fwrite(
         STDERR,
         'You need to set up the project dependencies using the following commands:' . PHP_EOL .
@@ -26,13 +26,13 @@ if (!defined('PHPUNIT_COMPOSER_INSTALL')) {
     );
     die(1);
 }
-//require PHPUNIT_COMPOSER_INSTALL;
-require __DIR__ . '/vendor/autoload.php';
 
-use Eva\EvaEngine\Dev\MakeModule;
+require ENGINE_AUTOLOAD;
+
+use Eva\EvaEngine\Dev;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
-$application->add(new MakeModule());
+$application->add(new Dev\MakeModule());
+$application->add(new Dev\MakeApp());
 $application->run();
-
