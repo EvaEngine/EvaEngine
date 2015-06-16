@@ -15,12 +15,17 @@
     "phalcon/incubator": "~2.0",
     "swiftmailer/swiftmailer": "~5.3",
     "knplabs/gaufrette": "~0.1",
+    "symfony/console": "2.7.*",
+    "symfony/filesystem": "2.7.*",
     "evaengine/eva-sms": "~0.1"
   },
   "require-dev": {
     "mockery/mockery": "dev-master",
     "satooshi/php-coveralls": "dev-master"
   },
+  "bin": [
+    "engine"
+  ],
   "suggest": {
     "ext-redis": "*",
     "ext-gearman": "*"
