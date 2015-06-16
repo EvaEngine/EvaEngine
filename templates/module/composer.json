@@ -1,0 +1,20 @@
+{
+    "name": "evaengine/<?=strtolower($moduleName)?>",
+    "description": "",
+    "license": "BSD-3-Clause",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "",
+            "email": "",
+            "homepage": ""
+        }
+    ],
+    "require": {
+        "evaengine/eva-common": "dev-master"
+    },
+    "autoload": {
+        "classmap": ["Module.php"],
+        "psr-4": {"<?=$moduleNamespace?>": "src/<?=$moduleName?>"}
+    }
+}

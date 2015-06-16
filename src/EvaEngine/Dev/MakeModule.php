@@ -15,6 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Class MakeModule
@@ -84,9 +85,12 @@ class MakeModule extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->name = $input->getArgument('name');
-        $this->namespace = $input->getOption('namespace');
+        $namespace = $input->getOption('namespace');
+        $namespace = $namespace ?: 'Eva\\' . $this->name;
+        $this->namespace = $namespace;
+
         $target = $input->getOption('target');
-        $this->target = $target ?: getcwd();
+        $this->target = $target ?: getcwd() . '/modules';
         $this->templatesDir = realpath(__DIR__ . '/../../../templates/module');
         $this->output = $output;
 
@@ -96,7 +100,17 @@ class MakeModule extends Command
         }
     }
 
-    public function createModule($moduleName, $namespace, $root)
+    public function loadTemplate($path, $vars)
+    {
+        ob_start();
+        extract($vars);
+        include $path;
+        $content = ob_get_clean();
+        $content = str_replace('\\<\\?php', '<?php', $content);
+        return $content;
+    }
+
+    public function createModule($moduleName, $moduleNamespace, $root)
     {
         /**
          * Module folders
@@ -107,6 +121,15 @@ class MakeModule extends Command
          * ---- $moduleBootstrapFile
          */
         $fs = new Filesystem();
+
+        if (false === $fs->exists($root)) {
+            $this->output->writeln(sprintf(
+                '<error>Target %s not exists</error>',
+                $root
+            ));
+            return false;
+        }
+
         $moduleDir = $root . '/' . $moduleName;
         $moduleSrcDir = $moduleDir . '/src/' . $moduleName;
         $moduleSrcDirSource = $moduleDir . '/src/_module';
@@ -125,18 +148,30 @@ class MakeModule extends Command
         $this->output->writeln(sprintf("Root dir %s", $root));
         $this->output->writeln(sprintf("Template dir %s", $templatesDir));
 
-        //$fs->mkdir($moduleDir);
+        $fs->mkdir($moduleDir);
         $this->output->writeln(sprintf("Created module dir %s", $moduleDir));
 
-        //$fs->mirror($templatesDir, $moduleDir);
+        $fs->mirror($templatesDir, $moduleDir);
         $this->output->writeln(sprintf("Copy files from %s to %s", $templatesDir, $moduleDir));
 
-        //$fs->rename($moduleSrcDirSource, $moduleSrcDir);
+        $fs->rename($moduleSrcDirSource, $moduleSrcDir);
         $this->output->writeln(sprintf(
             "Rename module dir from %s to %s",
             $moduleSrcDirSource,
             $moduleSrcDir
         ));
+
+        $finder = new Finder();
+        $finder->files()->name('*.*');
+        foreach ($finder->in($moduleDir) as $file) {
+            $filePath = $file->getRealpath();
+            $content = $this->loadTemplate($filePath, [
+                'moduleName' => $moduleName,
+                'moduleNamespace' => $moduleNamespace,
+            ]);
+            $fs->dumpFile($filePath, $content);
+            $this->output->writeln(sprintf("Updated file %s", $filePath));
+        }
 
         return true;
     }
