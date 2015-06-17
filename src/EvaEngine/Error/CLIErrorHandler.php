@@ -9,12 +9,11 @@
 
 namespace Eva\EvaEngine\Error;
 
-use Eva\EvaEngine\CLI\Output\ConsoleOutput;
-use Eva\EvaEngine\CLI\Output\StreamOutput;
-use Eva\EvaEngine\CLI\Formatter\OutputFormatterInterface;
+
 use Phalcon\DI;
 use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger\AdapterInterface as LoggerInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * Error handler for CLI mode
@@ -41,7 +40,7 @@ class CLIErrorHandler implements ErrorHandlerInterface
         }
         $output = new ConsoleOutput();
         $output->writeln("");
-        $output->writelnWarning(' [WARNING]: '. $errstr.' in file '. $errfile .' at line '.$errline);
+        $output->writelnWarning(' [WARNING]: ' . $errstr . ' in file ' . $errfile . ' at line ' . $errline);
         $output->writeln("");
 
     }
@@ -96,6 +95,7 @@ class CLIErrorHandler implements ErrorHandlerInterface
     public static function setLogger(LoggerInterface $logger)
     {
         static::$logger = $logger;
+
         return self;
     }
 

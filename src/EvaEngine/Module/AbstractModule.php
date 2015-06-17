@@ -50,6 +50,14 @@ abstract class AbstractModule implements StandardInterface, ModuleDefinitionInte
     }
 
     /**
+     * @return array
+     */
+    public static function registerErrorHandlers()
+    {
+        return array();
+    }
+
+    /**
      * Registers the module auto-loader
      */
     public function registerAutoloaders()
@@ -63,5 +71,15 @@ abstract class AbstractModule implements StandardInterface, ModuleDefinitionInte
      */
     public function registerServices($di)
     {
+    }
+
+    /**
+     * Registers global services
+     *
+     * @param \Phalcon\DiInterface $di
+     */
+    public function registerGlobalServices($di)
+    {
+
     }
 }

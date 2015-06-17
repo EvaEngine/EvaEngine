@@ -189,7 +189,7 @@ class ControllerBase extends Controller
             }
         }
 
-        $logger = $this->getDI()->get('logException');
+        $logger = $this->getDI()->get('errorLogger');
         $logger->log(
             implode('', $messageArray) . "\n" .
             get_class($exception) . ":" . $exception->getMessage() . "\n" .
@@ -263,7 +263,7 @@ class ControllerBase extends Controller
             }
         }
 
-        $logger = $this->getDI()->get('logException');
+        $logger = $this->getDI()->get('errorLogger');
         $logger->debug($exception);
         /*
         $logger->debug(

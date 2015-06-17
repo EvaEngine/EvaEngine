@@ -1,0 +1,22 @@
+<?= '<?php' ?> namespace PHPSTORM_META {
+    /**
+    * PhpStorm Meta file, to provide autocomplete information for PhpStorm
+    * Generated on <?= date("Y-m-d") ?>.
+    *
+    * @author EvaEngine
+    * @see https://github.com/evaengine/evaengine
+    */
+
+    /** @noinspection PhpIllegalArrayKeyTypeInspection */
+    /** @noinspection PhpUnusedLocalVariableInspection */
+    /** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
+    $STATIC_METHOD_TYPES = [
+    <?php foreach($methods as $method): ?>
+        <?= $method['name'] ?>('') => [
+        <?php foreach($method['bindings'] as $abstract => $class): ?>
+            '<?= $abstract ?>' instanceof \<?= $class ?>,
+        <?php endforeach ?>
+        ],
+    <?php endforeach ?>
+    ];
+}

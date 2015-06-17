@@ -1,29 +1,20 @@
 <?php
-
-namespace Eva\EvaEngine\Tasks;
-
 // +----------------------------------------------------------------------
-// | [phalcon]
+// | EvaEngine
 // +----------------------------------------------------------------------
 // | Author: Mr.5 <mr5.simple@gmail.com>
 // +----------------------------------------------------------------------
-// + Datetime: 14-7-17 15:22
+// + Datetime: 15/5/25 下午5:30
 // +----------------------------------------------------------------------
-// + TaskBase.php
+// + DispatchListener.php
 // +----------------------------------------------------------------------
+namespace Eva\EvaEngine\Listeners;
 
-use Phalcon\CLI\Task;
-use Symfony\Component\Console\Output\ConsoleOutput;
-
-class TaskBase extends Task
+class DispatchListener
 {
-    /**
-     * @var ConsoleOutput
-     */
-    protected $output;
-
-    public function __construct()
+    public function beforeException($event, $dispatcher, $exception)
     {
-        $this->output = new ConsoleOutput();
+        //For fixing phalcon weird behavior https://github.com/phalcon/cphalcon/issues/2558
+        throw $exception;
     }
 }

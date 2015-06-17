@@ -1,29 +1,18 @@
 <?php
-
-namespace Eva\EvaEngine\Tasks;
-
 // +----------------------------------------------------------------------
-// | [phalcon]
+// | EvaEngine
 // +----------------------------------------------------------------------
 // | Author: Mr.5 <mr5.simple@gmail.com>
 // +----------------------------------------------------------------------
-// + Datetime: 14-7-17 15:22
+// + Datetime: 15/6/15 下午4:02
 // +----------------------------------------------------------------------
-// + TaskBase.php
+// + ModuleTest.php
 // +----------------------------------------------------------------------
 
-use Phalcon\CLI\Task;
-use Symfony\Component\Console\Output\ConsoleOutput;
+namespace Eva\EvaEngine\EvaEngineTest\Module;
 
-class TaskBase extends Task
+
+class ModuleTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var ConsoleOutput
-     */
-    protected $output;
 
-    public function __construct()
-    {
-        $this->output = new ConsoleOutput();
-    }
 }

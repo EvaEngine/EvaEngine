@@ -4,3 +4,5 @@ log/*
 .idea*
 *.swp
 /.idea/
+/.phpstorm.meta.php
+*-ide-helper.php

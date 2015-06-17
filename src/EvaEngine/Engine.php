@@ -9,7 +9,6 @@
 
 namespace Eva\EvaEngine;
 
-use Eva\EvaEngine\CLI\Output\ConsoleOutput;
 //use Eva\EvaEngine\Events\DispatchCacheListener;
 use Eva\EvaEngine\Interceptor\Dispatch as DispatchInterceptor;
 use Eva\EvaEngine\SDK\SendCloudMailer;
@@ -33,6 +32,7 @@ use Phalcon\CLI\Dispatcher as CLIDispatcher;
 use Phalcon\DI\FactoryDefault\CLI;
 use Eva\EvaEngine\Service\TokenStorage;
 use Phalcon\DiInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * Core application configuration / bootstrap
@@ -214,7 +214,7 @@ class Engine
     /**
      *
      * @param $cacheFile cache file path
-     * @param bool                      $serialize
+     * @param bool $serialize
      * @return mixed|null
      */
     public function readCache($cacheFile, $serialize = false)
@@ -229,7 +229,7 @@ class Engine
     /**
      * @param $cacheFile
      * @param $content
-     * @param bool      $serialize
+     * @param bool $serialize
      * @return bool
      */
     public function writeCache($cacheFile, $content, $serialize = false)
@@ -751,6 +751,7 @@ class Engine
 
         IoC::setDI($di);
 
+
         return $this->di = $di;
     }
 
@@ -821,10 +822,13 @@ class Engine
             return new Config($cache);
         }
 
-        $config = new Config();
+        $config = new Config(include __DIR__ . '/../../config/config.php');
+
+
         //merge all loaded module configs
         $moduleManager = $di->getModuleManager();
         if (!$moduleManager || !$modules = $moduleManager->getModules()) {
+            return $config;
             throw new Exception\RuntimeException(sprintf('Config need at least one module loaded'));
         }
 
@@ -836,7 +840,6 @@ class Engine
                 $config->merge(new Config($moduleConfig));
             }
         }
-
         //merge config default
         $config->merge(new Config(include $this->getConfigPath() . "/config.default.php"));
 
@@ -1211,7 +1214,7 @@ class Engine
         return new TokenStorage(
             array_merge(
                 array(
-                'uniqueId' => $this->getAppName(),
+                    'uniqueId' => $this->getAppName(),
                 ),
                 $config->tokenStorage->toArray()
             )
@@ -1226,14 +1229,14 @@ class Engine
             //empty translator
             return new \Phalcon\Translate\Adapter\NativeArray(
                 array(
-                'content' => array()
+                    'content' => array()
                 )
             );
         }
         $translate = new \Phalcon\Translate\Adapter\Csv(
             array(
-            'file' => $file,
-            'delimiter' => ',',
+                'file' => $file,
+                'delimiter' => ',',
             )
         );
 
@@ -1257,6 +1260,10 @@ class Engine
      */
     public function bootstrap()
     {
+        // 注册 facade 别名
+        foreach ($this->getDI()->getConfig()->alias as $aliasName => $facade) {
+            class_alias($facade, $aliasName);
+        }
         if ($this->getDI()->getConfig()->debug) {
             $debugger = $this->getDebugger();
             $debugger->debugVar($this->getDI()->getModuleManager()->getModules(), 'modules');

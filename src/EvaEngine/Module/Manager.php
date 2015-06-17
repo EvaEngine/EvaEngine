@@ -9,11 +9,12 @@
 
 namespace Eva\EvaEngine\Module;
 
+use Phalcon\Config;
+use Phalcon\DiInterface;
 use Phalcon\Loader;
-use Phalcon\Events\EventsAwareInterface;
-use Phalcon\Events\ManagerInterface;
-use Phalcon\Events\Manager as EventsManager;
+
 use Eva\EvaEngine\Mvc\Model;
+use Phalcon\Mvc\Application;
 
 /**
  * Module Manager for module register / load
@@ -26,154 +27,120 @@ use Eva\EvaEngine\Mvc\Model;
  *
  * @package Eva\EvaEngine\Module
  */
-class Manager implements EventsAwareInterface
+class Manager
 {
-
     /**
-     * Loaded modules
-     * @var array
+     * @var string 模块的默认所在目录
+     */
+    protected $defaultModulesDir = '';
+    /**
+     * @var array<Module>
      */
     protected $modules = array();
+    /**
+     * @var array<array>
+     */
+    protected $phalconModules = array();
+    /**
+     * @var DIInterface
+     */
+    protected $di;
+
+
+    protected $allAutoLoaders;
+    /**
+     * @var array
+     */
+    protected $allRoutesFrontend;
+    /**
+     * @var Config
+     */
+    protected $allRoutesBackend;
+    /**
+     * @var Config
+     */
+    protected $allRoutesCLI;
+
+    protected $allListeners = array();
+    protected $allRelations = array();
 
     /**
-     * @var string
+     * @var array()
      */
-    protected $defaultPath;
+    protected $allAdminMenuFiles = array();
+    /**
+     * @var array 所有的 viewHelper
+     */
+    protected $allViewHelpers = array();
+    /**
+     * @var Config
+     */
+    protected $allConfig;
+    /**
+     * @var array
+     */
+    protected $allDIDefinition = array();
+    /**
+     * @var array
+     */
+    protected $allErrorHandlers = array();
 
     /**
-     * @var Loader
+     * @param string $defaultModulesDir 模块默认路径，当没有指定模块的路径时，从这里加载模块
      */
-    protected $loader;
-
-    /**
-     * @var string
-     */
-    protected $cacheFile;
-
-    /**
-     * @var EventsManager
-     */
-    protected $eventsManager;
-
-    /**
-     * @var bool
-     */
-    protected $injectRelations = false;
-
-    /**
-     * @return Loader
-     */
-    public function getLoader()
+    public function __construct($defaultModulesDir)
     {
-        if ($this->loader) {
-            return $this->loader;
+        $this->defaultModulesDir = $defaultModulesDir;
+        $this->moduleParser = new ModuleParser($this->defaultModulesDir);
+        $this->allConfig = new Config();
+        $this->allRoutesBackend = new Config();
+        $this->allRoutesFrontend = new Config();
+        $this->allRoutesCLI = new Config();
+    }
+
+    /**
+     * 通过模块配置数组来注册多个模块
+     *
+     * @param array $modulesConfig
+     */
+    public function registerModules(array $modulesConfig)
+    {
+        foreach ($modulesConfig as $name => $moduleOptions) {
+            // 当数组键为数字时，说明没有设置模块的 options，则模块名称取数组的「值」
+            if (is_numeric($name)) {
+                $name = $moduleOptions;
+                $moduleOptions = array();
+            }
+            $module = $this->moduleParser->parse($name, $moduleOptions);
+            $this->register($module);
         }
-        return $this->loader = new Loader();
     }
 
     /**
-     * @param Loader $loader
-     * @return $this
+     * 获取默认的模块
+     *
+     * @return Module
      */
-    public function setLoader(Loader $loader)
+    public function getDefaultModule()
     {
-        $this->loader = $loader;
-        return $this;
+        // 最后注册的模块作为默认模块
+        return end($this->modules);
     }
 
     /**
-     * @return null|string
+     * 通过模块名来获取模块
+     *
+     * @param $name
+     * @return Module
      */
-    public function getDefaultPath()
+    public function getModule($name)
     {
-        return $this->defaultPath;
+        return $this->modules[$name];
     }
 
     /**
-     * @param $defaultPath
-     * @return $this
-     */
-    public function setDefaultPath($defaultPath)
-    {
-        $this->defaultPath = $defaultPath;
-        return $this;
-    }
-
-    /**
-     * @param $cacheFile
-     * @return $this
-     */
-    public function setCacheFile($cacheFile)
-    {
-        $this->cacheFile = $cacheFile;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCacheFile()
-    {
-        return $this->cacheFile;
-    }
-
-    /**
-     * @return EventsManager
-     */
-    public function getEventsManager()
-    {
-        if ($this->eventsManager) {
-            return $this->eventsManager;
-        }
-        return $this->eventsManager = new EventsManager();
-    }
-
-    /**
-     * @param ManagerInterface $eventsManager
-     * @return ManagerInterface
-     */
-    public function setEventsManager($eventsManager)
-    {
-        return $this->eventsManager = $eventsManager;
-    }
-
-    /**
-     * @param $cacheFile
-     * @return mixed|null
-     */
-    public function readCache($cacheFile)
-    {
-        if (file_exists($cacheFile) && $cache = include $cacheFile) {
-            return $cache;
-        }
-        return null;
-    }
-
-    /**
-     * @param $cacheFile
-     * @param array     $content
-     * @return bool
-     */
-    public function writeCache($cacheFile, array $content)
-    {
-        if ($cacheFile && $fh = fopen($cacheFile, 'w')) {
-            fwrite($fh, '<?php return ' . var_export($content, true) . ';');
-            fclose($fh);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param $moduleName
-     * @return bool
-     */
-    public function hasModule($moduleName)
-    {
-        return isset($this->modules[$moduleName]) ? true : false;
-    }
-
-    /**
+     * 获取所有的模块
+     *
      * @return array
      */
     public function getModules()
@@ -182,412 +149,217 @@ class Manager implements EventsAwareInterface
     }
 
     /**
-     * @param $moduleName
+     * 获取注册到给定的 Entity 上的 ORM 关系
+     *
+     * @param \Phalcon\Mvc\Model $entity
      * @return array
      */
-    public function getModule($moduleName)
+    public function getInjectedRelations(\Phalcon\Mvc\Model $entity)
     {
-        return empty($this->modules[$moduleName]) ? array() : $this->modules[$moduleName];
+        $relations = array();
+        foreach ($this->allRelations as $relationDefinition) {
+            if ($entity instanceof $relationDefinition['entity']) {
+                $relations[] = $relationDefinition;
+            }
+        }
+
+        return $relations;
     }
 
     /**
-     * Get full module settings by module name or module setting array
-     * Module setting includes:
-     * - className:     Required | Module bootstrap class full name, e.g. Eva\EvaCommon\Module
-     * - path :         Required | Module.php file path, e.g. /www/eva/modules/EvaCommon/Module.php
-     * - moduleConfig:  Optional | Module config file path, e.g. /www/eva/modules/EvaCommon/config/config.php ,
-     *                              default is module_dir/config/config.php
-     * - routesFrontend Optional | Module front-end router config file path,
-     *                              e.g. /www/eva/modules/EvaCommon/config/routes.frontend.php
-     * - routesBackend  Optional | Module back-end router config file path,
-     *                              e.g. /www/eva/modules/EvaCommon/config/routes.backend.php
-     * - routesCommand  Optional | Module cli router config file path,
-     *                              e.g. /www/eva/modules/EvaCommon/config/routes.command.php
-     * - adminMenu      Optional | Admin sidebar menu
-     * - di :           Optional | Module global DI
-     * All optional setting could set as false to disable.
+     * 注册一个模块到模块管理器
      *
-     * @param  $moduleName    MUST as same as module folder, keep moduleName unique
-     * @param  $moduleSetting mixed Support 3 types:
-     *            - null, EvaEngine official module, module namespace MUST start with Eva\\,
-     *              and source path MUST under application/modules
-     *            - string, Full module class, which is already loaded by composer
-     *            - array, Module setting array, require className and path at least, other options will be auto filled
-     * @return array Module
-     * @throws \Exception
+     * @param Module $module
      */
-    public function getModuleInfo($moduleName, $moduleSetting = null)
+    public function register(Module $module)
     {
-        $moduleName = ucfirst($moduleName);
-        $modulesPath = $this->getDefaultPath();
-        $ds = DIRECTORY_SEPARATOR;
-
-        //Get basic module info only contains className and path
-        if (true === is_null($moduleSetting)) {
-            $module = array(
-                'className' => "Eva\\$moduleName\\Module",
-                'path' => "$modulesPath{$ds}$moduleName{$ds}Module.php",
-            );
-        } elseif (true === is_string($moduleSetting) && strpos($moduleSetting, '\\') !== false) {
-            //Composer module
-            $moduleClass = $moduleSetting;
-            if (false === class_exists($moduleClass)) {
-                throw new \Exception(sprintf('Module %s load failed by not exist class', $moduleClass));
-            }
-
-            $ref = new \ReflectionClass($moduleClass);
-            $module = array(
-                'className' => $moduleClass,
-                'path' => $ref->getFileName(),
-            );
-        } elseif (true === is_array($moduleSetting)) {
-            $module = array_merge(
-                array(
-                'className' => '',
-                'path' => '',
-                ),
-                $moduleSetting
-            );
-            $module['className'] = $module['className'] ?: "Eva\\$moduleName\\Module";
-            $module['path'] = $module['path'] ?: "$modulesPath{$ds}$moduleName{$ds}Module.php";
-        } else {
-            throw new \Exception(sprintf('Module %s load failed by incorrect format', $moduleName));
-        }
-
-        /**
- * @var StandardInterface $moduleClass
-*/
-        $moduleClass = $module['className'];
-        $this->getLoader()->registerClasses(
-            array(
-            $moduleClass => $module['path']
-            )
-        )->register();
-
-        if (false === class_exists($moduleClass)) {
-            throw new \Exception(sprintf('Module %s load failed by not exist class', $moduleClass));
-        }
-
-        if (count(
-            array_intersect(
-                array(
-                'Phalcon\Mvc\ModuleDefinitionInterface',
-                'Eva\EvaEngine\Module\StandardInterface'
-                ),
-                class_implements($moduleClass)
-            )
-        ) !== 2) {
-            throw new \Exception(sprintf('Module %s interfaces not correct', $moduleClass));
-        }
-
-        $module['dir'] = $moduleDir = dirname($module['path']);
-        $module = array_merge(
-            array(
-            'moduleConfig' => "$moduleDir{$ds}config{$ds}config.php", //module config file path
-            'routesFrontend' => "$moduleDir{$ds}config{$ds}routes.frontend.php", //module router frontend path
-            'routesBackend' => "$moduleDir{$ds}config{$ds}routes.backend.php", //module router backend path
-            'routesCommand' => "$moduleDir{$ds}config{$ds}routes.command.php", // module router in CLI mode
-            'adminMenu' => "$moduleDir{$ds}config{$ds}admin.menu.php", //admin menu
-            'autoloaders' => $moduleClass::registerGlobalAutoloaders(), //autoloaders
-            'relations' => $moduleClass::registerGlobalRelations(), //entity relations for injection
-            'listeners' => $moduleClass::registerGlobalEventListeners(), //module listeners list array
-            'viewHelpers' => $moduleClass::registerGlobalViewHelpers(), //module view helpers
-            //'translatePath' => false,
-            ),
-            $module
+        $this->modules[$module->getName()] = $module;
+        $this->phalconModules[$module->getName()] = array(
+            'path' => $module->getPath(),
+            'className' => $module->getClassName()
         );
-
-        return $module;
-    }
-
-    /**
-     * @param array $moduleSettings
-     * @return $this
-     * @throws \Exception
-     */
-    public function loadModules(array $moduleSettings)
-    {
-        //Trigger Event
-        $this->getEventsManager()->fire('module:beforeLoadModule', $this);
-
-        $cacheFile = $this->getCacheFile();
-        $loader = $this->getLoader();
-
-        if ($cacheFile && $cache = $this->readCache($cacheFile)) {
-            $loader->registerNamespaces($cache['namespaces'])->register();
-            $loader->registerClasses($cache['classes'])->register();
-            $this->modules = $cache['modules'];
-
-            //Trigger Event
-            $this->getEventsManager()->fire('module:afterLoadModule', $this);
-            return $this;
-        }
-
-        $modules = array();
-        //All Module.php map array for cache
-        $classes = array();
-        foreach ($moduleSettings as $moduleName => $moduleSetting) {
-            if (true === is_int($moduleName)) {
-                $moduleName = $moduleSetting;
-                $moduleSetting = null;
+        $this->allAdminMenuFiles[] = $module->getAdminMenusFile();
+        $this->allConfig->merge(new Config($module->getConfig()));
+        $this->allRoutesFrontend->merge(new Config($module->getRoutesFrontend()));
+        $this->allRoutesBackend->merge(new Config($module->getRoutesBackend()));
+        $this->allRoutesCLI->merge(new Config($module->getRoutesCLI()));
+        $this->allListeners[] = $module->getListeners();
+        $this->allViewHelpers = array_merge($this->allViewHelpers, $module->getViewHelpers());
+        $this->allErrorHandlers = array_merge($this->allErrorHandlers, $module->getErrorHandlers());
+        if (is_array($module->getRelations()) && !empty($module->getRelations())) {
+            foreach ($module->getRelations() as $entity => $relationDefinition) {
+                $this->allRelations[$entity][] = $relationDefinition;
             }
-            $module = $this->getModuleInfo($moduleName, $moduleSetting);
-            $modules[$moduleName] = $module;
-            $classes[$module['className']] = $module['path'];
         }
-        $this->modules = $modules;
-
-        $namespaces = $this->getMergedAutoloaders();
-        if ($namespaces) {
-            $loader->registerNamespaces($namespaces)->register();
-        }
-
-        if ($cacheFile) {
-            $this->writeCache(
-                $cacheFile,
-                array(
-                'classes' => $classes,
-                'namespaces' => $namespaces,
-                'modules' => $modules,
-                )
-            );
-        }
-        //Trigger Event
-        $this->getEventsManager()->fire('module:afterLoadModule', $this);
-        return $this;
     }
 
     /**
-     * @param $key
-     * @return array
-     */
-    private function getMergedArray($key)
-    {
-        if (!($modules = $this->modules)) {
-            return array();
-        }
-        $mergedArray = array();
-        foreach ($modules as $moduleName => $module) {
-            if (false === is_array($module[$key])) {
-                continue;
-            }
-            $mergedArray = array_merge($mergedArray, $module[$key]);
-        }
-        return $mergedArray;
-    }
-
-    /**
-     * @return array
-     */
-    public function getMergedAutoloaders()
-    {
-        return $this->getMergedArray('autoloaders');
-    }
-
-    /**
-     * @return array
-     */
-    public function getMergedViewHelpers()
-    {
-        return $this->getMergedArray('viewHelpers');
-    }
-
-    /**
-     * @return array
-     */
-    public function getMergedRelations()
-    {
-        return $this->getMergedArray('relations');
-    }
-
-
-    /**
-     * Module Events could by key => value pairs like:
-     * 'module' => 'Eva\RealModule\Events\ModuleListener',
-     * Or could be key => array pairs like
-     * 'module' => array('Eva\RealModule\Events\ModuleListener', 100)
-     * Array[1] is listener priority
+     * 获取用于注册到 Phalcon Application 的 module 数组
      *
-     * @param  array $listeners
-     * @return $this
-     * @throws \Exception
-     */
-    public function attachEvents(array $listeners = array())
-    {
-        if (!$listeners) {
-            $modules = $this->getModules();
-            if (!$modules) {
-                return $this;
-            }
-
-            $listeners = array();
-            foreach ($modules as $moduleName => $module) {
-                $listeners[$moduleName] = $this->getModuleListeners($moduleName);
-            }
-        }
-
-        if (!$listeners) {
-            return $this;
-        }
-
-        $eventsManager = $this->getEventsManager();
-        foreach ($listeners as $moduleName => $moduleListeners) {
-            foreach ($moduleListeners as $eventType => $listener) {
-                $priority = 0;
-                if (is_string($listener)) {
-                    $listenerClass = $listener;
-                } elseif (true === is_array($listener) && count($listener) > 1) {
-                    $listenerClass = $listener[0];
-                    $priority = (int) $listener[1];
-                } else {
-                    throw new \Exception(sprintf("Module %s listener format not correct", $moduleName));
-                }
-                if (false === class_exists($listenerClass)) {
-                    throw new \Exception(sprintf("Module listener %s not exist", $listenerClass));
-                }
-                $eventsManager->attach($eventType, new $listenerClass, $priority);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @param $moduleName
-     * @return string
-     */
-    public function getModulePath($moduleName)
-    {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['dir']) && file_exists($modules[$moduleName]['dir'])) {
-            return $modules[$moduleName]['dir'];
-        }
-        return '';
-    }
-
-    /**
-     * @param $moduleName
-     * @return array|mixed
-     */
-    public function getModuleConfig($moduleName)
-    {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['moduleConfig']) && file_exists($modules[$moduleName]['moduleConfig'])) {
-            return include $modules[$moduleName]['moduleConfig'];
-        }
-        return array();
-    }
-
-    /**
-     * @param $moduleName
-     * @return array|mixed
-     */
-    public function getModuleRoutesFrontend($moduleName)
-    {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['routesFrontend']) && file_exists($modules[$moduleName]['routesFrontend'])) {
-            return include $modules[$moduleName]['routesFrontend'];
-        }
-        return array();
-    }
-
-    /**
-     * @param $moduleName
-     * @return array|mixed
-     */
-    public function getModuleRoutesCommand($moduleName)
-    {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['routesCommand']) && file_exists($modules[$moduleName]['routesCommand'])) {
-            return include $modules[$moduleName]['routesCommand'];
-        }
-        return array();
-    }
-
-    /**
-     * @param $moduleName
-     * @return array|mixed
-     */
-    public function getModuleRoutesBackend($moduleName)
-    {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['routesBackend']) && file_exists($modules[$moduleName]['routesBackend'])) {
-            return include $modules[$moduleName]['routesBackend'];
-        }
-        return array();
-    }
-
-    /**
-     * @param $moduleName
      * @return array
      */
-    public function getModuleListeners($moduleName)
+    public function getModulesForPhalcon()
     {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['listeners'])) {
-            return $modules[$moduleName]['listeners'];
-        }
-        return array();
+        return $this->getModulesForPhalcon();
     }
 
     /**
-     * @param $moduleName
-     * @return mixed|string
+     * @return mixed
      */
-    public function getModuleAdminMenu($moduleName)
+    public function getAllAutoLoaders()
     {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['adminMenu']) && file_exists($modules[$moduleName]['adminMenu'])) {
-            return include $modules[$moduleName]['adminMenu'];
-        }
-        return '';
+        return $this->allAutoLoaders;
     }
 
     /**
-     * @param $moduleName
+     * @param mixed $allAutoLoaders
+     */
+    public function setAllAutoLoaders($allAutoLoaders)
+    {
+        $this->allAutoLoaders = $allAutoLoaders;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getAllRoutesFrontend()
+    {
+        return $this->allRoutesFrontend;
+    }
+
+    /**
+     * @param Config $allRoutesFrontend
+     */
+    public function setAllRoutesFrontend($allRoutesFrontend)
+    {
+        $this->allRoutesFrontend = $allRoutesFrontend;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getAllRoutesBackend()
+    {
+        return $this->allRoutesBackend;
+    }
+
+    /**
+     * @param Config $allRoutesBackend
+     */
+    public function setAllRoutesBackend($allRoutesBackend)
+    {
+        $this->allRoutesBackend = $allRoutesBackend;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getAllRoutesCLI()
+    {
+        return $this->allRoutesCLI;
+    }
+
+    /**
+     * @param Config $allRoutesCLI
+     */
+    public function setAllRoutesCLI($allRoutesCLI)
+    {
+        $this->allRoutesCLI = $allRoutesCLI;
+    }
+
+    /**
      * @return array
      */
-    public function getModuleViewHelpers($moduleName)
+    public function getAllListeners()
     {
-        $modules = $this->getModules();
-        if (!empty($modules[$moduleName]['viewHelpers'])) {
-            return $modules[$moduleName]['viewHelpers'];
-        }
-        return array();
+        return $this->allListeners;
     }
 
     /**
-     * @param Model $entity
+     * @param array $allListeners
+     */
+    public function setAllListeners($allListeners)
+    {
+        $this->allListeners = $allListeners;
+    }
+
+    /**
      * @return array
      */
-    public function getInjectRelations(Model $entity)
+    public function getAllRelations()
     {
-        $relations = $this->injectRelations;
-
-        if ($relations === false) {
-            $relations = $this->getMergedRelations();
-            $this->injectRelations = $relations;
-        }
-
-        if (!$relations) {
-            return array();
-        }
-
-        $entityRalations = array();
-        foreach ($relations as $relation) {
-            if ($entity instanceof $relation['entity']) {
-                $entityRalations[] = $relation;
-            }
-        }
-        return $entityRalations;
+        return $this->allRelations;
     }
 
     /**
-     * @param null $defaultPath
+     * @param array $allRelations
      */
-    public function __construct($defaultPath = null)
+    public function setAllRelations($allRelations)
     {
-        if ($defaultPath) {
-            $this->defaultPath = $defaultPath;
-        }
+        $this->allRelations = $allRelations;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllAdminMenuFiles()
+    {
+        return $this->allAdminMenuFiles;
+    }
+
+    /**
+     * @param array $allAdminMenuFiles
+     */
+    public function setAllAdminMenuFiles($allAdminMenuFiles)
+    {
+        $this->allAdminMenuFiles = $allAdminMenuFiles;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllViewHelpers()
+    {
+        return $this->allViewHelpers;
+    }
+
+    /**
+     * @param array $allViewHelpers
+     */
+    public function setAllViewHelpers($allViewHelpers)
+    {
+        $this->allViewHelpers = $allViewHelpers;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getAllConfig()
+    {
+        return $this->allConfig;
+    }
+
+    /**
+     * @param Config $allConfig
+     */
+    public function setAllConfig($allConfig)
+    {
+        $this->allConfig = $allConfig;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllDIDefinition()
+    {
+        return $this->allDIDefinition;
+    }
+
+    /**
+     * @param array $allDIDefinition
+     */
+    public function setAllDIDefinition($allDIDefinition)
+    {
+        $this->allDIDefinition = $allDIDefinition;
     }
 }

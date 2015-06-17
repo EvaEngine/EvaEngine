@@ -53,7 +53,7 @@ class IoC
         if (self::$di == null) {
             throw new RuntimeException('IoC container is null!');
         }
-        return self::$di->get($name, $parameters);
+        return self::$di->get($name);
     }
 
     /**

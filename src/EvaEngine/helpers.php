@@ -38,7 +38,7 @@ if (!function_exists('dd')) {
 }
 
 /**
- * 方便链式调用，避免过多的中间变量，例如：with(new Post())->findPosts()
+ * 方便链式调用，避免过多的中间变量，例如：with(new Post())->findPosts()，较老的版本
  *
  * @param  $obj
  * @return mixed
@@ -66,6 +66,13 @@ if (!function_exists('array_pluck')) {
     }
 }
 if (!function_exists('starts_with')) {
+    /**
+     * 判断 $haystack 是否以 $needle 打头
+     *
+     * @param $haystack
+     * @param $needle
+     * @return bool
+     */
     function starts_with($haystack, $needle)
     {
         // search backwards starting from haystack length characters from the end
@@ -73,19 +80,36 @@ if (!function_exists('starts_with')) {
     }
 }
 if (!function_exists('ends_with')) {
+    /**
+     * 判断 $haystack 是否以 $needle 结尾
+     *
+     * @param string $haystack
+     * @param string $needle
+     * @return bool
+     */
     function ends_with($haystack, $needle)
     {
         // search forward starting from end minus needle length characters
         return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos(
-            $haystack,
-            $needle,
-            $temp
-        ) !== false);
+                $haystack,
+                $needle,
+                $temp
+            ) !== false);
     }
 }
 
 
 if (!function_exists('eva_url')) {
+    /**
+     * 根据域名名称（站点名称）生成 URL
+     *
+     * @param string $domainName 域名名称（站点名称）
+     * @param string $baseUri 基础 URI
+     * @param array $params query参数数组
+     * @param bool $https 是否是https，留空则自动检测
+     * @return string
+     * @throws \Eva\EvaEngine\Exception\RuntimeException
+     */
     function eva_url($domainName, $baseUri = '/', $params = array(), $https = false)
     {
         $config = IoC::get('config');
@@ -110,10 +134,30 @@ if (!function_exists('eva_url')) {
     }
 }
 if (!function_exists('eva_domain')) {
+    /**
+     * 根据域名名称（站点名称）获取域名
+     *
+     * @param string $domainName 域名名称（站点名称）
+     * @return mixed
+     * @throws \Eva\EvaEngine\Exception\RuntimeException
+     */
     function eva_domain($domainName)
     {
         $config = IoC::get('config');
 
         return @$config->domains->$domainName->domain;
+    }
+}
+if (!function_exists('eva_get')) {
+    /**
+     * 从 DI 容器中获取服务
+     *
+     * @param string $serviceName 服务名
+     * @return mixed
+     * @throws \Eva\EvaEngine\Exception\RuntimeException
+     */
+    function eva_get($serviceName)
+    {
+        return IoC::get($serviceName);
     }
 }
