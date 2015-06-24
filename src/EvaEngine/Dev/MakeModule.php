@@ -66,7 +66,7 @@ class MakeModule extends Command
         $this->target = getcwd() . '/modules';
         $this
             ->setName('make:module')
-            ->setDescription('Create a EvaEngine module')
+            ->setDescription('Create an EvaEngine module')
             ->addArgument(
                 'name',
                 InputArgument::REQUIRED,

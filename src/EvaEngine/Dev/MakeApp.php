@@ -32,7 +32,7 @@ class MakeApp extends MakeModule
         $this->target = getcwd() . '/apps';
         $this
             ->setName('make:app')
-            ->setDescription('Create a EvaEngine App');
+            ->setDescription('Create an EvaEngine App');
     }
 
     public function __construct()
