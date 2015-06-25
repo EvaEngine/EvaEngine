@@ -40,9 +40,9 @@ class Module
      */
     protected $routesBackend = array();
     /**
-     * @var array routes in CLI
+     * @var array routes in console mode
      */
-    protected $routesCLI = array();
+    protected $routesConsole = array();
     /**
      * @var array 监听器
      */
@@ -185,17 +185,17 @@ class Module
     /**
      * @return array
      */
-    public function getRoutesCLI()
+    public function getRoutesConsole()
     {
-        return $this->routesCLI;
+        return $this->routesConsole;
     }
 
     /**
-     * @param array $routesCLI
+     * @param array $routesConsole
      */
-    public function setRoutesCLI($routesCLI)
+    public function setRoutesConsole($routesConsole)
     {
-        $this->routesCLI = $routesCLI;
+        $this->routesConsole = $routesConsole;
     }
 
     /**

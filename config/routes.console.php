@@ -8,4 +8,6 @@
 // +----------------------------------------------------------------------
 // + routes.cli.php
 // +----------------------------------------------------------------------
-return array();
+return array(
+    'debug:routes' => \Eva\EvaEngine\Commands\Debug\Routes\ListCommand::class,
+);

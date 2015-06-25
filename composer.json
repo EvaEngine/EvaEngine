@@ -18,11 +18,13 @@
     "evaengine/eva-sms": "0.1.*",
     "symfony/console": "^2.6",
     "phpdocumentor/reflection-docblock": "^2.0",
-    "doctrine/annotations": "^1.2"
+    "doctrine/annotations": "^1.2",
+    "jeremeamia/superclosure": "^2.1"
   },
   "require-dev": {
     "satooshi/php-coveralls": "dev-master",
-    "mockery/mockery": "^0.9.4"
+    "mockery/mockery": "^0.9.4",
+    "filp/whoops": "^1.1"
   },
   "suggest": {
     "ext-redis": "*",

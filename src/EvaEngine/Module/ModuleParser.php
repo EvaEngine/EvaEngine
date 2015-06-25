@@ -29,10 +29,11 @@ class ModuleParser
     protected function parseOptions(Module $module, $options)
     {
         // 模块定义所在的文件名
-        $options['path'] = isset($options['path']) ?
+        $options['path'] = !empty($options['path']) ?
             $options['path'] :
-            rtrim($this->defaultModulesPath, '/') . '/Module.php';
+            rtrim($this->defaultModulesPath, '/') . '/' . $module->getName() . '/Module.php';
         $options['path'] = realpath($options['path']);
+
         // 模块根目录
         $options['dir'] =
             isset($options['dir']) ?
@@ -41,7 +42,7 @@ class ModuleParser
         $options['dir'] = realpath(rtrim($options['dir'], '/'));
         // 模块定义的类名
         $options['className'] = isset($options['className']) ?
-            $options['className'] : $module->getName() . '\\Module';
+            $options['className'] : 'Eva\\' . $module->getName() . '\\Module';
 
         // 是否允许加载前台路由，默认是允许
         $options['routesFrontend'] = isset($options['routesFrontend']) ?
@@ -50,6 +51,10 @@ class ModuleParser
         // 是否允许加载后台路由，默认是允许
         $options['routesBackend'] = isset($options['routesBackend']) ?
             boolval($options['routesBackend']) : true;
+
+        // 是否允许加载 console 路由，默认是允许
+        $options['routesConsole'] = isset($options['routesConsole']) ?
+            boolval($options['routesConsole']) : true;
 
         // 是否允许加载模块的配置文件，默认为允许
         $options['configEnable'] = isset($options['configEnable']) ?
@@ -79,7 +84,7 @@ class ModuleParser
     }
 
 
-    public function parse($name, $options)
+    public function parse($name, $options = array())
     {
 
         $module = new Module($name);
@@ -92,6 +97,7 @@ class ModuleParser
             ->parseConfig($module, $options)
             ->parseRoutesFrontend($module, $options)
             ->parseRoutesBackend($module, $options)
+            ->parseRoutesConsole($module, $options)
             ->parseAdminMenus($module, $options)
             ->parseListeners($module, $options)
             ->parseRelations($module, $options)
@@ -106,14 +112,18 @@ class ModuleParser
     {
         if ($options['errorHandlerEnable']) {
             $moduleClass = $module->getClassName();
-            $module->setErrorHandlers($moduleClass::registerErrorHandlers());
+            $errorHandlers = $moduleClass::registerErrorHandlers();
+            $errorHandlers = !is_array($errorHandlers) ? array() : $errorHandlers;
+            $module->setErrorHandlers($errorHandlers);
         }
     }
 
     protected function parseGlobalAutoLoaders(Module $module, $options)
     {
         $moduleClass = $module->getClassName();
-        $module->setAutoLoaders($moduleClass::registerGlobalAutoloaders());
+        $autoLoaders = $moduleClass::registerGlobalAutoloaders();
+        $autoLoaders = !is_array($autoLoaders) ? array() : $autoLoaders;
+        $module->setAutoLoaders($autoLoaders);
 
         return $this;
     }
@@ -122,7 +132,9 @@ class ModuleParser
     {
         $moduleClass = $module->getClassName();
         if ($options['viewHelpersEnable']) {
-            $module->setViewHelpers($moduleClass::registerGlobalViewHelpers());
+            $viewHelpers = $moduleClass::registerGlobalViewHelpers();
+            $viewHelpers = !is_array($viewHelpers) ? array() : $viewHelpers;
+            $module->setViewHelpers($viewHelpers);
         }
 
         return $this;
@@ -132,7 +144,9 @@ class ModuleParser
     {
         $moduleClass = $module->getClassName();
         if ($options['eventsEnable']) {
-            $module->setListeners($moduleClass::registerGlobalEventListeners());
+            $listeners = $moduleClass::registerGlobalEventListeners();
+            $listeners = !is_array($listeners) ? array() : $listeners;
+            $module->setListeners($listeners);
         }
 
         return $this;
@@ -142,7 +156,9 @@ class ModuleParser
     {
         $moduleClass = $module->getClassName();
         if ($options['relationsEnable']) {
-            $module->setRelations($moduleClass::registerGlobalRelations());
+            $relations = $moduleClass::registerGlobalRelations();
+            $relations = !is_array($relations) ? array() : $relations;
+            $module->setRelations($relations);
         }
 
         return $this;
@@ -166,7 +182,9 @@ class ModuleParser
                 );
             }
             if (is_file($module->getDir() . '/config/config.php')) {
-                $moduleConfig->merge(new Config(include $module->getDir() . '/config/config.php'));
+                $config = include $module->getDir() . '/config/config.php';
+
+                $moduleConfig->merge($config instanceof Config ? $config : new Config($config));
             }
         }
 
@@ -209,6 +227,16 @@ class ModuleParser
         return $this;
     }
 
+    protected function parseRoutesConsole(Module $module, $options)
+    {
+        // 加载模块的前台路由
+        if ($options['routesConsole'] && is_file($module->getDir() . '/config/routes.console.php')) {
+            $module->setRoutesConsole(include $module->getDir() . '/config/routes.console.php');
+        }
+
+        return $this;
+    }
+
     protected function parseRoutesBackend(Module $module, $options)
     {
         // 加载模块的后台路由
@@ -222,7 +250,7 @@ class ModuleParser
     protected function parseAdminMenus(Module $module, $options)
     {
         // 加载模块的管理后台菜单
-        if ($options['adminMenus'] && is_file($module->getDir() . '/config/admin.menu.php')) {
+        if ($options['adminMenusEnable'] && is_file($module->getDir() . '/config/admin.menu.php')) {
             $module->setAdminMenusFile($module->getDir() . '/config/admin.menu.php');
         }
 

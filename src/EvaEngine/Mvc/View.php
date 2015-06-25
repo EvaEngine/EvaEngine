@@ -85,12 +85,11 @@ class View extends PhalconView
      */
     public function setModuleLayout($moduleName, $layoutPath)
     {
-        $moduleManager = $this->getDI()->getModuleManager();
+        $moduleManager = eva_get('moduleManager');
         if (!$moduleManager) {
             return $this;
         }
-
-        $moduleLayout = $moduleManager->getModulePath($moduleName) . $layoutPath;
+        $moduleLayout = $moduleManager->getModule($moduleName)->getDir() . $layoutPath;
         $this->moduleLayout = realpath(dirname($moduleLayout));
         $this->moduleLayoutName = basename($moduleLayout);
         if ($this->moduleViewsDir) {
@@ -115,12 +114,12 @@ class View extends PhalconView
      */
     public function setModuleViewsDir($moduleName, $viewsDir)
     {
-        $moduleManager = $this->getDI()->getModuleManager();
+        $moduleManager = eva_get('moduleManager');
         if (!$moduleManager) {
             return $this;
         }
 
-        $modulePath = $moduleManager->getModulePath($moduleName);
+        $modulePath = $moduleManager->getModule($moduleName)->getDir();
         $this->moduleViewsDir = $moduleViewsDir = realpath($modulePath . $viewsDir);
         $this->setViewsDir($moduleViewsDir);
         if ($this->moduleLayout) {
@@ -140,12 +139,12 @@ class View extends PhalconView
      */
     public function setModulePartialsDir($moduleName, $partialsDir)
     {
-        $moduleManager = $this->getDI()->getModuleManager();
+        $moduleManager = eva_get('moduleManager');
         if (!$moduleManager) {
             return $this;
         }
 
-        $modulePath = $moduleManager->getModulePath($moduleName);
+        $modulePath = $moduleManager->getModule($moduleName)->getDir();
         $this->modulePartialsDir = $modulePartialsDir = realpath($modulePath . $partialsDir);
         if ($this->moduleViewsDir) {
             $this->caculatePartialsRelatedPath();

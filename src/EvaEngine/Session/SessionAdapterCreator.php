@@ -17,15 +17,6 @@ use Eva\EvaEngine\IoC;
 
 class SessionAdapterCreator extends AdapterCreator
 {
-    protected static $adapterMapping = array(
-        'files' => 'Phalcon\Session\Adapter\Files',
-        'database' => 'Phalcon\Session\Adapter\Database',
-        'memcache' => 'Phalcon\Session\Adapter\Memcache',
-        'libmemcached' => 'Eva\EvaEngine\Session\Adapter\Libmemcached',
-        'mongo' => 'Phalcon\Session\Adapter\Mongo',
-        'redis' => 'Phalcon\Session\Adapter\Redis',
-        'handlersocket' => 'Phalcon\Session\Adapter\HandlerSocket',
-    );
 
     public function create(
         $adapter,

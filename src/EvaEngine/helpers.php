@@ -158,6 +158,6 @@ if (!function_exists('eva_get')) {
      */
     function eva_get($serviceName)
     {
-        return IoC::get($serviceName);
+        return \Phalcon\DI::getDefault()->get($serviceName);
     }
 }

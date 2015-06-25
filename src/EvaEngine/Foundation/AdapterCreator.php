@@ -25,7 +25,6 @@ abstract class AdapterCreator
      *  protected function getAdaptersMapping()
      *  {
      *      return array(
-     *          // `default` 对应 `getAdapterClass` 方法的 category 参数
      *          'default' => array(
      *              'adapter1' => 'Some\Adapter\XXX1',
      *              'adapter2' => 'Some\Adapter\XXX2'
@@ -36,6 +35,7 @@ abstract class AdapterCreator
      * @return array
      */
     abstract protected function getAdaptersMapping();
+
     /**
      * @param string $adapter 适配器名称，可以为完整的类名
      * @param string $category 分类，可选
@@ -44,11 +44,13 @@ abstract class AdapterCreator
      */
     protected function getAdapterClass($adapter, $category = 'default')
     {
-        $adaptersMapping = $this->getAdaptersMapping($category);
+        $adaptersMapping = $this->getAdaptersMapping();
         $adapterClass = $adapter;
-        if (isset($adaptersMapping[$category]) && in_array($adapter, $adaptersMapping[$category])) {
-            $adapterClass = $adaptersMapping[$category][$adapter];
+        $adapterName = strtolower($adapter);
+        if (isset($adaptersMapping[$category]) && isset($adaptersMapping[$category][$adapterName])) {
+            $adapterClass = $adaptersMapping[$category][$adapterName];
         }
+
         if (!class_exists($adapterClass)) {
             throw new RuntimeException(
                 sprintf(

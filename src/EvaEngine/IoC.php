@@ -19,57 +19,26 @@ use Phalcon\DI;
  */
 class IoC
 {
-    /**
-     * @var DI
-     */
-    private static $di;
 
     /**
      * @return DI
      */
     public static function getDI()
     {
-        return self::$di;
+        return \Phalcon\DI::getDefault();
     }
 
-    /**
-     * @param DI $di
-     */
-    public static function setDI(DI $di)
-    {
-        self::$di = $di;
-    }
 
     /**
      * Resolves the service based on its configuration
      *
      * @param  string $name
-     * @param  array  $parameters
+     * @param  array $parameters
      * @throws RuntimeException
      * @return mixed
      */
     public static function get($name, $parameters = null)
     {
-        if (self::$di == null) {
-            throw new RuntimeException('IoC container is null!');
-        }
-        return self::$di->get($name);
-    }
-
-    /**
-     * Registers a service in the services container
-     *
-     * @param  string  $name
-     * @param  mixed   $definition
-     * @param  boolean $shared
-     * @throws RuntimeException
-     * @return \Phalcon\DI\ServiceInterface
-     */
-    public static function set($name, $definition, $shared = null)
-    {
-        if (self::$di == null) {
-            throw new RuntimeException('IoC container is null!');
-        }
-        self::$di->set($name, $definition, $shared);
+        return self::getDI()->get($name);
     }
 }

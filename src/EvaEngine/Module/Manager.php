@@ -15,6 +15,9 @@ use Phalcon\Loader;
 
 use Eva\EvaEngine\Mvc\Model;
 use Phalcon\Mvc\Application;
+use SuperClosure\Analyzer\AstAnalyzer;
+use SuperClosure\Analyzer\TokenAnalyzer;
+use SuperClosure\Serializer;
 
 /**
  * Module Manager for module register / load
@@ -47,7 +50,7 @@ class Manager
     protected $di;
 
 
-    protected $allAutoLoaders;
+    protected $allAutoLoaders = array();
     /**
      * @var array
      */
@@ -59,7 +62,7 @@ class Manager
     /**
      * @var Config
      */
-    protected $allRoutesCLI;
+    protected $allRoutesConsole;
 
     protected $allListeners = array();
     protected $allRelations = array();
@@ -95,7 +98,12 @@ class Manager
         $this->allConfig = new Config();
         $this->allRoutesBackend = new Config();
         $this->allRoutesFrontend = new Config();
-        $this->allRoutesCLI = new Config();
+        $this->allRoutesConsole = new Config();
+    }
+
+    public function hasModule($name)
+    {
+        return isset($this->modules[$name]);
     }
 
     /**
@@ -182,15 +190,20 @@ class Manager
         $this->allConfig->merge(new Config($module->getConfig()));
         $this->allRoutesFrontend->merge(new Config($module->getRoutesFrontend()));
         $this->allRoutesBackend->merge(new Config($module->getRoutesBackend()));
-        $this->allRoutesCLI->merge(new Config($module->getRoutesCLI()));
-        $this->allListeners[] = $module->getListeners();
+        $this->allRoutesConsole->merge(new Config($module->getRoutesConsole()));
+        if (!empty($module->getListeners())) {
+            $this->allListeners[] = $module->getListeners();
+        }
         $this->allViewHelpers = array_merge($this->allViewHelpers, $module->getViewHelpers());
         $this->allErrorHandlers = array_merge($this->allErrorHandlers, $module->getErrorHandlers());
-        if (is_array($module->getRelations()) && !empty($module->getRelations())) {
-            foreach ($module->getRelations() as $entity => $relationDefinition) {
-                $this->allRelations[$entity][] = $relationDefinition;
-            }
-        }
+//        if (is_array($module->getRelations()) && !empty($module->getRelations())) {
+//            foreach ($module->getRelations() as $entity => $relationDefinition) {
+//                $this->allRelations[$entity][] = $relationDefinition;
+//            }
+//        }
+        $this->allRelations = array_merge($this->allRelations, $module->getRelations());
+        $this->allDIDefinition = array_merge($this->allDIDefinition, $module->getDiDefinition());
+        $this->allAutoLoaders = array_merge($this->allAutoLoaders, $module->getAutoLoaders());
     }
 
     /**
@@ -200,7 +213,7 @@ class Manager
      */
     public function getModulesForPhalcon()
     {
-        return $this->getModulesForPhalcon();
+        return $this->phalconModules;
     }
 
     /**
@@ -254,17 +267,17 @@ class Manager
     /**
      * @return Config
      */
-    public function getAllRoutesCLI()
+    public function getAllRoutesConsole()
     {
-        return $this->allRoutesCLI;
+        return $this->allRoutesConsole;
     }
 
     /**
-     * @param Config $allRoutesCLI
+     * @param Config $allRoutesConsole
      */
-    public function setAllRoutesCLI($allRoutesCLI)
+    public function setAllRoutesConsole($allRoutesConsole)
     {
-        $this->allRoutesCLI = $allRoutesCLI;
+        $this->allRoutesConsole = $allRoutesConsole;
     }
 
     /**
@@ -361,5 +374,55 @@ class Manager
     public function setAllDIDefinition($allDIDefinition)
     {
         $this->allDIDefinition = $allDIDefinition;
+    }
+
+    public function getAllWebRoutes()
+    {
+        $routes = $this->getAllRoutesBackend();
+        $routes->merge($this->getAllRoutesFrontend());
+
+        return $routes;
+    }
+
+    public function serialize()
+    {
+//        dd(get_object_vars($this));
+//        dd($this->getAllDIDefinition());
+//        $files = array();
+        foreach ($this->getAllDIDefinition() as $name => $definition) {
+//            p(gettype($definition['definition'] ));
+            if (!$definition['definition'] instanceof \Closure) {
+                continue;
+            }
+            $serializer = new Serializer(new TokenAnalyzer());
+            p($name);
+            p($serializer->getData($definition['definition'], true));
+            /**
+             * 创建一个反射：
+             */
+//            $reflection = new \ReflectionFunction($definition['definition']);
+//            p($reflection->getParameters());
+//
+//            p($reflection->getFileName());
+//            p($reflection->getStartLine());
+//            p($reflection->getEndLine());
+//            p($reflection->getClosure());
+//            /**
+//             * 参数可以直接得到了：
+//             */
+//            $params = $reflection->getParameters();
+//
+//            /**
+//             * 获得Closure的函数体和use变量，形如：
+//             * function($arg1, $arg2, ...) use ($val1, $val2, ...) {
+//             *     // 要获得这个部分的代码！
+//             * }
+//             * 办法很多，你可以直接用正则、字符串查找或者Tokenizer，等等等等。
+//             * 比如可以先从reflection里得到函数的开始行和结束行：
+//             */
+//            $startLine = $reflection->getStartLine();
+//            $endLine = $reflection->getEndLine();
+        }
+
     }
 }

@@ -16,7 +16,7 @@ use Eva\EvaEngine\Module\Manager as ModuleManager;
 use Eva\EvaEngine\Module\StandardInterface;
 use Phalcon\Events\Manager as EventsManager;
 
-class Module implements StandardInterface
+class Module extends AbstractModule
 {
     /**
      * Registers an autoloader related to the module

@@ -18,7 +18,7 @@ class CacheAdapterCreator extends AdapterCreator
     /**
      * {@inheritdoc}
      */
-    protected function getAdaptersMapping($category = 'default')
+    protected function getAdaptersMapping()
     {
         return array(
             'frontend' => array(
@@ -56,7 +56,9 @@ class CacheAdapterCreator extends AdapterCreator
      */
     public function create($frontendAdapter, array $frontendOptions, $backendAdapter, array $backendOptions)
     {
+        $frontendAdapter = strtolower($frontendAdapter);
         $frontendCacheClass = $this->getAdapterClass($frontendAdapter, 'frontend');
+        $backendAdapter = strtolower($backendAdapter);
 
         $backendCacheClass = $this->getAdapterClass($backendAdapter, 'backend');
 

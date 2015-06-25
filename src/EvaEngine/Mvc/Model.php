@@ -144,7 +144,7 @@ class Model extends PhalconModel
      */
     public function loadRelations()
     {
-        $relations = $this->getDI()->getModuleManager()->getInjectRelations($this);
+        $relations = eva_get('moduleManager')->getInjectedRelations($this);
         if (!$relations) {
             return $this;
         }

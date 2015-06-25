@@ -15,15 +15,11 @@ use Eva\EvaEngine\IoC;
 
 class DbAdapterCreator extends AdapterCreator
 {
-    protected static $adapterMapping = array(
-        'mysql' => 'Phalcon\Db\Adapter\Pdo\Mysql',
-        'oracle' => 'Phalcon\Db\Adapter\Pdo\Oracle',
-        'postgresql' => 'Phalcon\Db\Adapter\Pdo\Postgresql',
-        'sqlite' => 'Phalcon\Db\Adapter\Pdo\Sqlite',
-    );
+
 
     public function create($adapter, array $options, $eventsManager = null)
     {
+
         $adapterClass = $this->getAdapterClass($adapter);
         $options['charset'] = isset($options['charset']) && $options['charset'] ? $options['charset'] : 'utf8';
         /** @var \Phalcon\Db\Adapter\Pdo $dbAdapter */

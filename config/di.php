@@ -11,7 +11,7 @@
 
 
 use Phalcon\Mvc\Router;
-
+$a = 'aaa';
 return array(
     /**
      * disposable DI 在每次 get 的时候都会重新构造一个对象
@@ -19,6 +19,35 @@ return array(
     'disposables' => array(
         'mailMessage' => 'Eva\EvaEngine\MailMessage',
         'placeholder' => 'Eva\EvaEngine\View\Helper\Placeholder',
+        'flash' => 'Phalcon\Flash\Session',
+        'cookies' => function () use ($a){
+            $cookies = new \Phalcon\Http\Response\Cookies();
+            $cookies->useEncryption(false);
+
+            return $cookies;
+        },
+        'translate' =>
+            function () {
+                $config = eva_get('config');
+                $file = $config->translate->path . $config->translate->forceLang . '.csv';
+                if (false === file_exists($file)) {
+                    //empty translator
+                    return new \Phalcon\Translate\Adapter\NativeArray(
+                        array(
+                            'content' => array()
+                        )
+                    );
+                }
+                $translate = new \Phalcon\Translate\Adapter\Csv(
+                    array(
+                        'file' => $file,
+                        'delimiter' => ',',
+                    )
+                );
+
+                return $translate;
+            },
+
     ),
     /**
      * shares DI 是共享的服务，每次获取的对象都是同一个，类似单例。
@@ -121,8 +150,18 @@ return array(
         'config' => function () {
             /** @var \Eva\EvaEngine\Module\Manager $moduleManager */
             $moduleManager = eva_get('moduleManager');
+            $evaengine = eva_get('evaengine');
 
-            return $moduleManager->getAllConfig();
+            $config = $moduleManager->getAllConfig();
+            $config->merge(
+                new \Phalcon\Config(include $evaengine->getProjectRoot() . '/config/config.default.php')
+            );
+
+            $config->merge(
+                new \Phalcon\Config(include $evaengine->getProjectRoot() . '/config/config.local.php')
+            );
+
+            return $config;
         },
         /*
         |--------------------------------------------------------------------------
@@ -138,30 +177,12 @@ return array(
             //Last extra slash
             $router->removeExtraSlashes(true);
             //Set last module as default module
-            /** @var \Eva\EvaEngine\Module\Manager $moduleManager */
-            $moduleManager = eva_get('moduleManager');
-            $router->setDefaultModule($moduleManager->getDefaultModule()->getName());
+            $router->setDefaultModule(eva_get('moduleManager')->getDefaultModule()->getName());
             //NOTICE: Set a strange controller here to make router not match default index/index
             $router->setDefaultController('EvaEngineDefaultController');
 
-            //NOTICE: EvaEngine Load front-end router at last
-            $routes = $moduleManager->getAllRoutesBackend();
-            $routes->merge($moduleManager->getAllRoutesFrontend());
+            return $router;
 
-            foreach ($routes->toArray() as $url => $route) {
-                if (count($route) !== count($route, COUNT_RECURSIVE)) {
-                    if (isset($route['pattern']) && isset($route['paths'])) {
-                        $method = isset($route['httpMethods']) ? $route['httpMethods'] : null;
-                        $router->add($route['pattern'], $route['paths'], $method);
-                    } else {
-                        throw new RuntimeException(
-                            sprintf('No route pattern and paths found by route %s', $url)
-                        );
-                    }
-                } else {
-                    $router->add($url, $route);
-                }
-            }
         },
         /*
         |--------------------------------------------------------------------------
@@ -208,12 +229,12 @@ return array(
                 $sessionConfig->adapter,
                 $sessionConfig->options->toArray(),
                 $sessionConfig->session_name,
-                $sessionConfig->cookie_params
+                $sessionConfig->cookie_params->toArray()
             );
         },
-        'tokenStorage' => function () use ($self) {
-            return $self->diTokenStorage();
-        },
+//        'tokenStorage' => function () use ($self) {
+//            return $self->diTokenStorage();
+//        },
         'dbMaster' => function () {
             $config = eva_get('config');
             if (!isset($config->dbAdapter->master->adapter) || !$config->dbAdapter->master) {
@@ -222,7 +243,7 @@ return array(
 
             return (new \Eva\EvaEngine\Db\DbAdapterCreator())->create(
                 $config->dbAdapter->master->adapter,
-                $config->dbAdapter->master->options->toArray(),
+                $config->dbAdapter->master->toArray(),
                 eva_get('eventsManager')
             );
         },
@@ -237,7 +258,7 @@ return array(
 
             return (new \Eva\EvaEngine\Db\DbAdapterCreator())->create(
                 $config->dbAdapter->slave->$slaveKey->adapter,
-                $config->dbAdapter->slave->$slaveKey->options->toArray(),
+                $config->dbAdapter->slave->$slaveKey->toArray(),
                 eva_get('eventsManager')
             );
         },
@@ -266,12 +287,12 @@ return array(
 
             return $worker;
         },
-        'mailer' => function () use ($self) {
-            return $self->diMailer();
-        },
-        'smsSender' => function () use ($self) {
-            return $self->diSmsSender();
-        },
+//        'mailer' => function () {
+//            return $self->diMailer();
+//        },
+//        'smsSender' => function () {
+//            return $self->diSmsSender();
+//        },
         'url' => function () {
             $config = eva_get('config');
             $url = new Eva\EvaEngine\Mvc\Url();
@@ -282,41 +303,12 @@ return array(
             return $url;
         },
         'escaper' => 'Phalcon\Escaper',
-        'tag' =>
-            function () {
-//        \Eva\EvaEngine\Tag::setDi($di);
-//        $self->registerViewHelpers();
-//
-//        return new Tag();
-            },
-        'flash' => 'Phalcon\Flash\Session',
-        'cookies' => function () {
-            $cookies = new \Phalcon\Http\Response\Cookies();
-            $cookies->useEncryption(false);
+        'tag' => function () {
+            \Eva\EvaEngine\Tag::setDi(\Phalcon\DI::getDefault());
+            \Eva\EvaEngine\Tag::registerHelpers(eva_get('moduleManager')->getAllViewHelpers());
 
-            return $cookies;
+            return new \Eva\EvaEngine\Tag();
         },
-        'translate' =>
-            function () {
-                $config = eva_get('config');
-                $file = $config->translate->path . $config->translate->forceLang . '.csv';
-                if (false === file_exists($file)) {
-                    //empty translator
-                    return new \Phalcon\Translate\Adapter\NativeArray(
-                        array(
-                            'content' => array()
-                        )
-                    );
-                }
-                $translate = new \Phalcon\Translate\Adapter\Csv(
-                    array(
-                        'file' => $file,
-                        'delimiter' => ',',
-                    )
-                );
-
-                return $translate;
-            },
         'fileSystem' =>
             function () {
 //            return $di->diFileSystem();
