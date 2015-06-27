@@ -49,6 +49,26 @@ class MakeEntity extends Command
 
     }
 
+    public function registerAppOption()
+    {
+        $this->addOption(
+            'app',
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'App name'
+        );
+    }
+
+    public function registerModuleOption()
+    {
+        $this->addOption(
+            'module',
+            'm',
+            InputOption::VALUE_OPTIONAL,
+            'Module name'
+        );
+    }
+
     /**
      * CLI configure
      */
@@ -64,18 +84,6 @@ class MakeEntity extends Command
                 'name',
                 InputArgument::REQUIRED,
                 'Entity name'
-            )
-            ->addOption(
-                'app',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'App name'
-            )
-            ->addOption(
-                'module',
-                'm',
-                InputOption::VALUE_OPTIONAL,
-                'Module name'
             )
             ->addOption(
                 'namespace',
@@ -148,7 +156,7 @@ class MakeEntity extends Command
 
         $dbColumns = [];
         if ($dbTable) {
-            $dbTable = $dbPrefix . $dbTable;
+            $dbFullTable = $dbPrefix . $dbTable;
             if (false === file_exists($dbConnection)) {
                 $output->writeln(sprintf(
                     '<error>DB connection config file %s not exists</error>',
@@ -182,7 +190,7 @@ class MakeEntity extends Command
 
             /** @var Adapter $db */
             $db = new $adapterClass($dbConfig);
-            $dbColumns = $this->dbTableToEntity($db, $dbTable);
+            $dbColumns = $this->dbTableToEntity($db, $dbFullTable);
         }
 
         $fs = new Filesystem();
@@ -191,6 +199,7 @@ class MakeEntity extends Command
             'namespace' => rtrim($namespace, '\\'),
             'columns' => $dbColumns,
             'extends' => $extends,
+            'tableName' => $dbTable,
             'phalconTypes' => [
                 Column::TYPE_INTEGER => 'integer',
                 Column::TYPE_DATE => 'date',
@@ -223,6 +232,7 @@ class MakeEntity extends Command
         $content = ob_get_clean();
         return $content;
     }
+
 
     public function dbTableToEntity(Adapter $db, $tableName)
     {

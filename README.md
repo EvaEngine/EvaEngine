@@ -18,6 +18,107 @@ Thanks the icon from [Hrvoje Bielen](http://cargocollective.com/bielen)
 
 ----
 
+## Development Tools
+
+### Switch environment
+
+Show current env
+
+```
+./engine env
+```
+
+Show single env variable
+
+```
+./engine env app
+```
+
+Set env variables
+```
+./engine env --App=Wscn --Module=EvaBlog
+```
+
+Default env file section is `ENV`, if get/set other sections, use `--section` option.
+
+```
+./engine env username --section=database
+./engine env --section=database --uername=root
+```
+
+
+### Create a Module
+
+Create a standard module:
+
+```
+./engine make:module EvaTest
+```
+
+Will generate `Eva\EvaTest` module under `project/modules` folder.
+
+Create a module with specific namespace and path:
+
+```
+./engine make:module EvaTest --namespace="Test\Foo" --target="logs"
+```
+
+Will generate `EvaTest` module with `Test\Foo` namespace under `logs/` folder.
+ 
+### Create an Application
+
+As same as `make:module`, default generate path is `project/apps`
+
+```
+./engine make:app MobileSite
+```
+
+
+### Create Controller
+
+```
+./engine make:controller Index
+
+./engine make:controller Index --for-admin
+```
+
+### Create Entity
+
+Generate entity under env Module
+
+```
+./engine make:entity Posts
+```
+
+```
+./engine make:entity Posts --module=EvaBlog --db-table=blog_posts --namespace='Test\Eva\'
+```
+
+### Create Form
+
+### Scaffold to create an CURD of admin
+
+Template source load from App, then Engine
+
+```
+./engine scaffold 
+```
+
+### Database Migration
+
+Generate migration files for env module
+
+```
+./engine migration:generate
+```
+
+Traversal all modules and generate all migrations
+
+```
+./engine migration:generate --all
+```
+----
+
 ## Exception Design
 
 EvaEngine exceptions contains status code for http response. If an exception throw to top, EvaEngine will use `Error\ErrorHandler` to catch exception and set status code into response.

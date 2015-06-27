@@ -33,6 +33,7 @@ use Eva\EvaEngine\Dev;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
+$application->add(new Dev\Env());
 $application->add(new Dev\MakeModule());
 $application->add(new Dev\MakeApp());
 $application->add(new Dev\MakeEntity());

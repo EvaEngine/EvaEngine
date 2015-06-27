@@ -1,5 +1,6 @@
 <?='<?php'?>
 
+
 namespace <?=$namespace?>\<?=$name?>;
 
 use <?=$extends?> as BaseEntity;
@@ -9,7 +10,7 @@ use <?=$extends?> as BaseEntity;
 *
 * @package <?=$namespace?>
 *
-* @SWG\Model(id="<?=str_replace('\\', '_', $namespace) . '_' . $name?>")
+* @SWG\Model(id="<?="$namespace\\$name"?>")
 *
 */
 class <?=$name?> extends BaseEntity
@@ -21,10 +22,22 @@ foreach ($columns as $key => $column) :
 ?>
     /**
      *
+     * @SWG\Property(
+     *   name="<?=$column->getName()?>",
+     *   type="<?=$swaggerTypes[$column->getType()]?>",
+     *   description="<?=$column->getComment()?>"
+     * )
+     *
      * @var <?=$phalconTypes[$column->getType()] . "\n";?>
      */
     public $<?=$column->getName()?><?=$column->getDefault() ? " = '{$column->getDefault()}'" : ''?>;
 
 <?endforeach?>
 <?endif?>
+
+    /**
+     * Database table name (Not including prefix)
+     * @var string
+     */
+    protected $tableName = '<?=$tableName?>';
 }
