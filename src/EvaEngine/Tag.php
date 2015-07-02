@@ -93,13 +93,13 @@ class Tag extends \Phalcon\Tag
         return $translate;
     }
 
-    public static function flashOutput()
+    public static function flashOutput($remove = true)
     {
         $flash = self::getDI()->getFlash();
         if (!$flash) {
             return '';
         }
-        $messages = $flash->getMessages();
+        $messages = $flash->getMessages(null, $remove);
         $classMapping = array(
             'error' => 'alert alert-danger',
             'warning' => 'alert alert-warning',
