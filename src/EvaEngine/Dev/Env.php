@@ -70,7 +70,7 @@ class Env extends Command
             return $value;
         }
         $env = self::getVariables();
-        $key = str_replace('_', '-', strtoupper($key));
+        $key = str_replace('-', '_', strtoupper($key));
         return $env->get($key) ?: getenv($key);
     }
 
@@ -86,6 +86,7 @@ class Env extends Command
         }
 
         if (!self::$env) {
+            //TODO:: ENV section is phalcon bug, waiting for fix
             return self::$env = with(new Ini($path))->ENV;
         }
 

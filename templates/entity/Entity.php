@@ -1,18 +1,19 @@
 <?='<?php'?>
 
 
-namespace <?=$namespace?>\<?=$name?>;
+namespace <?=$namespace?>;
 
 use <?=$extends?> as BaseEntity;
 
 /**
-* Class <?=$name?>
-*
-* @package <?=$namespace?>
-*
-* @SWG\Model(id="<?="$namespace\\$name"?>")
-*
-*/
+ * Class <?=$name?>
+
+ *
+ * @package <?=$namespace?>
+ *
+ * @SWG\Model(id="<?="$namespace\\$name"?>")
+ *
+ */
 class <?=$name?> extends BaseEntity
 {
 <?if ($columns) :?>
