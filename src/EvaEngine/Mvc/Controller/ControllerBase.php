@@ -380,7 +380,7 @@ class ControllerBase extends Controller
      */
     public function cors(
         $allowCredentials = 'true',
-        $allowMethods = '*',
+        $allowMethods = 'GET, POST, PUT, DELETE, OPTIONS',
         $allowHeaders = null
     ) {
         if (empty($_SERVER['HTTP_ORIGIN'])) {
