@@ -165,7 +165,8 @@ class ControllerBase extends Controller
                 'errors' => array(
                     array(
                         'code' => $code,
-                        'message' => $message
+                        'message' => $message,
+                        'message_human'=>$this->getDI()->getTranslate()->query($message)
                     )
                 ),
             )
