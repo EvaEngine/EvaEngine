@@ -222,6 +222,7 @@ class ControllerBase extends Controller
                         array(
                             'code' => $exception->getCode(),
                             'message' => $exception->getMessage(),
+                            'message_human'=>$this->getDI()->getTranslate()->query($exception->getMessage())
                         )
                     ),
                 )
@@ -235,12 +236,15 @@ class ControllerBase extends Controller
                 $errors[] = array(
                     'code' => 0,
                     'message' => $message->getMessage(),
+                    'message_human'=>$this->getDI()->getTranslate()->query($message->getMessage())
+
                 );
             }
         }
         $errors[] = array(
             'code' => $exception->getCode(),
             'message' => $exception->getMessage(),
+            'message_human'=>$this->getDI()->getTranslate()->query($exception->getMessage())
         );
 
         return $this->response->setJsonContent(
@@ -343,6 +347,7 @@ class ControllerBase extends Controller
             $content[] = array(
                 'code' => 10001,
                 'message' => $message->getMessage(),
+                'message_human'=>$this->getDI()->getTranslate()->query($message->getMessage())
             );
         }
         $this->response->setStatusCode(400, $this->recommendedReasonPhrases[400]);
