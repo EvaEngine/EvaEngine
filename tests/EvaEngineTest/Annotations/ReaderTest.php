@@ -56,6 +56,21 @@ DOC
     {
         $res = Reader::parseComment(<<<DOC
 /**
+ 中文
+
+ @Simple @SingleParam(
+ "Param") @MultipleParams(         "First",
+ Second, 1,    1.1
+ ,-10,
+ false,    true,
+ null)
+ */
+DOC
+        );
+        $this->assertEquals(6, count($res));
+
+        $res = Reader::parseComment(<<<DOC
+/**
  * This is a property string
  *
  * @return string
@@ -67,6 +82,7 @@ DOC
 DOC
         );
         $this->assertEquals(6, count($res));
+
 
     }
 }

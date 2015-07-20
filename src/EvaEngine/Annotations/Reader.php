@@ -17,60 +17,56 @@ class Reader extends BaseReader
 
     private $phalconParseResult;
 
+    private static $docStack = [];
+
+    private static function pushToDocStack($type, array $strArray)
+    {
+        self::$docStack[] = [
+            'type' => $type,
+            'string' => implode('', $strArray),
+        ];
+    }
 
     public static function parseComment($docComment)
     {
         $docComment = self::removeCommentSeparators($docComment);
-        $letters = str_split($docComment);
-        $stacks = [];
+        $letters = preg_split('//u', $docComment, null, PREG_SPLIT_NO_EMPTY);
         $stack = [];
         $stackType = 'description';
         $stackDeepth = 0;
+        $docLength = count($letters) - 1;
 
         foreach ($letters as $i => $letter) {
-            if (!$stack) {
-                if ($letter === '@') {
-                    $stackType = 'argument';
-                } else {
-                    $stackType = 'description';
-                }
-                $stack[] = $letter;
-            } else {
-                if ($stackType === 'description') {
-                    if ($letter === '@') {
-                        $stacks[] = [
-                            'type' => $stackType,
-                            'string' => implode('', $stack)
-                        ];
-                        $stackType = 'argument';
-                        $stack = ['@'];
-                    } else {
-                        $stack[] = $letter;
-                    }
-                } else {
-                    if ($letter === '(') {
-                        $stackDeepth++;
-                    } elseif ($letter === ')') {
-                        $stackDeepth--;
-                    }
+            if (!$stack && $letter === '@') {
+                $stackType = 'argument';
+            }
 
-                    $stack[] = $letter;
-                    if ($letter === "\n" && $stackDeepth === 0) {
-                        $stacks[] = [
-                            'type' => $stackType,
-                            'string' => implode('', $stack)
-                        ];
-                        $stack = [];
-                    }
-                }
+            if ($stackType === 'argument' && $letter === '(') {
+                $stackDeepth++;
+            }
+
+            if ($stackType === 'argument' && $letter === ')') {
+                $stackDeepth--;
+            }
+
+            $stack[] = $letter;
+            $nextLetter = isset($letters[$i + 1]) ? $letters[$i + 1] : null;
+
+            if (($stackType === "description" && $letter === "\n")
+                || ($stackType === 'description' && $nextLetter === '@')
+                || ($stackType === 'argument' && $stackDeepth === 0 && $letter === "\n")
+                || ($stackType === 'argument' && $stackDeepth === 0 && $nextLetter === "@")
+                || $i === $docLength
+            ) {
+                self::pushToDocStack($stackType, $stack);
+                //Reset stack
+                $stack = [];
+                $stackType = 'description';
+                $stackDeepth = 0;
             }
         }
-        $stacks[] = [
-            'type' => $stackType,
-            'string' => implode('', $stack)
-        ];
 
-        return $stacks;
+        return self::$docStack;
     }
 
     public static function removeCommentSeparators($docComment)
