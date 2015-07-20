@@ -9,12 +9,19 @@
 
 namespace Eva\EvaEngine\Dev;
 
+use Eva\EvaEngine\Annotations\Reader;
 use Eva\EvaEngine\Db\ColumnsFactory;
 use Eva\EvaEngine\Exception;
-use Eva\EvaEngine\Module\Manager as ModuleManager;
+use Phalcon\Annotations\Adapter\Memory as AnnotationHandler;
+use Phalcon\Annotations\Annotation;
 use Phalcon\Db\Column;
 use Phalcon\Db\Adapter;
 use Phalcon\Text;
+use PhpParser\Lexer\Emulative;
+use PhpParser\NodeDumper;
+use PhpParser\NodeTraverser;
+use PhpParser\Parser;
+use PhpParser\PrettyPrinter\Standard;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -46,9 +53,27 @@ class MakeEntity extends Command
 
     protected $template;
 
-    public function setTemplate()
-    {
+    protected static $processingModule = [
+        'name' => '',
+        'namespace' => '',
+        'class' => '',
+        'extends' => '',
+        'dbPrefix' => '',
+        'dbTable' => '',
+        'dbFullTable' => '',
+        'target' => '',
+    ];
 
+    protected static $processingEntity = [
+        'class' => '',
+        'target' => '',
+    ];
+
+    protected static $annotations = [];
+
+    public function setTemplate($template)
+    {
+        $this->template = $template;
     }
 
     public function registerEnvOptions(...$options)
@@ -67,6 +92,13 @@ class MakeEntity extends Command
         }
     }
 
+    /**
+     * Dynamic load module & get module namespace by Module Name
+     *
+     * @return array
+     * @throws Exception\IOException
+     * @throws Exception\LogicException
+     */
     public function getModuleInfo()
     {
         $moduleName = Env::getVariable('module');
@@ -205,9 +237,6 @@ class MakeEntity extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $name = $input->getArgument('name');
-        $extends = $input->getOption('extends');
-        $dbTable = $input->getOption('db-table');
-        $dbPrefix = Env::getVariable('db-prefix');
 
         if (false === file_exists($this->template)) {
             $output->writeln(sprintf(
@@ -218,20 +247,49 @@ class MakeEntity extends Command
         }
 
         $module = $this->getModuleInfo();
-        $target = $input->getOption('target') ?: $module['entityPath'] . '/' . ucfirst($name) . '.php';
         $namespace = $input->getOption('namespace') ?: $module['namespace'];
+        $dbTable = $input->getOption('db-table');
+        $dbPrefix = Env::getVariable('db-prefix');
+
+        $target = $input->getOption('target') ?: $module['entityPath'] . '/' . ucfirst($name) . '.php';
+        self::$processingEntity = array_merge(self::$processingEntity, [
+            'name' => $name,
+            'namespace' => $namespace,
+            'class' => "$namespace\\$name",
+            'extends' => $input->getOption('extends'),
+            'dbPrefix' => $dbPrefix,
+            'dbTable' => $dbTable,
+            'dbFullTable' => $dbPrefix . $dbTable,
+            'target' => $target,
+        ]);
+
         if (true === file_exists($target)) {
+            return $this->update($input, $output, $module);
+            /*
             $output->writeln(sprintf(
                 '<error>Target entity file %s already exists</error>',
                 $target
             ));
             return false;
+            */
         }
 
+        return $this->create($input, $output, $module);
+
+    }
+
+    protected function create(InputInterface $input, OutputInterface $output, $module)
+    {
+        $entity = self::$processingEntity;
+        $name = $entity['name'];
+        $target = $entity['target'];
+        $namespace = $entity['namespace'];
+        $extends = $entity['extends'];
+        $dbTable = $entity['dbTable'];
+        $dbFullTable = $entity['dbFullTable'];
 
         $dbColumns = [];
         if ($dbTable) {
-            $dbFullTable = $dbPrefix . $dbTable;
             /** @var Adapter $db */
             $db = $this->getDbConnection();
             $dbColumns = $this->dbTableToEntity($db, $dbFullTable);
@@ -267,6 +325,108 @@ class MakeEntity extends Command
 
         $fs->dumpFile($target, $content);
         $output->writeln(sprintf("<info>Entity %s created as file %s</info>", $name, $target));
+    }
+
+    protected function update(InputInterface $input, OutputInterface $output, $module)
+    {
+        $entity = self::$processingEntity;
+        $name = $entity['name'];
+        $target = $entity['target'];
+        $namespace = $entity['namespace'];
+        $extends = $entity['extends'];
+        $dbTable = $entity['dbTable'];
+        $dbFullTable = $entity['dbFullTable'];
+        $dbColumns = [];
+
+        require_once $target;
+
+        if ($dbTable) {
+            /** @var Adapter $db */
+            $db = $this->getDbConnection();
+            $dbColumns = $this->dbTableToEntity($db, $dbFullTable);
+        }
+
+        self::$processingModule = $module;
+        $parser = new Parser(new Emulative());
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor(new AnnotationResolver());
+        $prettyPrinter = new Standard();
+        $stmts = $parser->parse(file_get_contents($target));
+        $stmts = $traverser->traverse($stmts);
+        $code = $prettyPrinter->prettyPrintFile($stmts);
+
+        $fs = new Filesystem();
+        $fs->dumpFile($target, $code);
+        $output->writeln(sprintf("<info>Entity %s updated as file %s</info>", $name, $target));
+    }
+
+    /**
+     * @param $class
+     * @return \Phalcon\Annotations\Reflection
+     */
+    public static function getAnnotations($class)
+    {
+        if (isset(self::$annotations[$class])) {
+            return self::$annotations[$class];
+        }
+
+        $annotationHandler = new AnnotationHandler();
+        $annotationHandler->setReader(new Reader());
+        return self::$annotations[$class] = $annotationHandler->get($class);
+    }
+
+    public static function getPropertyAnnotation($class, $property)
+    {
+        $annotation = self::getAnnotations($class);
+        $annotations = $annotation->getPropertiesAnnotations();
+        if (isset($annotations[$property])) {
+            return $annotations[$property];
+        }
+        return null;
+    }
+
+    public static function annotationResolveCallback($property, $rawAnnotation)
+    {
+        $entity = self::$processingEntity;
+        $class = $entity['class'];
+        if (!$class) {
+            return $rawAnnotation;
+        }
+
+        $annotationCollection = self::getPropertyAnnotation($class, $property);
+        $annotations = $annotationCollection->getAnnotations();
+        return self::annotationsToString($annotations);
+    }
+
+    public static function annotationsToString(array $annotations = [])
+    {
+        $docComment = '';
+        if (!$annotations) {
+            return "/**\n*/\n";
+        }
+
+        $docComment .= "/**\n";
+
+        foreach ($annotations as $key => $annotation) {
+            /** @var Annotation $annotation */
+            $docComment .= " * @{$annotation->getName()}";
+            print_r($annotation);exit;
+
+            if ($annotation->numberArguments() > 0) {
+                $docComment .= '(';
+                $arguments = $annotation->getArguments();
+                $argumentsArray = [];
+                foreach ($arguments as $key => $value) {
+                    $argumentsArray[] = "$key=\"$value\"";
+                }
+                $docComment .= implode(',', $argumentsArray) . ")";
+            }
+            $docComment .= "\n";
+        }
+
+        $docComment .= "*/\n";
+        dd($docComment);
+        exit;
     }
 
     public function loadTemplate($path, array $vars = [])
