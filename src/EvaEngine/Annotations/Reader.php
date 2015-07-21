@@ -19,49 +19,91 @@ class Reader extends BaseReader
 
     private static $docStack = [];
 
+    const ANNOTATION_TYPE_DESCRIPTION = 'description';
+
+    const ANNOTATION_TYPE_ARGUMENT = 'argument';
+
     private static function pushToDocStack($type, array $strArray)
     {
+        $annotationString = implode('', $strArray);
+        $argumentName = '';
+        $argumentString = '';
+        $argumentValue = '';
+        if ($annotationString && $type === self::ANNOTATION_TYPE_ARGUMENT) {
+            $argumentString = trim(ltrim($annotationString, '@'));
+            $argument = explode('(', $argumentString);
+
+            if (count($argument) <= 1) {
+                //Annotation format as @foo bar => name:foo value: bar
+                $argument = explode(' ', $argument[0]);
+                $argumentName = array_shift($argument);
+                $argumentValue = implode(' ', $argument);
+            } else {
+                if (false !== strpos(trim($argument[0]), ' ')) {
+                    //Annotation format as @foo bar(test) => name:foo value: bar(test)
+                    $argument = explode(' ', $argumentString);
+
+                    $argumentName = array_shift($argument);
+                    $argumentValue = implode(' ', $argument);
+                } else {
+                    //Annotation format as @foo(bar) => name:foo value:null
+                    //Annotation format as @foo (test) => name:foo value:null
+                    $argumentName = trim($argument[0]);
+                    $annotationString = implode('(', $argument);
+                }
+            }
+        }
+
         self::$docStack[] = [
             'type' => $type,
-            'string' => implode('', $strArray),
+            'argumentName' => $argumentName,
+            //'argumentString' => $argumentString,
+            'value' => $argumentValue,
+            'rawString' => $annotationString,
         ];
     }
 
     public static function parseComment($docComment)
     {
+        self::$docStack = [];
         $docComment = self::removeCommentSeparators($docComment);
-        $letters = preg_split('//u', $docComment, null, PREG_SPLIT_NO_EMPTY);
+        if (!$docComment) {
+            return [];
+        }
+        //TODO:: UTF8 support
+        //$letters = preg_split('//u', $docComment, null, PREG_SPLIT_NO_EMPTY);
+        $letters = str_split($docComment);
         $stack = [];
-        $stackType = 'description';
+        $stackType = self::ANNOTATION_TYPE_DESCRIPTION;
         $stackDeepth = 0;
         $docLength = count($letters) - 1;
 
         foreach ($letters as $i => $letter) {
             if (!$stack && $letter === '@') {
-                $stackType = 'argument';
+                $stackType = self::ANNOTATION_TYPE_ARGUMENT;
             }
 
-            if ($stackType === 'argument' && $letter === '(') {
+            if ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $letter === '(') {
                 $stackDeepth++;
             }
-
-            if ($stackType === 'argument' && $letter === ')') {
+            if ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $letter === ')') {
                 $stackDeepth--;
             }
 
             $stack[] = $letter;
             $nextLetter = isset($letters[$i + 1]) ? $letters[$i + 1] : null;
 
-            if (($stackType === "description" && $letter === "\n")
-                || ($stackType === 'description' && $nextLetter === '@')
-                || ($stackType === 'argument' && $stackDeepth === 0 && $letter === "\n")
-                || ($stackType === 'argument' && $stackDeepth === 0 && $nextLetter === "@")
-                || $i === $docLength
+            //echo sprintf("letter:%s, type:%s, nextLetter:%s, deep: %s\n", $letter, $stackType, $nextLetter, $stackDeepth);
+            if (($stackType === self::ANNOTATION_TYPE_DESCRIPTION && $letter === "\n")
+                || ($stackType === self::ANNOTATION_TYPE_DESCRIPTION && $nextLetter === '@')
+                || ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $stackDeepth === 0 && $letter === "\n")
+                || ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $stackDeepth === 0 && $nextLetter === "@")
+                || $i === $docLength //last stack
             ) {
                 self::pushToDocStack($stackType, $stack);
                 //Reset stack
                 $stack = [];
-                $stackType = 'description';
+                $stackType = self::ANNOTATION_TYPE_DESCRIPTION;
                 $stackDeepth = 0;
             }
         }
