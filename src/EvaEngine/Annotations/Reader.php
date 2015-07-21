@@ -13,10 +13,6 @@ use Phalcon\Text;
 
 class Reader extends BaseReader
 {
-    private $className;
-
-    private $phalconParseResult;
-
     private static $docStack = [];
 
     const ANNOTATION_TYPE_DESCRIPTION = 'description';
@@ -26,11 +22,16 @@ class Reader extends BaseReader
     private static function pushToDocStack($type, array $strArray)
     {
         $annotationString = implode('', $strArray);
+        //Blank or \n
+        if (!trim($annotationString)) {
+            return self::$docStack;
+        }
+
         $argumentName = '';
         $argumentString = '';
         $argumentValue = '';
         if ($annotationString && $type === self::ANNOTATION_TYPE_ARGUMENT) {
-            $argumentString = trim(ltrim($annotationString, '@'));
+            $argumentString = ltrim($annotationString, '@');
             $argument = explode('(', $argumentString);
 
             if (count($argument) <= 1) {
@@ -55,11 +56,15 @@ class Reader extends BaseReader
         }
 
         self::$docStack[] = [
-            'type' => $type,
-            'argumentName' => $argumentName,
-            //'argumentString' => $argumentString,
-            'value' => $argumentValue,
+            'mainType' => $type,
+            'name' => $argumentName,
+            'value' => trim($argumentValue),
             'rawString' => $annotationString,
+            //Phalcon default fields: name / type / file / line / arguments(optional)
+            'type' => null,
+            'arguments' => null,
+            'file' => null,
+            'line' => null,
         ];
     }
 
@@ -79,7 +84,10 @@ class Reader extends BaseReader
         $docLength = count($letters) - 1;
 
         foreach ($letters as $i => $letter) {
-            if (!$stack && $letter === '@') {
+            $nextLetter = isset($letters[$i + 1]) ? $letters[$i + 1] : null;
+
+            if (!$stack && $letter === '@' && $nextLetter !== ' ') {
+                //Annotation `@ foo bar(test)` will consider as description
                 $stackType = self::ANNOTATION_TYPE_ARGUMENT;
             }
 
@@ -91,14 +99,28 @@ class Reader extends BaseReader
             }
 
             $stack[] = $letter;
-            $nextLetter = isset($letters[$i + 1]) ? $letters[$i + 1] : null;
 
-            //echo sprintf("letter:%s, type:%s, nextLetter:%s, deep: %s\n", $letter, $stackType, $nextLetter, $stackDeepth);
-            if (($stackType === self::ANNOTATION_TYPE_DESCRIPTION && $letter === "\n")
-                || ($stackType === self::ANNOTATION_TYPE_DESCRIPTION && $nextLetter === '@')
-                || ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $stackDeepth === 0 && $letter === "\n")
-                || ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $stackDeepth === 0 && $nextLetter === "@")
-                || $i === $docLength //last stack
+            //For DEBUG:
+            //echo sprintf("letter:%s, type:%s, nextLetter:%s, deep: %s\n",
+            // $letter, $stackType, $nextLetter, $stackDeepth);
+
+            if ((
+                    $letter === "\n" && $stackType === self::ANNOTATION_TYPE_DESCRIPTION
+                ) || (
+                    $nextLetter === '@' && $stackType === self::ANNOTATION_TYPE_DESCRIPTION
+                ) ||
+                //check last stack
+                $i === $docLength
+                || (
+                    //for case: `@foo() some test @bar()`
+                    $nextLetter === "@" && $stackDeepth === 0 &&
+                    $stackType === self::ANNOTATION_TYPE_ARGUMENT
+                ) || (
+                    //for case: `@foo() some text`
+                    //for case: `@foo some text\n`
+                    true === in_array($letter, ["\n", ')']) && $stackDeepth === 0 &&
+                    $stackType === self::ANNOTATION_TYPE_ARGUMENT && $stackDeepth === 0
+                )
             ) {
                 self::pushToDocStack($stackType, $stack);
                 //Reset stack
@@ -198,7 +220,20 @@ class Reader extends BaseReader
 
     public static function parseDocBlock($docBlock, $file = null, $line = null)
     {
-        $res = parent::parseDocBlock($docBlock, $file, $line);
-        return $res;
+        $baseParseResults = parent::parseDocBlock($docBlock, $file, $line);
+        $advanceParseResults = self::parseComment($docBlock);
+        $argumentIndex = 0;
+        foreach ($advanceParseResults as $key => $res) {
+            if ($res['mainType'] !== self::ANNOTATION_TYPE_ARGUMENT) {
+                continue;
+            }
+            if (isset($baseParseResults[$argumentIndex]['name']) &&
+                $baseParseResults[$argumentIndex]['name'] == $res['name']
+            ) {
+                $advanceParseResults[$key] = array_merge($res, $baseParseResults[$argumentIndex]);
+            }
+            $argumentIndex++;
+        }
+        return $advanceParseResults;
     }
 }
