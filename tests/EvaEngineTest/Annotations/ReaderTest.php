@@ -2,6 +2,7 @@
 
 namespace Eva\EvaEngine\EvaEngineTest\Annotations;
 
+use Eva\EvaEngine\Annotations\Annotation;
 use Eva\EvaEngine\Annotations\Reader;
 use Phalcon\Http\Request;
 
@@ -81,33 +82,33 @@ DOC
         );
         $this->assertEquals(10, count($res));
         $annotation = $res[0];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_DESCRIPTION, $annotation['mainType']);
-        $this->assertEmpty($annotation['name']);
-        $this->assertEmpty($annotation['value']);
+        $this->assertEquals(Annotation::TYPE_DESCRIPTION, $annotation['mainType']);
+        $this->assertNotEmpty($annotation['name']);
+        $this->assertNotEmpty($annotation['value']);
         $annotation = $res[1];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_DESCRIPTION, $annotation['mainType']);
-        $this->assertEmpty($annotation['name']);
-        $this->assertEmpty($annotation['value']);
+        $this->assertEquals(Annotation::TYPE_DESCRIPTION, $annotation['mainType']);
+        $this->assertNotEmpty($annotation['name']);
+        $this->assertNotEmpty($annotation['value']);
         $annotation = $res[2];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_DESCRIPTION, $annotation['mainType']);
-        $this->assertEmpty($annotation['name']);
-        $this->assertEmpty($annotation['value']);
+        $this->assertEquals(Annotation::TYPE_DESCRIPTION, $annotation['mainType']);
+        $this->assertNotEmpty($annotation['name']);
+        $this->assertNotEmpty($annotation['value']);
         $annotation = $res[3];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('foo', $annotation['name']);
-        $this->assertEmpty($annotation['value']);
+        //$this->assertEmpty($annotation['value']);
         $annotation = $res[4];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('return', $annotation['name']);
         $this->assertEquals('string', $annotation['value']);
         $annotation = $res[5];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('foo', $annotation['name']);
         $this->assertEquals('bar(test)', $annotation['value']);
         $annotation = $res[9];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('NamedMultipleParams', $annotation['name']);
-        $this->assertEmpty($annotation['value']);
+        //$this->assertEmpty($annotation['value']);
 
         $res = Reader::parseComment(<<<DOC
 /**
@@ -124,15 +125,15 @@ DOC
         );
         $this->assertEquals(4, count($res));
         $annotation = $res[0];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_DESCRIPTION, $annotation['mainType']);
-        $this->assertEmpty($annotation['name']);
-        $this->assertEmpty($annotation['value']);
+        $this->assertEquals(Annotation::TYPE_DESCRIPTION, $annotation['mainType']);
+        $this->assertNotEmpty($annotation['name']);
+        $this->assertNotEmpty($annotation['value']);
         $annotation = $res[1];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('Simple', $annotation['name']);
         $this->assertEmpty($annotation['value']);
         $annotation = $res[2];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('SingleParam', $annotation['name']);
         $this->assertEmpty($annotation['value']);
 
@@ -147,18 +148,18 @@ DOC
 
         $this->assertEquals(5, count($res));
         $annotation = $res[0];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('Simple', $annotation['name']);
         $annotation = $res[1];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('SingleParam', $annotation['name']);
         $annotation = $res[2];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_DESCRIPTION, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_DESCRIPTION, $annotation['mainType']);
         $annotation = $res[3];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_ARGUMENT, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_ARGUMENT, $annotation['mainType']);
         $this->assertEquals('MultipleParams', $annotation['name']);
         $annotation = $res[4];
-        $this->assertEquals(Reader::ANNOTATION_TYPE_DESCRIPTION, $annotation['mainType']);
+        $this->assertEquals(Annotation::TYPE_DESCRIPTION, $annotation['mainType']);
     }
 
     public function testIncompleteDocBlock()

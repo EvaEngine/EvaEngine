@@ -11,14 +11,23 @@ namespace Eva\EvaEngine\Annotations;
 use Phalcon\Annotations\Reader as BaseReader;
 use Phalcon\Text;
 
+/**
+ * Class Reader
+ * @package Eva\EvaEngine\Annotations
+ */
 class Reader extends BaseReader
 {
+    /**
+     * @var array
+     */
     private static $docStack = [];
 
-    const ANNOTATION_TYPE_DESCRIPTION = 'description';
 
-    const ANNOTATION_TYPE_ARGUMENT = 'argument';
-
+    /**
+     * @param $type
+     * @param array $strArray
+     * @return array
+     */
     private static function pushToDocStack($type, array $strArray)
     {
         $annotationString = implode('', $strArray);
@@ -27,10 +36,15 @@ class Reader extends BaseReader
             return self::$docStack;
         }
 
-        $argumentName = '';
+        //Generate a random name for description annotation
+        $argumentName = '__' . Text::random(Text::RANDOM_ALNUM, 8);
         $argumentString = '';
         $argumentValue = '';
-        if ($annotationString && $type === self::ANNOTATION_TYPE_ARGUMENT) {
+        $value = '';
+
+        if ($type === Annotation::TYPE_DESCRIPTION) {
+            $value = $annotationString;
+        } elseif ($type === Annotation::TYPE_ARGUMENT) {
             $argumentString = ltrim($annotationString, '@');
             $argument = explode('(', $argumentString);
 
@@ -53,21 +67,27 @@ class Reader extends BaseReader
                     $annotationString = implode('(', $argument);
                 }
             }
+            $value = trim($argumentValue);
         }
 
         self::$docStack[] = [
             'mainType' => $type,
             'name' => $argumentName,
-            'value' => trim($argumentValue),
-            'rawString' => $annotationString,
+            'value' => $value,
+            //'rawString' => $annotationString,
+
             //Phalcon default fields: name / type / file / line / arguments(optional)
             'type' => null,
-            'arguments' => null,
+            //'arguments' => null,
             'file' => null,
             'line' => null,
         ];
     }
 
+    /**
+     * @param $docComment
+     * @return array
+     */
     public static function parseComment($docComment)
     {
         self::$docStack = [];
@@ -79,7 +99,7 @@ class Reader extends BaseReader
         //$letters = preg_split('//u', $docComment, null, PREG_SPLIT_NO_EMPTY);
         $letters = str_split($docComment);
         $stack = [];
-        $stackType = self::ANNOTATION_TYPE_DESCRIPTION;
+        $stackType = Annotation::TYPE_DESCRIPTION;
         $stackDeepth = 0;
         $docLength = count($letters) - 1;
 
@@ -88,13 +108,13 @@ class Reader extends BaseReader
 
             if (!$stack && $letter === '@' && $nextLetter !== ' ') {
                 //Annotation `@ foo bar(test)` will consider as description
-                $stackType = self::ANNOTATION_TYPE_ARGUMENT;
+                $stackType = Annotation::TYPE_ARGUMENT;
             }
 
-            if ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $letter === '(') {
+            if ($stackType === Annotation::TYPE_ARGUMENT && $letter === '(') {
                 $stackDeepth++;
             }
-            if ($stackType === self::ANNOTATION_TYPE_ARGUMENT && $letter === ')') {
+            if ($stackType === Annotation::TYPE_ARGUMENT && $letter === ')') {
                 $stackDeepth--;
             }
 
@@ -105,27 +125,27 @@ class Reader extends BaseReader
             // $letter, $stackType, $nextLetter, $stackDeepth);
 
             if ((
-                    $letter === "\n" && $stackType === self::ANNOTATION_TYPE_DESCRIPTION
+                    $letter === "\n" && $stackType === Annotation::TYPE_DESCRIPTION
                 ) || (
-                    $nextLetter === '@' && $stackType === self::ANNOTATION_TYPE_DESCRIPTION
+                    $nextLetter === '@' && $stackType === Annotation::TYPE_DESCRIPTION
                 ) ||
                 //check last stack
                 $i === $docLength
                 || (
                     //for case: `@foo() some test @bar()`
                     $nextLetter === "@" && $stackDeepth === 0 &&
-                    $stackType === self::ANNOTATION_TYPE_ARGUMENT
+                    $stackType === Annotation::TYPE_ARGUMENT
                 ) || (
                     //for case: `@foo() some text`
                     //for case: `@foo some text\n`
                     true === in_array($letter, ["\n", ')']) && $stackDeepth === 0 &&
-                    $stackType === self::ANNOTATION_TYPE_ARGUMENT && $stackDeepth === 0
+                    $stackType === Annotation::TYPE_ARGUMENT && $stackDeepth === 0
                 )
             ) {
                 self::pushToDocStack($stackType, $stack);
                 //Reset stack
                 $stack = [];
-                $stackType = self::ANNOTATION_TYPE_DESCRIPTION;
+                $stackType = Annotation::TYPE_DESCRIPTION;
                 $stackDeepth = 0;
             }
         }
@@ -224,7 +244,7 @@ class Reader extends BaseReader
         $advanceParseResults = self::parseComment($docBlock);
         $argumentIndex = 0;
         foreach ($advanceParseResults as $key => $res) {
-            if ($res['mainType'] !== self::ANNOTATION_TYPE_ARGUMENT) {
+            if ($res['mainType'] !== Annotation::TYPE_ARGUMENT) {
                 continue;
             }
             if (isset($baseParseResults[$argumentIndex]['name']) &&

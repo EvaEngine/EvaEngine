@@ -12,7 +12,7 @@ namespace Eva\EvaEngine\Dev;
 use Eva\EvaEngine\Annotations\Reader;
 use Eva\EvaEngine\Db\ColumnsFactory;
 use Eva\EvaEngine\Exception;
-use Phalcon\Annotations\Adapter\Memory as AnnotationHandler;
+use Eva\EvaEngine\Annotations\Adapter\Memory as AnnotationHandler;
 use Phalcon\Annotations\Annotation;
 use Phalcon\Db\Column;
 use Phalcon\Db\Adapter;
@@ -201,6 +201,11 @@ class MakeEntity extends Command
                 InputArgument::REQUIRED,
                 'Entity name'
             )
+            ->addArgument(
+                'name2',
+                InputArgument::OPTIONAL,
+                'Entity name'
+            )
             ->addOption(
                 'namespace',
                 'ns',
@@ -280,6 +285,7 @@ class MakeEntity extends Command
 
     protected function create(InputInterface $input, OutputInterface $output, $module)
     {
+
         $entity = self::$processingEntity;
         $name = $entity['name'];
         $target = $entity['target'];
@@ -347,16 +353,21 @@ class MakeEntity extends Command
         }
 
         self::$processingModule = $module;
-        $parser = new Parser(new Emulative());
-        $traverser = new NodeTraverser();
-        $traverser->addVisitor(new AnnotationResolver());
-        $prettyPrinter = new Standard();
-        $stmts = $parser->parse(file_get_contents($target));
-        $stmts = $traverser->traverse($stmts);
-        $code = $prettyPrinter->prettyPrintFile($stmts);
+        try {
+            $parser = new Parser(new Emulative());
+            $traverser = new NodeTraverser();
+            $traverser->addVisitor(new AnnotationResolver());
+            $prettyPrinter = new Standard();
+            $stmts = $parser->parse(file_get_contents($target));
+            $stmts = $traverser->traverse($stmts);
+            $code = $prettyPrinter->prettyPrintFile($stmts);
+        } catch (\Exception $e) {
+            echo $e;
+            return;
+        }
 
         $fs = new Filesystem();
-        $fs->dumpFile($target, $code);
+        //$fs->dumpFile($target, $code);
         $output->writeln(sprintf("<info>Entity %s updated as file %s</info>", $name, $target));
     }
 
@@ -395,6 +406,7 @@ class MakeEntity extends Command
 
         $annotationCollection = self::getPropertyAnnotation($class, $property);
         $annotations = $annotationCollection->getAnnotations();
+        dd($annotations);
         return self::annotationsToString($annotations);
     }
 
@@ -410,7 +422,6 @@ class MakeEntity extends Command
         foreach ($annotations as $key => $annotation) {
             /** @var Annotation $annotation */
             $docComment .= " * @{$annotation->getName()}";
-            print_r($annotation);exit;
 
             if ($annotation->numberArguments() > 0) {
                 $docComment .= '(';
@@ -425,8 +436,8 @@ class MakeEntity extends Command
         }
 
         $docComment .= "*/\n";
-        dd($docComment);
-        exit;
+
+        return $docComment;
     }
 
     public function loadTemplate($path, array $vars = [])
