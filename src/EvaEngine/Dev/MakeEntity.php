@@ -482,13 +482,44 @@ class MakeEntity extends Command
 
         $annotations = $annotationCollection[$property]->getAnnotations();
         if ($column) {
+            $hasSwaggerAnnotation = false;
             //Update Swagger Annotation by DB
             foreach ($annotations as $key => $annotation) {
                 /** @var Annotation $annotation */
                 if ('SWG\Property' == $annotation->getName()) {
+                    $hasSwaggerAnnotation = true;
                     $annotations[$key] = self::mergeColumnToSwaggerAnnotation($column, $annotation);
                     break;
                 }
+            }
+
+            if (false === $hasSwaggerAnnotation) {
+                array_unshift($annotations, new Annotation([
+                    'name' => 'SWG\Property',
+                    'arguments' => [
+                        [
+                            'name' => 'name',
+                            'expr' => [
+                                'type' => 303,
+                                'value' => $property,
+                            ],
+                        ],
+                        [
+                            'name' => 'type',
+                            'expr' => [
+                                'type' => 303,
+                                'value' => self::$swaggerTypes[$column->getType()],
+                            ],
+                        ],
+                        [
+                            'name' => 'description',
+                            'expr' => [
+                                'type' => 303,
+                                'value' => $column->getComment()
+                            ],
+                        ],
+                    ]
+                ]));
             }
         }
         return self::annotationsToString($annotations);
