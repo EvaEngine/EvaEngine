@@ -64,6 +64,7 @@ class ColumnsFactory
             ];
         }
 
+        $columnsArray = [];
         /** @var Column $column */
         foreach ($columns as $key => $column) {
             $columnName = $column->getName();
@@ -93,9 +94,9 @@ class ColumnsFactory
 
             $columnArray = array_merge($columnArray, $columnExtras[$columnName]);
             $column = new Column($columnName, $columnArray);
-            $columns[$key] = $column;
+            $columnsArray[$column->getName()] = $column;
         }
 
-        return $columns;
+        return $columnsArray;
     }
 }

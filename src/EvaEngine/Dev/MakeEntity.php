@@ -13,8 +13,8 @@ use Eva\EvaEngine\Annotations\Reader;
 use Eva\EvaEngine\Db\ColumnsFactory;
 use Eva\EvaEngine\Exception;
 use Eva\EvaEngine\Annotations\Adapter\Memory as AnnotationHandler;
-use Phalcon\Annotations\Annotation;
-use Phalcon\Db\Column;
+use Eva\EvaEngine\Annotations\Annotation;
+use Eva\EvaEngine\Db\Column;
 use Phalcon\Db\Adapter;
 use Phalcon\Text;
 use PhpParser\Lexer\Emulative;
@@ -51,8 +51,14 @@ class MakeEntity extends Command
      */
     protected $output;
 
+    /**
+     * @var string
+     */
     protected $template;
 
+    /**
+     * @var array
+     */
     protected static $processingModule = [
         'name' => '',
         'namespace' => '',
@@ -64,18 +70,83 @@ class MakeEntity extends Command
         'target' => '',
     ];
 
+    /**
+     * @var array
+     */
     protected static $processingEntity = [
         'class' => '',
         'target' => '',
     ];
 
-    protected static $annotations = [];
+    /**
+     * @var Column
+     */
+    protected static $processingDb;
+
+    /**
+     * @var AnnotationHandler
+     */
+    protected static $annotationHandler;
+
+    /**
+     * @var array
+     */
+    protected static $phalconTypes = [
+        Column::TYPE_INTEGER => 'integer',
+        Column::TYPE_DATE => 'date',
+        Column::TYPE_VARCHAR => 'string',
+        Column::TYPE_DECIMAL => 'float',
+        Column::TYPE_DATETIME => 'datetime',
+        Column::TYPE_CHAR => 'string',
+        Column::TYPE_TEXT => 'text',
+        //Below types are new added in Phalcon 2.0.5
+        Column::TYPE_FLOAT => 'float',
+        Column::TYPE_BOOLEAN => 'boolean',
+        Column::TYPE_DOUBLE => 'float',
+        Column::TYPE_TINYBLOB => 'text',
+        Column::TYPE_BLOB => 'text',
+        Column::TYPE_MEDIUMBLOB => 'text',
+        Column::TYPE_LONGBLOB => 'text',
+        Column::TYPE_BIGINTEGER => 'long',
+        Column::TYPE_JSON => 'json',
+        Column::TYPE_JSONB => 'jsonb',
+    ];
+
+
+    /**
+     * Swagger Types: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#data-types
+     *
+     * @var array
+     */
+    protected static $swaggerTypes = [
+        Column::TYPE_INTEGER => 'integer',
+        Column::TYPE_DATE => 'date',
+        Column::TYPE_VARCHAR => 'string',
+        Column::TYPE_DECIMAL => 'number',
+        Column::TYPE_DATETIME => 'date-time',
+        Column::TYPE_CHAR => 'string',
+        Column::TYPE_TEXT => 'text',
+        //Below types are new added in Phalcon 2.0.5
+        Column::TYPE_FLOAT => 'number',
+        Column::TYPE_BOOLEAN => 'boolean',
+        Column::TYPE_DOUBLE => 'double',
+        Column::TYPE_TINYBLOB => 'text',
+        Column::TYPE_BLOB => 'text',
+        Column::TYPE_MEDIUMBLOB => 'text',
+        Column::TYPE_LONGBLOB => 'text',
+        Column::TYPE_BIGINTEGER => 'long',
+        Column::TYPE_JSON => 'json',
+        Column::TYPE_JSONB => 'jsonb',
+    ];
 
     public function setTemplate($template)
     {
         $this->template = $template;
     }
 
+    /**
+     * @param ...$options
+     */
     public function registerEnvOptions(...$options)
     {
         foreach ($options as $key => $option) {
@@ -154,6 +225,10 @@ class MakeEntity extends Command
         ];
     }
 
+    /**
+     * @return Adapter
+     * @throws Exception\RuntimeException
+     */
     public function getDbConnection()
     {
         $dbConfig = [
@@ -283,6 +358,14 @@ class MakeEntity extends Command
 
     }
 
+    /**
+     * Create an entity
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param $module
+     * @throws Exception\RuntimeException
+     */
     protected function create(InputInterface $input, OutputInterface $output, $module)
     {
 
@@ -308,48 +391,37 @@ class MakeEntity extends Command
             'columns' => $dbColumns,
             'extends' => $extends,
             'tableName' => $dbTable,
-            'phalconTypes' => [
-                Column::TYPE_INTEGER => 'integer',
-                Column::TYPE_DATE => 'date',
-                Column::TYPE_VARCHAR => 'string',
-                Column::TYPE_DECIMAL => 'float',
-                Column::TYPE_DATETIME => 'datetime',
-                Column::TYPE_CHAR => 'string',
-                Column::TYPE_TEXT => 'text',
-            ],
-            //Swagger Types: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#data-types
-            'swaggerTypes' => [
-                Column::TYPE_INTEGER => 'integer',
-                Column::TYPE_DATE => 'date',
-                Column::TYPE_VARCHAR => 'string',
-                Column::TYPE_DECIMAL => 'number',
-                Column::TYPE_DATETIME => 'date-time',
-                Column::TYPE_CHAR => 'string',
-                Column::TYPE_TEXT => 'text',
-            ]
+            'phalconTypes' => self::$phalconTypes,
+            'swaggerTypes' => self::$swaggerTypes,
         ]);
 
         $fs->dumpFile($target, $content);
         $output->writeln(sprintf("<info>Entity %s created as file %s</info>", $name, $target));
     }
 
+    /**
+     * Update an entity
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param $module
+     * @throws Exception\RuntimeException
+     */
     protected function update(InputInterface $input, OutputInterface $output, $module)
     {
         $entity = self::$processingEntity;
         $name = $entity['name'];
         $target = $entity['target'];
-        $namespace = $entity['namespace'];
-        $extends = $entity['extends'];
         $dbTable = $entity['dbTable'];
         $dbFullTable = $entity['dbFullTable'];
-        $dbColumns = [];
+        self::$processingDb = null;
 
         require_once $target;
 
         if ($dbTable) {
             /** @var Adapter $db */
             $db = $this->getDbConnection();
-            $dbColumns = $this->dbTableToEntity($db, $dbFullTable);
+            self::$processingDb = $db = $this->dbTableToEntity($db, $dbFullTable);
         }
 
         self::$processingModule = $module;
@@ -362,40 +434,35 @@ class MakeEntity extends Command
             $stmts = $traverser->traverse($stmts);
             $code = $prettyPrinter->prettyPrintFile($stmts);
         } catch (\Exception $e) {
-            echo $e;
-            return;
+            return $output->writeln($e);
         }
 
         $fs = new Filesystem();
-        //$fs->dumpFile($target, $code);
+        $fs->dumpFile($target, $code);
         $output->writeln(sprintf("<info>Entity %s updated as file %s</info>", $name, $target));
     }
 
     /**
-     * @param $class
-     * @return \Phalcon\Annotations\Reflection
+     * @return AnnotationHandler
      */
-    public static function getAnnotations($class)
+    public static function getAnnotationHandler()
     {
-        if (isset(self::$annotations[$class])) {
-            return self::$annotations[$class];
+        if (self::$annotationHandler) {
+            return self::$annotationHandler;
         }
 
         $annotationHandler = new AnnotationHandler();
         $annotationHandler->setReader(new Reader());
-        return self::$annotations[$class] = $annotationHandler->get($class);
+        return self::$annotationHandler = $annotationHandler;
     }
 
-    public static function getPropertyAnnotation($class, $property)
-    {
-        $annotation = self::getAnnotations($class);
-        $annotations = $annotation->getPropertiesAnnotations();
-        if (isset($annotations[$property])) {
-            return $annotations[$property];
-        }
-        return null;
-    }
-
+    /**
+     * Called by PHP Parser node traverser when property has annoations
+     *
+     * @param $property
+     * @param $rawAnnotation
+     * @return string
+     */
     public static function annotationResolveCallback($property, $rawAnnotation)
     {
         $entity = self::$processingEntity;
@@ -404,42 +471,71 @@ class MakeEntity extends Command
             return $rawAnnotation;
         }
 
-        $annotationCollection = self::getPropertyAnnotation($class, $property);
-        $annotations = $annotationCollection->getAnnotations();
-        dd($annotations);
+        /** @var Column $column */
+        $column = isset(self::$processingDb[$property]) ? self::$processingDb[$property] : null;
+        $annotationHandler = self::getAnnotationHandler();
+        $reflection = $annotationHandler->get($class);
+        $annotationCollection = $reflection->getPropertiesAnnotations();
+        if (!$column && empty($annotationCollection[$property])) {
+            return $rawAnnotation;
+        }
+
+        $annotations = $annotationCollection[$property]->getAnnotations();
+        if ($column) {
+            //Update Swagger Annotation by DB
+            foreach ($annotations as $key => $annotation) {
+                /** @var Annotation $annotation */
+                if ('SWG\Property' == $annotation->getName()) {
+                    $annotations[$key] = self::mergeColumnToSwaggerAnnotation($column, $annotation);
+                    break;
+                }
+            }
+        }
         return self::annotationsToString($annotations);
     }
 
+    private static function mergeColumnToSwaggerAnnotation(Column $column, Annotation $annotation)
+    {
+        $arguments = $annotation->getArguments();
+        $arguments = array_merge($arguments, [
+            'type' => self::$swaggerTypes[$column->getType()],
+            //If already has description, not overwrite
+            'description' => $arguments['description'] ?: $column->getComment()
+        ]);
+        $annotation->setArguments($arguments);
+        return $annotation;
+    }
+
+    /**
+     * @param array $annotations
+     * @return string
+     */
     public static function annotationsToString(array $annotations = [])
     {
         $docComment = '';
         if (!$annotations) {
-            return "/**\n*/\n";
+            return "\n/**\n*/\n";
         }
 
-        $docComment .= "/**\n";
+        $docComment .= "\n/**\n";
 
         foreach ($annotations as $key => $annotation) {
             /** @var Annotation $annotation */
-            $docComment .= " * @{$annotation->getName()}";
-
-            if ($annotation->numberArguments() > 0) {
-                $docComment .= '(';
-                $arguments = $annotation->getArguments();
-                $argumentsArray = [];
-                foreach ($arguments as $key => $value) {
-                    $argumentsArray[] = "$key=\"$value\"";
-                }
-                $docComment .= implode(',', $argumentsArray) . ")";
-            }
-            $docComment .= "\n";
+            $docComment .= (string)$annotation;
         }
 
-        $docComment .= "*/\n";
+        $docComment .= " */";
 
         return $docComment;
     }
 
+    /**
+     * Simple template engine
+     *
+     * @param $path
+     * @param array $vars
+     * @return string
+     */
     public function loadTemplate($path, array $vars = [])
     {
         ob_start();
@@ -449,7 +545,12 @@ class MakeEntity extends Command
         return $content;
     }
 
-
+    /**
+     * @param Adapter $db
+     * @param $tableName
+     * @return array
+     * @throws \Eva\EvaEngine\Exception\BadMethodCallException
+     */
     public function dbTableToEntity(Adapter $db, $tableName)
     {
         //Note: Phalcon use `DESCRIBE db.table` to get scheme
