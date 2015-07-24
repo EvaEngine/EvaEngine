@@ -17,7 +17,10 @@ use Eva\EvaEngine\Annotations\Annotation;
 use Eva\EvaEngine\Db\Column;
 use Phalcon\Db\Adapter;
 use Phalcon\Text;
+use PhpParser\BuilderFactory;
 use PhpParser\Lexer\Emulative;
+use PhpParser\Node\Stmt\Property;
+use PhpParser\NodeAbstract;
 use PhpParser\NodeDumper;
 use PhpParser\NodeTraverser;
 use PhpParser\Parser;
@@ -138,6 +141,10 @@ class MakeEntity extends Command
         Column::TYPE_JSON => 'json',
         Column::TYPE_JSONB => 'jsonb',
     ];
+
+    protected static $propertiesInCode = [];
+
+    protected static $propertiesInDb = [];
 
     public function setTemplate($template)
     {
@@ -343,6 +350,7 @@ class MakeEntity extends Command
             'target' => $target,
         ]);
 
+
         if (true === file_exists($target)) {
             return $this->update($input, $output, $module);
             /*
@@ -405,12 +413,17 @@ class MakeEntity extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param $module
+     * @return mixed
+     * @throws Exception\LogicException
      * @throws Exception\RuntimeException
      */
     protected function update(InputInterface $input, OutputInterface $output, $module)
     {
+        self::$propertiesInCode = [];
+        self::$propertiesInDb = [];
         $entity = self::$processingEntity;
         $name = $entity['name'];
+        $class = $entity['class'];
         $target = $entity['target'];
         $dbTable = $entity['dbTable'];
         $dbFullTable = $entity['dbFullTable'];
@@ -418,20 +431,41 @@ class MakeEntity extends Command
 
         require_once $target;
 
+        if (false === class_exists($class)) {
+            throw new Exception\LogicException(sprintf("Entity class %s not exist in file %s", $class, $target));
+        }
+
         if ($dbTable) {
             /** @var Adapter $db */
             $db = $this->getDbConnection();
-            self::$processingDb = $db = $this->dbTableToEntity($db, $dbFullTable);
+            self::$processingDb = $columns = $this->dbTableToEntity($db, $dbFullTable);
         }
 
         self::$processingModule = $module;
         try {
+            //Parse code prepare
             $parser = new Parser(new Emulative());
             $traverser = new NodeTraverser();
+            //Added callback
             $traverser->addVisitor(new AnnotationResolver());
-            $prettyPrinter = new Standard();
             $stmts = $parser->parse(file_get_contents($target));
+            //Refer: https://github.com/nikic/PHP-Parser/blob/1.x/doc/2_Usage_of_basic_components.markdown
             $stmts = $traverser->traverse($stmts);
+
+            $columnKeys = array_keys(self::$processingDb);
+            $properties = self::$propertiesInCode;
+            //Maybe DB added some columns
+            if ($diff = array_diff($columnKeys, $properties)) {
+                //Append new columns to entity
+                $stmts = $this->appendNewDbColomns($stmts, $diff);
+            }
+            //Maybe user defined some custom properties OR DB removed some columns
+            if ($diff = array_diff($properties, $columnKeys)) {
+                //Nothing to do for now
+            }
+
+            //Print out code
+            $prettyPrinter = new Standard();
             $code = $prettyPrinter->prettyPrintFile($stmts);
         } catch (\Exception $e) {
             return $output->writeln($e);
@@ -439,7 +473,67 @@ class MakeEntity extends Command
 
         $fs = new Filesystem();
         $fs->dumpFile($target, $code);
+        if ($diff) {
+            $output->writeln(sprintf(
+                "WARING: Found properties <error>%s</error> in Entity %s but not in DB.",
+                implode(",", $diff),
+                $name
+            ));
+        }
         $output->writeln(sprintf("<info>Entity %s updated as file %s</info>", $name, $target));
+    }
+
+    protected function appendNewDbColomns(array $stmts, $diff)
+    {
+        $columns = self::$processingDb;
+
+        //Stmts construct:
+        //- PhpParser\Node\Stmt\Namespace_
+        //---- PhpParser\Node\Stmt\Use_
+        //---- PhpParser\Node\Stmt\Use_
+        //---- PhpParser\Node\Stmt\Class_
+        //-------- PhpParser\Node\Stmt\Property
+        //-------- PhpParser\Node\Stmt\Property
+        //-------- PhpParser\Node\Stmt\ClassMethod
+        $classStmt = array_pop($stmts[0]->stmts);
+        $innerStmts = $classStmt->stmts;
+        $lastPropertyIndex = 0;
+        foreach ($innerStmts as $key => $stmt) {
+            if ($stmt instanceof PhpParser\Node\Stmt\Property) {
+                $lastPropertyIndex = $key;
+                break;
+            }
+        }
+
+        $factory = new BuilderFactory();
+        $swaggerTypes = self::$swaggerTypes;
+        $phalconTypes = self::$phalconTypes;
+        foreach ($diff as $columnName) {
+            if (empty($columns[$columnName])) {
+                continue;
+            }
+            /** @var Column $column */
+            $column = $columns[$columnName];
+            $swaggerType = $swaggerTypes[$column->getType()];
+            $phalconType = $phalconTypes[$column->getType()];
+            $propery = $factory->property($columnName)->setDocComment(<<<DOC
+
+/**
+ * @SWG\Property(
+ *   name="{$column->getName()}",
+ *   type="$swaggerType",
+ *   description="{$column->getComment()}"
+ * )
+ *
+ * @var $phalconType
+ */
+DOC
+            )->getNode();
+            $classStmt->stmts[] = $propery;
+        }
+
+        array_push($stmts[0]->stmts, $classStmt);
+        return $stmts;
     }
 
     /**
@@ -465,6 +559,11 @@ class MakeEntity extends Command
      */
     public static function annotationResolveCallback($property, $rawAnnotation)
     {
+        //Skip properties which not a DB column
+        if ('tableName' !== $property) {
+            self::$propertiesInCode[] = $property;
+        }
+
         $entity = self::$processingEntity;
         $class = $entity['class'];
         if (!$class) {

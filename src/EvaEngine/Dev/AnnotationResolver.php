@@ -16,14 +16,20 @@ class AnnotationResolver extends NodeVisitorAbstract
 {
     public function enterNode(Node $node)
     {
-        if ('Stmt_Property' === $node->getType() && ($annotation = $node->getDocComment())) {
-            $property = isset($node->props[0]->name) ? $node->props[0]->name : '';
-            if (!$property) {
-                return;
-            }
+        if ('Stmt_Property' !== $node->getType()) {
+            return;
+        }
 
-            $newAnnotation = MakeEntity::annotationResolveCallback($property, $annotation->getText());
-            $annotation->setText($newAnnotation);
+        $property = isset($node->props[0]->name) ? $node->props[0]->name : '';
+        if (!$property) {
+            return;
+        }
+
+        $annotation = $node->getDocComment();
+        $docComment = $annotation ? $annotation->getText() : '';
+        $docComment = MakeEntity::annotationResolveCallback($property, $docComment);
+        if ($annotation && $docComment) {
+            $annotation->setText($docComment);
         }
     }
 }
