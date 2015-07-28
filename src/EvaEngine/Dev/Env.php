@@ -86,8 +86,7 @@ class Env extends Command
         }
 
         if (!self::$env) {
-            //TODO:: ENV section is phalcon bug, waiting for fix
-            return self::$env = with(new Ini($path))->ENV;
+            return self::$env = new Ini($path);
         }
 
         return self::$env;

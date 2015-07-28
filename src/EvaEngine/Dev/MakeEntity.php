@@ -16,6 +16,7 @@ use Eva\EvaEngine\Annotations\Adapter\Memory as AnnotationHandler;
 use Eva\EvaEngine\Annotations\Annotation;
 use Eva\EvaEngine\Db\Column;
 use Phalcon\Db\Adapter;
+use Phalcon\Loader;
 use Phalcon\Text;
 use PhpParser\BuilderFactory;
 use PhpParser\Lexer\Emulative;
@@ -32,6 +33,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Process;
 
 /**
  * Class Make Entity
@@ -48,11 +50,6 @@ class MakeEntity extends Command
      * @var string
      */
     protected $name;
-
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
 
     /**
      * @var string
@@ -146,6 +143,19 @@ class MakeEntity extends Command
 
     protected static $propertiesInDb = [];
 
+    /**
+     * @var InputInterface
+     */
+    protected $input;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
+     * @param $template
+     */
     public function setTemplate($template)
     {
         $this->template = $template;
@@ -323,6 +333,9 @@ class MakeEntity extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->input = $input;
+        $this->output = $output;
+
         $name = $input->getArgument('name');
 
         if (false === file_exists($this->template)) {
@@ -352,7 +365,7 @@ class MakeEntity extends Command
 
 
         if (true === file_exists($target)) {
-            return $this->update($input, $output, $module);
+            return $this->update($module);
             /*
             $output->writeln(sprintf(
                 '<error>Target entity file %s already exists</error>',
@@ -362,21 +375,18 @@ class MakeEntity extends Command
             */
         }
 
-        return $this->create($input, $output, $module);
+        return $this->create($module);
 
     }
 
     /**
      * Create an entity
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @param $module
      * @throws Exception\RuntimeException
      */
-    protected function create(InputInterface $input, OutputInterface $output, $module)
+    protected function create($module)
     {
-
         $entity = self::$processingEntity;
         $name = $entity['name'];
         $target = $entity['target'];
@@ -404,32 +414,38 @@ class MakeEntity extends Command
         ]);
 
         $fs->dumpFile($target, $content);
-        $output->writeln(sprintf("<info>Entity %s created as file %s</info>", $name, $target));
+        $this->output->writeln(sprintf("<info>Entity %s created as file %s</info>", $name, $target));
     }
 
     /**
      * Update an entity
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @param $module
      * @return mixed
      * @throws Exception\LogicException
      * @throws Exception\RuntimeException
      */
-    protected function update(InputInterface $input, OutputInterface $output, $module)
+    protected function update($module)
     {
+        //TODO: import SWG if not
+
         self::$propertiesInCode = [];
         self::$propertiesInDb = [];
         $entity = self::$processingEntity;
         $name = $entity['name'];
+        $namespace = $entity['namespace'];
         $class = $entity['class'];
         $target = $entity['target'];
         $dbTable = $entity['dbTable'];
         $dbFullTable = $entity['dbFullTable'];
         self::$processingDb = null;
 
-        require_once $target;
+        //Register namespaces & path because entity may extends some base classes
+        $loader = new Loader();
+        $loader->registerNamespaces([
+            $namespace => dirname($target)
+        ]);
+        $loader->register();
 
         if (false === class_exists($class)) {
             throw new Exception\LogicException(sprintf("Entity class %s not exist in file %s", $class, $target));
@@ -468,19 +484,26 @@ class MakeEntity extends Command
             $prettyPrinter = new Standard();
             $code = $prettyPrinter->prettyPrintFile($stmts);
         } catch (\Exception $e) {
-            return $output->writeln($e);
+            return $this->output->writeln($e);
         }
 
         $fs = new Filesystem();
         $fs->dumpFile($target, $code);
         if ($diff) {
-            $output->writeln(sprintf(
+            $this->output->writeln(sprintf(
                 "WARING: Found properties <error>%s</error> in Entity %s but not in DB.",
                 implode(",", $diff),
                 $name
             ));
         }
-        $output->writeln(sprintf("<info>Entity %s updated as file %s</info>", $name, $target));
+        $this->output->writeln(sprintf("<info>Entity %s updated as file %s</info>", $name, $target));
+        $process = new Process("phpcbf $target --standard=PSR2");
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->output->writeln($process->getErrorOutput());
+        } else {
+            $this->output->writeln($process->getOutput());
+        }
     }
 
     protected function appendNewDbColomns(array $stmts, $diff)
@@ -599,7 +622,7 @@ DOC
                         [
                             'name' => 'name',
                             'expr' => [
-                                'type' => 303,
+                                'type' => 303, //Phalcon string type is 303
                                 'value' => $property,
                             ],
                         ],

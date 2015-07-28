@@ -11,18 +11,19 @@
   ],
   "require": {
     "php": ">=5.5",
-    "ext-phalcon": "~2.0",
+    "ext-phalcon": ">=2.0.6",
     "phalcon/incubator": "~2.0",
     "swiftmailer/swiftmailer": "~5.3",
     "knplabs/gaufrette": "~0.1",
-    "symfony/console": "2.7.*",
-    "symfony/filesystem": "2.7.*",
-    "symfony/finder": "2.7.*",
-    "nikic/php-parser": "1.4.0",
     "evaengine/eva-sms": "~0.1"
   },
   "require-dev": {
     "mockery/mockery": "dev-master",
+    "symfony/console": "2.7.*",
+    "symfony/filesystem": "2.7.*",
+    "symfony/finder": "2.7.*",
+    "symfony/process": "2.7.*",
+    "nikic/php-parser": "1.4.0",
     "satooshi/php-coveralls": "dev-master"
   },
   "bin": [
