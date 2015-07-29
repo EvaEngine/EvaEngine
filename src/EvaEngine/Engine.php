@@ -1038,7 +1038,7 @@ class Engine
         }
 
         $redis = new \Redis();
-        $redis->connect(
+        $redis->pconnect(
             $config->cache->fastCache->host,
             $config->cache->fastCache->port,
             $config->cache->fastCache->timeout
