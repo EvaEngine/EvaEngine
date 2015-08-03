@@ -190,6 +190,7 @@ class MakeEntity extends Command
     public function getModuleInfo()
     {
         $moduleName = Env::getVariable('module');
+        //TODO: need to support app entity
         $modulePath = getcwd() . '/modules/' . $moduleName;
         if (false == file_exists($modulePath)) {
             throw new Exception\IOException(sprintf("Path %s not exists", $modulePath));
@@ -366,13 +367,6 @@ class MakeEntity extends Command
 
         if (true === file_exists($target)) {
             return $this->update($module);
-            /*
-            $output->writeln(sprintf(
-                '<error>Target entity file %s already exists</error>',
-                $target
-            ));
-            return false;
-            */
         }
 
         return $this->create($module);
@@ -427,7 +421,6 @@ class MakeEntity extends Command
      */
     protected function update($module)
     {
-        //TODO: import SWG if not
 
         self::$propertiesInCode = [];
         self::$propertiesInDb = [];
@@ -475,6 +468,9 @@ class MakeEntity extends Command
                 //Append new columns to entity
                 $stmts = $this->appendNewDbColomns($stmts, $diff);
             }
+            //import SWG if not
+            $stmts = $this->importSwagger($stmts);
+
             //Maybe user defined some custom properties OR DB removed some columns
             if ($diff = array_diff($properties, $columnKeys)) {
                 //Nothing to do for now
@@ -506,6 +502,27 @@ class MakeEntity extends Command
         }
     }
 
+    protected function importSwagger(array $stmts)
+    {
+        $namespaces = $stmts[0]->stmts;
+        $imported = false;
+        foreach ($namespaces as $key => $stmt) {
+            /** @var \PhpParser\Node\Stmt\UseUse $stmt */
+            if ('Stmt_Use' === $stmt->getType() && ['Swagger', 'Annotations'] === $stmt->uses[0]->name->parts) {
+                $imported = true;
+            }
+        }
+
+        if (false === $imported) {
+            $factory = new BuilderFactory();
+            $node = $factory->use('Swagger\Annotations')->as('SWG')->getNode();
+            array_splice($namespaces, count($namespaces), 0, [$node]);
+            $stmts[0]->stmts = $namespaces;
+        }
+
+        return $stmts;
+    }
+
     protected function appendNewDbColomns(array $stmts, $diff)
     {
         $columns = self::$processingDb;
@@ -522,11 +539,12 @@ class MakeEntity extends Command
         $innerStmts = $classStmt->stmts;
         $lastPropertyIndex = 0;
         foreach ($innerStmts as $key => $stmt) {
-            if ($stmt instanceof PhpParser\Node\Stmt\Property) {
-                $lastPropertyIndex = $key;
+            $lastPropertyIndex = $key;
+            if (!($stmt instanceof \PhpParser\Node\Stmt\Property)) {
                 break;
             }
         }
+
 
         $factory = new BuilderFactory();
         $swaggerTypes = self::$swaggerTypes;
@@ -552,7 +570,8 @@ class MakeEntity extends Command
  */
 DOC
             )->getNode();
-            $classStmt->stmts[] = $propery;
+            //Insert new DB property before last entity property
+            array_splice($classStmt->stmts, $lastPropertyIndex - 1, 0, [$propery]);
         }
 
         array_push($stmts[0]->stmts, $classStmt);

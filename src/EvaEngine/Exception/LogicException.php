@@ -15,4 +15,8 @@ namespace Eva\EvaEngine\Exception;
  */
 class LogicException extends StandardException
 {
+    /**
+     * @var int
+     */
+    protected $statusCode = 400;
 }
