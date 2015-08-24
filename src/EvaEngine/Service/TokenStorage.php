@@ -52,6 +52,11 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      */
     const AUTH_HEADER_KEY = 'Authorization';
 
+    public static function discoverToken(RequestInterface $request)
+    {
+        return self::dicoverToken($request);
+    }
+
     /**
      * Find token from http request, token may be in http header or url query
      * If find both, use http header priority
