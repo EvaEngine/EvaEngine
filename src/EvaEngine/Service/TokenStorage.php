@@ -52,18 +52,13 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      */
     const AUTH_HEADER_KEY = 'Authorization';
 
-    public static function discoverToken(RequestInterface $request)
-    {
-        return self::dicoverToken($request);
-    }
-
     /**
      * Find token from http request, token may be in http header or url query
      * If find both, use http header priority
      * @param RequestInterface $request
      * @return string
      */
-    public static function dicoverToken(RequestInterface $request)
+    public static function discoverToken(RequestInterface $request)
     {
         if ($token = $request->getQuery(TokenStorage::AUTH_QUERY_KEY, 'string')) {
             return $token;
@@ -87,6 +82,15 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
             return isset($token[1]) ? $token[1] : '';
         }
         return '';
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function dicoverToken(RequestInterface $request)
+    {
+        trigger_error('Method dicoverToken has been deprecated', E_USER_DEPRECATED);
+        return self::discoverToken($request);
     }
 
     /**
