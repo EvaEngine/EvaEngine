@@ -107,10 +107,10 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
         }
 
         /**
- * @var RequestInterface $request
-*/
+         * @var RequestInterface $request
+         */
         $request = $this->getDI()->getRequest();
-        $token = TokenStorage::dicoverToken($request);
+        $token = TokenStorage::discoverToken($request);
         if ($token) {
             return $this->tokenId = $token;
         } else {
@@ -210,7 +210,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
     /**
      * @param string $key
-     * @param null   $defaultValue
+     * @param null $defaultValue
      * @return mixed
      */
     public function get($key, $defaultValue = null)
