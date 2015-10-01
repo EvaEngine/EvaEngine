@@ -288,15 +288,10 @@ class MakeEntity extends Command
 
         $this
             ->setName('make:entity')
-            ->setDescription('Create an entity')
+            ->setDescription('Create an Entity')
             ->addArgument(
                 'name',
                 InputArgument::REQUIRED,
-                'Entity name'
-            )
-            ->addArgument(
-                'name2',
-                InputArgument::OPTIONAL,
                 'Entity name'
             )
             ->addOption(

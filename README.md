@@ -39,14 +39,6 @@ Set env variables
 ./engine env --App=Wscn --Module=EvaBlog
 ```
 
-Default env file section is `ENV`, if get/set other sections, use `--section` option.
-
-```
-./engine env username --section=database
-./engine env --section=database --uername=root
-```
-
-
 ### Create a Module
 
 Create a standard module:
@@ -109,13 +101,27 @@ Template source load from App, then Engine
 Generate migration files for env module
 
 ```
-./engine migration:generate
+./engine make:migration
 ```
+
+Generate migration files for specific module
+
+```
+./engine make:migration --module=EvaBlog
+```
+
+Generate migration file for specific db table
+
+```
+./engine make:migration blog_posts --target=./tests --db-prefix=eva_
+```
+
+
 
 Traversal all modules and generate all migrations
 
 ```
-./engine migration:generate --all
+./engine make:migration --all
 ```
 ----
 

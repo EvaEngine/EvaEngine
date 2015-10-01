@@ -14,6 +14,9 @@ use PhpParser\NodeVisitorAbstract;
 
 class AnnotationResolver extends NodeVisitorAbstract
 {
+    /**
+     * @param Node $node
+     */
     public function enterNode(Node $node)
     {
         if ('Stmt_Property' !== $node->getType()) {
