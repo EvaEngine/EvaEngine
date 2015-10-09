@@ -10,6 +10,8 @@
 namespace Eva\EvaEngine\Http;
 
 use Eva\EvaEngine\Exception;
+use Eva\EvaEngine\Utils\PhpStream;
+use Phalcon\Http\Request;
 
 /**
  * Build a fake http request
@@ -86,7 +88,7 @@ class RequestFactory
 
         $request = new Request();
         if (is_string($body)) {
-            $request->setRawBody($body);
+            self::setRawBody($body);
             parse_str($body, $bodyArray);
 
             $contentType = empty($_SERVER['HTTP_CONTENT_TYPE']) ? '' : $_SERVER['HTTP_CONTENT_TYPE'];
@@ -98,10 +100,6 @@ class RequestFactory
                 $_POST = $bodyArray;
                 $_REQUEST = $bodyArray + $queryArray;
             }
-
-            if ($method === 'PUT' && $bodyArray) {
-                $request->setPutCache($bodyArray);
-            }
         }
 
         if (true === is_array($body)) {
@@ -110,15 +108,22 @@ class RequestFactory
                 $_SERVER['HTTP_CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
                 $_POST = $body;
                 $_REQUEST = $body + $queryArray;
-                $request->setRawBody(http_build_query($body));
+                self::setRawBody($body);
             }
 
             if ($method == 'PUT') {
-                $request->setPutCache($body);
-                $request->setRawBody(http_build_query($body));
+                self::setRawBody($body);
             }
         }
 
         return $request;
+    }
+
+    private static function setRawBody($body)
+    {
+        stream_wrapper_unregister('php');
+        stream_wrapper_register('php', PhpStream::class);
+        $body = is_array($body) ? http_build_query($body) : $body;
+        file_put_contents('php://input', $body);
     }
 }

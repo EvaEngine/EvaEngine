@@ -155,6 +155,8 @@ class MakeModule extends Command
         $moduleDir = $root . '/' . $moduleName;
         $moduleSrcDir = $moduleDir . '/src/' . $moduleName;
         $moduleSrcDirSource = $moduleDir . '/src/_module';
+        $moduleTestDir = $moduleDir . '/tests/' . $moduleName . 'Tests';
+        $moduleTestDirSource = $moduleDir . '/tests/_Tests';
         $templatesDir = $this->templatesDir;
 
         if (true === $fs->exists($moduleDir)) {
@@ -181,6 +183,13 @@ class MakeModule extends Command
             "Rename module dir from %s to %s",
             $moduleSrcDirSource,
             $moduleSrcDir
+        ));
+
+        $fs->rename($moduleTestDirSource, $moduleTestDir);
+        $this->output->writeln(sprintf(
+            "Rename module test dir from %s to %s",
+            $moduleTestDirSource,
+            $moduleTestDir
         ));
 
         $finder = new Finder();
