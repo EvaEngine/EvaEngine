@@ -125,6 +125,29 @@ Traversal all modules and generate all migrations
 ```
 ----
 
+## Start A New Project:
+
+```
+mkdir yinxing
+cd yinxing
+
+# init project
+composer require evaengine/evaengine:1.0.x-dev
+./vender/bin/engine make:project init
+
+# create module
+./vender/bin/engine make:module EvaMovie
+
+# set environment as created module, as well as db name/username/password/etc
+./vender/bin/engine env --module=EvaMovie --db_dbname=yinxing --db_username=root --db_password=password
+
+# create entity from DB
+./vender/bin/engine make:entity Movies --db-table=movie_movies
+
+# create app for REST API
+./vender/bin/engine make:app YinxingApiVer1 
+```
+
 ## Exception Design
 
 EvaEngine exceptions contains status code for http response. If an exception throw to top, EvaEngine will use `Error\ErrorHandler` to catch exception and set status code into response.
