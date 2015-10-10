@@ -1,0 +1,4 @@
+vendor/*
+.idea/*
+config/_*
+config/config.local.php

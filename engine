@@ -37,4 +37,5 @@ $application->add(new Dev\Env());
 $application->add(new Dev\MakeModule());
 $application->add(new Dev\MakeApp());
 $application->add(new Dev\MakeEntity());
+$application->add(new Dev\MakeProject());
 $application->run();

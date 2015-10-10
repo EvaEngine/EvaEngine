@@ -23,10 +23,7 @@ use Symfony\Component\Finder\Finder;
  */
 class MakeModule extends Command
 {
-    /**
-     * @var string
-     */
-    protected $templatesDir;
+    use TemplateSupportTrait;
 
     /**
      * @var string
@@ -48,15 +45,6 @@ class MakeModule extends Command
      */
     protected $output;
 
-    /**
-     * @param $templatesDir
-     * @return $this
-     */
-    public function setTemplatesDir($templatesDir)
-    {
-        $this->templatesDir = $templatesDir;
-        return $this;
-    }
 
     /**
      * CLI configure
@@ -107,22 +95,6 @@ class MakeModule extends Command
         if (true === $res) {
             $output->writeln(sprintf("<info>Created module %s in %s</info>", $this->name, $this->target));
         }
-    }
-
-    /**
-     * Load template and extract parameters
-     * @param string $path
-     * @param array $vars
-     * @return string
-     */
-    public function loadTemplate($path, array $vars = [])
-    {
-        ob_start();
-        extract($vars);
-        include $path;
-        $content = ob_get_clean();
-        $content = str_replace('\\<\\?', '<?', $content);
-        return $content;
     }
 
     /**
