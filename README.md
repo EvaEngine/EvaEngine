@@ -88,6 +88,10 @@ Generate entity under env Module
 
 ### Create Form
 
+### Add Module to An App
+
+### Merge all modules/apps composer.json
+
 ### Scaffold to create an CURD of admin
 
 Template source load from App, then Engine
@@ -133,7 +137,7 @@ cd yinxing
 
 # init project
 composer require evaengine/evaengine:1.0.x-dev
-./vender/bin/engine make:project init
+./vender/bin/engine make:project
 
 # create module
 ./vender/bin/engine make:module EvaMovie

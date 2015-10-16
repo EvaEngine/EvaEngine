@@ -10,6 +10,7 @@ namespace Eva\EvaEngine\Db;
 use Phalcon\Db\Adapter;
 use Phalcon\Db;
 use Phalcon\Text;
+use Eva\EvaEngine\Exception;
 
 /**
  * Class ColumnsFactory
