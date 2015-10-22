@@ -103,7 +103,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      * @param RequestInterface $request
      * @return string
      */
-    public static function dicoverToken(RequestInterface $request)
+    public static function discoverToken(RequestInterface $request)
     {
         if ($token = $request->getQuery(self::$authQueryKey, 'string')) {
             return $token;
@@ -339,5 +339,36 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
     public function __construct(array $options)
     {
         $this->setOptions($options);
+    }
+
+    /**
+     * Regenerate session's id
+     *
+     * @param bool $deleteOldSession
+     * @return SessionInterface
+     */
+    public function regenerateId($deleteOldSession = true)
+    {
+        // TODO: Implement regenerateId() method.
+    }
+
+    /**
+     * Set session name
+     *
+     * @param string $name
+     */
+    public function setName($name)
+    {
+        // TODO: Implement setName() method.
+    }
+
+    /**
+     * Get session name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        // TODO: Implement getName() method.
     }
 }
