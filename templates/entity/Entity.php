@@ -32,7 +32,7 @@ foreach ($columns as $key => $column) :
      *
      * @var <?=$phalconTypes[$column->getType()] . "\n";?>
      */
-    public $<?=$column->getName()?><?=$column->getDefault() ? " = '{$column->getDefault()}'" : ''?>;
+    public $<?=$column->getName()?><?=!is_null($column->getDefault()) ? (is_numeric($column->getDefault()) ?  " = {$column->getDefault()}" : " = '{$column->getDefault()}'"): ''?>;
 
 <?endforeach?>
 <?endif?>
