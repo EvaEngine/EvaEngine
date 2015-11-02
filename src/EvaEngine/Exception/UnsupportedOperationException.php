@@ -10,10 +10,13 @@
 namespace Eva\EvaEngine\Exception;
 
 /**
- * Operation Not Permited Exception
+ * Out Of Range Exception
  * @package Eva\EvaEngine\Exception
  */
-class OperationNotPermitedException extends LogicException
+class UnsupportedOperationException extends LogicException
 {
-    protected $statusCode = 403;
+    /**
+     * @var int
+     */
+    protected $statusCode = 405;
 }

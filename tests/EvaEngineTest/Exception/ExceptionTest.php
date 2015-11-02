@@ -26,17 +26,22 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
         }
 
         $total = count(array_unique($strArray));
-        $real =  count(array_unique($numberArray));
+        $real = count(array_unique($numberArray));
         p(sprintf("Total: %d, Real: %d, Conflict percent:%d", $total, $real, ($total - $real) / $total * 100));
     }
 
     public function testCode()
     {
+        if (PHP_INT_SIZE !== 8) {
+            $this->markTestSkipped(
+                'Exception code work only under 64bit system'
+            );
+        }
         $exception = new Exception\StandardException('test');
-        $this->assertEquals(139002846, $exception->getCode());
+        $this->assertEquals(139570000284678023, $exception->getCode());
 
         $exception = new Exception\LogicException('test');
-        $this->assertEquals(139003568, $exception->getCode());
+        $this->assertEquals(139570003568940973, $exception->getCode());
     }
 
     public function testStatusCode()
@@ -51,9 +56,14 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
 
     public function testCodeGroup()
     {
+        if (PHP_INT_SIZE !== 8) {
+            $this->markTestSkipped(
+                'Exception code work only under 64bit system'
+            );
+        }
         $exception = \Mockery::mock('Eva\EvaEngine\Exception\StandardException[getCode]', ['test']);
         $code = (string)$exception->getCode();
-        $this->assertEquals(9, strlen($code));
-        $this->assertEquals('00', $code[3] . $code[4]);
+        $this->assertEquals(18, strlen($code));
+        $this->assertEquals('000', $code[5] . $code[6] . $code[7]);
     }
 }
