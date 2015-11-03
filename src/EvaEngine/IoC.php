@@ -57,6 +57,19 @@ class IoC
     }
 
     /**
+     * @param $name
+     * @return bool
+     * @throws RuntimeException
+     */
+    public static function has($name)
+    {
+        if (self::$di == null) {
+            throw new RuntimeException('IoC container is null!');
+        }
+        return self::$di->has($name);
+    }
+
+    /**
      * Registers a service in the services container
      *
      * @param  string  $name
