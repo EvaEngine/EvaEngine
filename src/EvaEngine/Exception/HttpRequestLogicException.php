@@ -16,4 +16,14 @@ class HttpRequestLogicException extends LogicException implements HttpRequestExc
     protected $statusCode = 403;
 
     use HttpRequestExceptionTrait;
+
+    public function getIssueCode()
+    {
+        return '';
+    }
+
+    public function getIssueMessage()
+    {
+        return '';
+    }
 }

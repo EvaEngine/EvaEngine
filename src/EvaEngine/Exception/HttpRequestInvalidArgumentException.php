@@ -16,4 +16,14 @@ class HttpRequestInvalidArgumentException extends InvalidArgumentException imple
     protected $statusCode = 400;
 
     use HttpRequestExceptionTrait;
+
+    public function getIssueCode()
+    {
+        return '';
+    }
+
+    public function getIssueMessage()
+    {
+        return '';
+    }
 }
