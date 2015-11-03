@@ -8,6 +8,7 @@
  */
 namespace Eva\EvaEngine\Mvc;
 
+use Eva\EvaEngine\Exception\DatabaseWriteException;
 use Phalcon\Mvc\Model\Resultset\Simple as SimpleResultSet;
 use Eva\EvaEngine\Mvc\Model\Manager as ModelManager;
 use Phalcon\Mvc\Model as PhalconModel;
@@ -153,6 +154,22 @@ class Model extends PhalconModel
             call_user_func_array(array($this, $relationType), $relation['parameters']);
         }
         return $this;
+    }
+
+    /**
+     * A wrapper for Phalcon save method, a DatabaseWriteException will be thrown
+     * @return bool
+     * @throws DatabaseWriteException
+     */
+    public function eSave()
+    {
+        if (!$this->save()) {
+            throw new DatabaseWriteException(
+                sprintf('Save failed for class %s', get_class($this)),
+                $this->getMessages()
+            );
+        }
+        return true;
     }
 
     /**
