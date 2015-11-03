@@ -157,7 +157,25 @@ class Model extends PhalconModel
     }
 
     /**
-     * A wrapper for Phalcon save method, a DatabaseWriteException will be thrown
+     * A wrapper for Phalcon create method, a DatabaseWriteException will be thrown if create failed
+     * @param mixed $data
+     * @param mixed $whiteList
+     * @return bool
+     * @throws DatabaseWriteException
+     */
+    public function eCreate($data = null, $whiteList = null)
+    {
+        if (!$this->create($data, $whiteList)) {
+            throw new DatabaseWriteException(
+                sprintf('Create failed for class %s', get_class($this)),
+                $this->getMessages()
+            );
+        }
+        return true;
+    }
+
+    /**
+     * A wrapper for Phalcon save method, a DatabaseWriteException will be thrown if save failed
      * @return bool
      * @throws DatabaseWriteException
      */
@@ -166,6 +184,40 @@ class Model extends PhalconModel
         if (!$this->save()) {
             throw new DatabaseWriteException(
                 sprintf('Save failed for class %s', get_class($this)),
+                $this->getMessages()
+            );
+        }
+        return true;
+    }
+
+    /**
+     * A wrapper for Phalcon delete method, a DatabaseWriteException will be thrown if delete failed
+     * @return bool
+     * @throws DatabaseWriteException
+     */
+    public function eDelete()
+    {
+        if (!$this->delete()) {
+            throw new DatabaseWriteException(
+                sprintf('Delete failed for class %s', get_class($this)),
+                $this->getMessages()
+            );
+        }
+        return true;
+    }
+
+    /**
+     * A wrapper for Phalcon update method, a DatabaseWriteException will be thrown if update failed
+     * @param mixed $data
+     * @param mixed $whiteList
+     * @return bool
+     * @throws DatabaseWriteException
+     */
+    public function eUpdate($data = null, $whiteList = null)
+    {
+        if (!$this->update($data, $whiteList)) {
+            throw new DatabaseWriteException(
+                sprintf('Update failed for class %s', get_class($this)),
                 $this->getMessages()
             );
         }
