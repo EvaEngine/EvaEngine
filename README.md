@@ -171,6 +171,7 @@ Exceptions dependents are as below:
     - `BadMethodCallException` 405
     - `DomainException` 400
     - `InvalidArgumentException` 400
+      - `FormValidateException` 400
       - `HttpRequestInvalidArgumentException` implements HttpRequestExceptionInterface 400
     - `LengthException` 400
     - `OperationNotPermittedException` 403
