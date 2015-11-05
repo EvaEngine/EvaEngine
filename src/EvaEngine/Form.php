@@ -274,8 +274,9 @@ class Form extends \Phalcon\Forms\Form
         //callback
     }
 
-    public function isFullValid($data, $entity = null)
+    public function isFullValid($data = null, $entity = null)
     {
+        $data = $data ?: $this->values;
         $this->setRawPostData($data);
 
         if (!$this->formset) {
