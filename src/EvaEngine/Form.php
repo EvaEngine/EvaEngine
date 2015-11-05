@@ -38,7 +38,7 @@ class Form extends \Phalcon\Forms\Form
     /**
      * @var
      */
-    protected $values;
+    protected $values = [];
 
     /**
      * @var
