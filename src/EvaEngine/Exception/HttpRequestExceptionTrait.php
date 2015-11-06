@@ -112,20 +112,4 @@ trait HttpRequestExceptionTrait
     {
         return $this->handlerContext;
     }
-
-    public function __construct(
-        $message,
-        RequestInterface $request,
-        ResponseInterface $response = null,
-        array $handlerContext = [],
-        $code = null,
-        \Exception $previous = null,
-        $statusCode = null
-    ) {
-        $this->request = $request;
-        $this->response = $response;
-        $this->handlerContext = $handlerContext;
-
-        parent::__construct($message, $code, $previous, $statusCode);
-    }
 }
