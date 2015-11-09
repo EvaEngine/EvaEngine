@@ -157,6 +157,38 @@ class Model extends PhalconModel
     }
 
     /**
+     * @deprecated
+     */
+    public function create($data = null, $whiteList = null)
+    {
+        return parent::create($data, $whiteList);
+    }
+
+    /**
+     * @deprecated
+     */
+    public function save($data = null, $whiteList = null)
+    {
+        return parent::save($data, $whiteList);
+    }
+
+    /**
+     * @deprecated
+     */
+    public function delete()
+    {
+        return parent::delete();
+    }
+
+    /**
+     * @deprecated
+     */
+    public function update($data = null, $whiteList = null)
+    {
+        return parent::update($data, $whiteList);
+    }
+
+    /**
      * A wrapper for Phalcon create method, a DatabaseWriteException will be thrown if create failed
      * @param mixed $data
      * @param mixed $whiteList

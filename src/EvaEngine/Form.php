@@ -153,6 +153,16 @@ class Form extends \Phalcon\Forms\Form
         return $this;
     }
 
+    /**
+     * @deprecated need to fix under phalcon2
+     * @param string $name
+     * @return mixed
+     */
+    public function getValue($name)
+    {
+        return parent::getValue($name);
+    }
+
     public function getValues()
     {
         return $this->values;

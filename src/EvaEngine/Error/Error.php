@@ -16,6 +16,8 @@ use Eva\EvaEngine\Engine;
 
 /**
  * Defined system error construct
+ * @method exception
+ * @method isException
  * @package Eva\EvaEngine\Error
  */
 class Error
