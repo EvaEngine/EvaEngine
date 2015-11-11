@@ -19,7 +19,7 @@ use Phalcon\Mvc\Model\ValidatorInterface;
 class Uniqueness extends PhalconUniqueness implements ValidatorInterface
 {
     /**
-     * @param \Phalcon\Mvc\ModelInterface $model
+     * @param \Phalcon\Mvc\EntityInterface $model
      * @return bool
      */
     public function validate(PhalconEntityInterface $model)
