@@ -20,7 +20,7 @@
     "symfony/finder": "2.7.*",
     "symfony/process": "2.7.*",
     "nikic/php-parser": "1.4.*",
-    "evaengine/eva-sms": "~0.1"
+    "evaengine/eva-sms": "0.2.*"
   },
   "require-dev": {
     "phpunit/phpunit": "5.0.*",
