@@ -214,7 +214,6 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
             'mongo' => 'Phalcon\Cache\Backend\Mongo',
             'xcache' => 'Phalcon\Cache\Backend\Xcache',
             'redis' => 'Phalcon\Cache\Backend\Redis',
-            'wincache' => 'Phalcon\Cache\Backend\Wincache',
             'base64' => 'Phalcon\Cache\Frontend\Base64',
             'data' => 'Phalcon\Cache\Frontend\Data',
             'igbinary' => 'Phalcon\Cache\Frontend\Igbinary',

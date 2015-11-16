@@ -924,8 +924,8 @@ class Engine
             'memory' => 'Phalcon\Mvc\Model\MetaData\Memory',
             'xcache' => 'Phalcon\Mvc\Model\MetaData\Xcache',
             'memcache' => 'Phalcon\Mvc\Model\MetaData\Memcache',
+            'libmemcached' => 'Phalcon\Mvc\Model\MetaData\Libmemcached',
             'redis' => 'Phalcon\Mvc\Model\MetaData\Redis',
-            'wincache' => 'Phalcon\Mvc\Model\MetaData\Wincache',
         );
 
         $config = $this->getDI()->getConfig();
@@ -1069,7 +1069,6 @@ class Engine
             'mongo' => 'Phalcon\Cache\Backend\Mongo',
             'xcache' => 'Phalcon\Cache\Backend\Xcache',
             'redis' => 'Phalcon\Cache\Backend\Redis',
-            'wincache' => 'Phalcon\Cache\Backend\Wincache',
             'base64' => 'Phalcon\Cache\Frontend\Base64',
             'data' => 'Phalcon\Cache\Frontend\Data',
             'igbinary' => 'Phalcon\Cache\Frontend\Igbinary',
@@ -1172,12 +1171,9 @@ class Engine
     {
         $adapterMapping = array(
             'files' => 'Phalcon\Session\Adapter\Files',
-            'database' => 'Phalcon\Session\Adapter\Database',
             'memcache' => 'Phalcon\Session\Adapter\Memcache',
-            'libmemcached' => 'Eva\EvaEngine\Session\Adapter\Libmemcached',
-            'mongo' => 'Phalcon\Session\Adapter\Mongo',
+            'libmemcached' => 'Phalcon\Session\Adapter\Libmemcached',
             'redis' => 'Phalcon\Session\Adapter\Redis',
-            'handlersocket' => 'Phalcon\Session\Adapter\HandlerSocket',
         );
 
         $config = $this->getDI()->getConfig();
