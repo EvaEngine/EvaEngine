@@ -21,10 +21,11 @@
     "symfony/process": "2.7.*",
     "nikic/php-parser": "1.4.*",
     "zircote/swagger-php": "2.0.*",
+    "phpunit/phpunit": "5.0.*",
+    "phpunit/dbunit": "2.0.*",
     "evaengine/eva-sms": "0.2.*"
   },
   "require-dev": {
-    "phpunit/phpunit": "5.0.*",
     "mockery/mockery": "0.9.*",
     "satooshi/php-coveralls": "0.6.*"
   },

@@ -15,7 +15,7 @@ use Eva\EvaEngine\Engine;
  * Class TestCase
  * @package Eva\EvaEngine\Test
  */
-class TestCase extends \PHPUnit_Framework_TestCase
+trait EngineTestCaseTrait
 {
     /**
      * @var Engine
@@ -23,6 +23,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
     protected $engine;
 
     public function setUp()
+    {
+        $this->initEngine();
+    }
+
+    protected function initEngine()
     {
         $engine = new Engine(getenv('APPLICATION_ROOT'), getenv('APPLICATION_NAME'));
         $engine
