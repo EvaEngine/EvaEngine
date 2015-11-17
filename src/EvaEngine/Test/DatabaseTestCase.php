@@ -67,6 +67,10 @@ class DatabaseTestCase extends \PHPUnit_Extensions_Database_TestCase
         return $prefix . $tableName;
     }
 
+    public function assertTableRowCount($tableName, $expected, $message = '')
+    {
+        return parent::assertTableRowCount($this->getTableName($tableName), $expected, $message = '');
+    }
 
     /**
      * @param $table
@@ -80,6 +84,18 @@ class DatabaseTestCase extends \PHPUnit_Extensions_Database_TestCase
         $db->execute("SET FOREIGN_KEY_CHECKS = 0");
         $success = $db->execute("TRUNCATE TABLE `$table`");
         $db->execute("SET FOREIGN_KEY_CHECKS = 1");
+        return $success;
+    }
+
+    /**
+     * @param $file
+     * @return bool
+     */
+    protected function importSQL($file)
+    {
+        /* @var $db \Phalcon\Db\Adapter\Pdo\Mysql */
+        $db = $this->engine->getDI()->get('dbMaster');
+        $success = $db->execute(file_get_contents($file));
         return $success;
     }
 
