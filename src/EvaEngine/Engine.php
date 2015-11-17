@@ -94,7 +94,7 @@ class Engine
     /**
      * @var string
      */
-    protected $environment; //development | test | production
+    protected $environment; //dev | test | production
 
     /**
      * @var Debug
@@ -304,7 +304,7 @@ class Engine
         $moduleManager = $this->getDI()->getModuleManager();
 
         if ($this->getEnvironment() == 'production') {
-            $cachePrefix = $this->getAppName();
+            $cachePrefix = $this->getAppName() . '.' . $this->getEnvironment();
             $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.modules.php";
             $moduleManager->setCacheFile($cacheFile);
         }
@@ -335,7 +335,7 @@ class Engine
     public function attachModuleEvents()
     {
         $di = $this->getDI();
-        $cachePrefix = $this->getAppName();
+        $cachePrefix = $this->getAppName() . '.' . $this->getEnvironment();
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.events.php";
         $listeners = $this->readCache($cacheFile);
         $cacheLoaded = false;
@@ -825,7 +825,8 @@ class Engine
     public function diConfig()
     {
         $di = $this->getDI();
-        $cachePrefix = $this->getAppName();
+        $env = $this->getEnvironment();
+        $cachePrefix = $this->getAppName() . '.' . $env;
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.config.php";
         if ($cache = $this->readCache($cacheFile)) {
             return new Config($cache);
@@ -850,11 +851,17 @@ class Engine
         //merge config default
         $config->merge(new Config(include $this->getConfigPath() . "/config.default.php"));
 
-        //merge config local
-        if (false === file_exists($this->getConfigPath() . "/config.local.php")) {
-            return $config;
+        //merge env file
+        $mergeConfigFile = $this->getConfigPath() . "/config.$env.php";
+        if (true === file_exists($mergeConfigFile)) {
+            $config->merge(new Config(include $mergeConfigFile));
         }
-        $config->merge(new Config(include $this->getConfigPath() . "/config.local.php"));
+
+        //merge local file
+        $mergeConfigFile = $this->getConfigPath() . "/config.local.$env.php";
+        if (true === file_exists($mergeConfigFile)) {
+            $config->merge(new Config(include $mergeConfigFile));
+        }
 
         if (!$config->debug) {
             $this->writeCache($cacheFile, $config->toArray());
@@ -866,7 +873,7 @@ class Engine
     public function diRouter()
     {
         $di = $this->getDI();
-        $cachePrefix = $this->getAppName();
+        $cachePrefix = $this->getAppName() . '.' . $this->getEnvironment();
         $cacheFile = $this->getConfigPath() . "/_cache.$cachePrefix.router.php";
         if ($router = $this->readCache($cacheFile, true)) {
             return $router;
@@ -1294,6 +1301,7 @@ class Engine
      */
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)
     {
+        /*
         $this->getDI()->getEventsManager()->attach(
             'dispatch:beforeException',
             function ($event, $dispatcher, $exception) {
@@ -1301,6 +1309,7 @@ class Engine
                 throw $exception;
             }
         );
+        */
 
         if ($this->getDI()->getConfig()->debug && $this->appMode != 'cli') {
             return $this;
@@ -1385,7 +1394,10 @@ class Engine
         self::$appStartTime = microtime(true);
         $this->appRoot = $appRoot ? $appRoot : __DIR__;
         $this->appName = empty($_SERVER['APPLICATION_NAME']) ? $appName : $_SERVER['APPLICATION_NAME'];
-        $this->environment = empty($_SERVER['APPLICATION_ENV']) ? 'development' : $_SERVER['APPLICATION_ENV'];
+        $environment = empty($_SERVER['APPLICATION_ENV']) ? 'dev' : $_SERVER['APPLICATION_ENV'];
+        $environment = in_array($environment, array('dev', 'test', 'production'))
+            ? $environment : 'dev';
+        $this->environment = $environment;
 
         $appMode = strtolower($appMode);
         $this->appMode = in_array($appMode, array('web', 'cli')) ? $appMode : 'web';

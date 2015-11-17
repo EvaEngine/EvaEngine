@@ -1,4 +1,14 @@
-<phpunit bootstrap="./tests/Bootstrap.php" colors="true">
+<phpunit bootstrap="./tests/Bootstrap.php"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         verbose="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="true"
+         colors="true">
     <testsuites>
         <testsuite name="Test Suite">
             <directory>./tests</directory>
