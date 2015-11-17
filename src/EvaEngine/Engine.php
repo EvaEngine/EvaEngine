@@ -1394,7 +1394,9 @@ class Engine
         self::$appStartTime = microtime(true);
         $this->appRoot = $appRoot ? $appRoot : __DIR__;
         $this->appName = empty($_SERVER['APPLICATION_NAME']) ? $appName : $_SERVER['APPLICATION_NAME'];
-        $environment = empty($_SERVER['APPLICATION_ENV']) ? 'dev' : $_SERVER['APPLICATION_ENV'];
+        $environment = empty($_SERVER['APPLICATION_ENV']) ?
+            (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'dev') :
+            $_SERVER['APPLICATION_ENV'];
         $environment = in_array($environment, array('dev', 'test', 'production'))
             ? $environment : 'dev';
         $this->environment = $environment;
