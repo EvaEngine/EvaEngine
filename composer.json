@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "php": ">=5.5",
+    "php": ">=5.5.0",
     "ext-phalcon": ">=2.0.8",
     "psr/http-message": "~1.0",
     "swiftmailer/swiftmailer": "~5.4",
@@ -21,7 +21,7 @@
     "symfony/process": "2.7.*",
     "nikic/php-parser": "1.4.*",
     "zircote/swagger-php": "2.0.*",
-    "phpunit/phpunit": "5.0.*",
+    "phpunit/phpunit": "4.8.*",
     "phpunit/dbunit": "2.0.*",
     "evaengine/eva-sms": "0.2.*"
   },

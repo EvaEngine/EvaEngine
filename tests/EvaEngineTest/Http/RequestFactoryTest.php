@@ -29,6 +29,7 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testBuildPost()
     {
+        $this->markTestSkipped('Wait for phalcon fix bug #11012');
         $request = RequestFactory::build('POST', 'http://example.com/', [], [
             'key' => 'value',
             'post_key' => 'post_value'
