@@ -6,7 +6,7 @@ php:
 
 before_script:
   - git clone -b phalcon-v2.0.8 git://github.com/phalcon/cphalcon.git --depth=1 && cd cphalcon/build/ && ./install
-  - cd ../../../ && phpenv config-add ./tests/phalcon.ini
+  - cd ../../ && phpenv config-add ./tests/phalcon.ini
   - composer self-update
   - composer install --dev --prefer-source
   - pyrus install pear/PHP_CodeSniffer
