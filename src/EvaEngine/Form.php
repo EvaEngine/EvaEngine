@@ -411,6 +411,7 @@ class Form extends \Phalcon\Forms\Form
     {
         $element = $this->get($name);
         $element = $this->middleware ? $this->middleware->pipeElement($element) : $element;
+        $attributes = $attributes ? (array) $attributes : [];
 
         if (!$this->prefix) {
             return parent::render($element->getName(), array_merge($element->getAttributes(), $attributes));
