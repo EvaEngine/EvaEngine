@@ -9,6 +9,7 @@
 
 namespace Eva\EvaEngine;
 
+use Eva\EvaEngine\Forms\FormMiddleWareInterface;
 use Phalcon\Annotations\Collection as Property;
 use Phalcon\Mvc\Model as PhalconModel;
 use Phalcon\Annotations\Adapter\Memory as Annotations;
@@ -16,6 +17,7 @@ use Phalcon\Forms\ElementInterface;
 
 /**
  * Class Form
+ *
  * @package Eva\EvaEngine
  */
 class Form extends \Phalcon\Forms\Form
@@ -105,6 +107,24 @@ class Form extends \Phalcon\Forms\Form
         'stringlength' => 'Phalcon\Validation\Validator\StringLength',
     );
 
+    /**
+     * @var FormMiddlewareInterface
+     */
+    protected $middleware;
+
+
+    public function getMiddleware()
+    {
+        return $this->middleware;
+    }
+
+    public function setMiddleware(FormMiddleWareInterface $middleware)
+    {
+        $this->middleware = $middleware;
+
+        return $this;
+    }
+
     public function getRelationKey()
     {
         return $this->relationKey;
@@ -155,7 +175,9 @@ class Form extends \Phalcon\Forms\Form
 
     /**
      * @deprecated need to fix under phalcon2
+     *
      * @param string $name
+     *
      * @return mixed
      */
     public function getValue($name)
@@ -276,6 +298,7 @@ class Form extends \Phalcon\Forms\Form
             }
         }
         $this->afterSetModel();
+
         return $this;
     }
 
@@ -291,6 +314,7 @@ class Form extends \Phalcon\Forms\Form
 
         if (!$this->formset) {
             $entity = $entity ? $entity : $this->model;
+
             return $this->isValid($data, $entity);
         }
 
@@ -383,16 +407,20 @@ class Form extends \Phalcon\Forms\Form
         return $this->model;
     }
 
-    public function render($name, $attributes = null)
+    public function render($name, array $attributes = [])
     {
+        $element = $this->get($name);
+        $element = $this->middleware ? $this->middleware->pipeElement($element) : $element;
+
         if (!$this->prefix) {
-            return parent::render($name, $attributes);
+            return parent::render($element->getName(), array_merge($element->getAttributes(), $attributes));
         }
         $attributes = array_merge(
-            array(
-            'name' => $this->prefix . '[' . $this->get($name)->getName() . ']'
-            ),
-            (array)$attributes
+            $element->getAttributes(),
+            [
+                'name' => $this->prefix . '[' . $element->getName() . ']',
+            ],
+            $attributes
         );
 
         return parent::render($name, $attributes);
@@ -429,14 +457,14 @@ class Form extends \Phalcon\Forms\Form
         $relationKey =
             is_array($formOptions)
             && isset($formOptions['relationKey'])
-            ? $formOptions['relationKey']
-            : $prefix;
+                ? $formOptions['relationKey']
+                : $prefix;
         $formClass->setRelationKey($relationKey);
         $relationModel =
             is_array($formOptions)
             && isset($formOptions['relationModel'])
-            ? $formOptions['relationModel']
-            : null;
+                ? $formOptions['relationModel']
+                : null;
         if ($relationModel) {
             $formClass->setDefaultModelClass($relationModel);
         }
