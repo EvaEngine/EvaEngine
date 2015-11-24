@@ -12,11 +12,11 @@ namespace Eva\EvaEngine\Forms;
 use Phalcon\Forms\Element;
 
 /**
- * Interface FormMiddleWareInterface
+ * Interface FormMiddlewareInterface
  *
  * @package Eva\EvaEngine\Forms
  */
-interface FormMiddleWareInterface
+interface FormMiddlewareInterface
 {
     /**
      * @param Element $element
