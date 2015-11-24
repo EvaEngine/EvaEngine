@@ -407,7 +407,7 @@ class Form extends \Phalcon\Forms\Form
         return $this->model;
     }
 
-    public function render($name, array $attributes = [])
+    public function render($name, $attributes = null)
     {
         $element = $this->get($name);
         $element = $this->middleware ? $this->middleware->pipeElement($element) : $element;
