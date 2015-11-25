@@ -408,8 +408,7 @@ class ControllerBase extends Controller
         $this->response->setHeader('Access-Control-Allow-Headers', $allowHeaders);
         if (strtoupper($this->request->getMethod()) == 'OPTIONS') {
             $this->response->send();
-
-            return;
+            exit();
         }
     }
 
