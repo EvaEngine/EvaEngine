@@ -370,6 +370,7 @@ class ControllerBase extends Controller
         return $this->response->setJsonContent($object);
     }
 
+   
     /**
      * handler cross domain request
      *
@@ -379,7 +380,7 @@ class ControllerBase extends Controller
      */
     public function cors(
         $allowCredentials = 'true',
-        $allowMethods = '*',
+        $allowMethods = 'GET, POST, PUT, DELETE, OPTIONS',
         $allowHeaders = null
     ) {
         if (empty($_SERVER['HTTP_ORIGIN'])) {
@@ -407,8 +408,7 @@ class ControllerBase extends Controller
         $this->response->setHeader('Access-Control-Allow-Headers', $allowHeaders);
         if (strtoupper($this->request->getMethod()) == 'OPTIONS') {
             $this->response->send();
-
-            return;
+            exit();
         }
     }
 
