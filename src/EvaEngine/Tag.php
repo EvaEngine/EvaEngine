@@ -158,7 +158,7 @@ class Tag extends \Phalcon\Tag
         }
 
 
-        if (Text::startsWith($uri, 'http://', false) || Text::startsWith($uri, 'https://', false)) {
+        if (Text::startsWith($uri, 'http://', true) || Text::startsWith($uri, 'https://', true)) {
             return $uri;
         }
 
