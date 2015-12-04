@@ -400,7 +400,7 @@ class ControllerBase extends Controller
             }
         }
         if (!$checked) {
-            return;
+            exit();
         }
         $this->response->setHeader('Access-Control-Allow-Credentials', (string)$allowCredentials);
         $this->response->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
