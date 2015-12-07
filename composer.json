@@ -20,7 +20,6 @@
     "symfony/finder": "2.7.*",
     "symfony/process": "2.7.*",
     "nikic/php-parser": "1.4.*",
-    "zircote/swagger-php": "2.0.*",
     "phpunit/phpunit": "4.8.*",
     "phpunit/dbunit": "2.0.*",
     "evaengine/eva-sms": "0.2.*"
