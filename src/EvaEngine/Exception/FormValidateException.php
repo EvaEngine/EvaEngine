@@ -32,6 +32,11 @@ class FormValidateException extends InvalidArgumentException
         return $output;
     }
 
+    public function __toString()
+    {
+        return implode('|', $this->getFormMessages()) . '|' . parent::__toString();
+    }
+
     public function __construct(
         Form $form,
         $message = null,

@@ -116,6 +116,7 @@ class Engine
 
     /**
      * @param $environment
+     *
      * @return $this
      */
     public function setEnvironment($environment)
@@ -127,6 +128,7 @@ class Engine
 
     /**
      * @param $appRoot
+     *
      * @return $this
      */
     public function setAppRoot($appRoot)
@@ -146,6 +148,7 @@ class Engine
 
     /**
      * @param $name
+     *
      * @return $this
      */
     public function setAppName($name)
@@ -165,6 +168,7 @@ class Engine
 
     /**
      * @param $path
+     *
      * @return $this
      */
     public function setConfigPath($path)
@@ -189,6 +193,7 @@ class Engine
 
     /**
      * @param $modulesPath
+     *
      * @return $this
      */
     public function setModulesPath($modulesPath)
@@ -213,8 +218,9 @@ class Engine
 
     /**
      *
-     * @param $cacheFile cache file path
+     * @param      $cacheFile cache file path
      * @param bool $serialize
+     *
      * @return mixed|null
      */
     public function readCache($cacheFile, $serialize = false)
@@ -227,9 +233,10 @@ class Engine
     }
 
     /**
-     * @param $cacheFile
-     * @param $content
+     * @param      $cacheFile
+     * @param      $content
      * @param bool $serialize
+     *
      * @return bool
      */
     public function writeCache($cacheFile, $content, $serialize = false)
@@ -297,6 +304,7 @@ class Engine
      * - module:afterLoadModule
      *
      * @param  array $moduleSettings
+     *
      * @return $this
      */
     public function loadModules(array $moduleSettings)
@@ -364,7 +372,11 @@ class Engine
                 continue;
             }
             foreach ($moduleListeners as $eventType => $listener) {
-                $eventsManager->attach($eventType, new $listener);
+                if ($this->appMode == 'cli' && $eventType == 'console') {
+                    $eventsManager->attach($eventType, new $listener);
+                } elseif ($this->appMode == 'web' && $eventType !== 'console') {
+                    $eventsManager->attach($eventType, new $listener);
+                }
             }
         }
 
@@ -417,6 +429,7 @@ class Engine
 
     /**
      * @param DiInterface $di
+     *
      * @return $this
      */
     public function setDI(DiInterface $di)
@@ -469,11 +482,13 @@ class Engine
                 $eventsManager = new EventsManager();
                 $eventsManager->enablePriorities(true);
                 // dispatch caching event handler
-                $eventsManager->attach(
-                    "dispatch",
-                    new DispatchInterceptor(),
-                    -1
-                );
+                if ($this->appMode == 'web') {
+                    $eventsManager->attach(
+                        "dispatch",
+                        new DispatchInterceptor(),
+                        -1
+                    );
+                }
                 $eventsManager->enablePriorities(true);
 
                 return $eventsManager;
@@ -794,6 +809,7 @@ class Engine
             function () use ($di, $argv) {
                 $dispatcher = new CLIDispatcher();
                 $dispatcher->setDI($di);
+                $dispatcher->setEventsManager($di->getEventsManager());
 
                 $moduleName = array_shift($argv);
                 $taskName = array_shift($argv);
@@ -811,6 +827,8 @@ class Engine
                     } else {
                         $dispatcher->setNamespaceName("Eva\\{$moduleName}\\Tasks");
                     }
+                    //Phalcon CLI will repeat require module file
+                    //$dispatcher->setModuleName($moduleName);
                 } else {
                     $dispatcher->setTaskName('Main');
                     $dispatcher->setParams($argv);
@@ -1238,7 +1256,7 @@ class Engine
         if (false === file_exists($file)) {
             //empty translator
             return new \Phalcon\Translate\Adapter\NativeArray([
-                'content' => []
+                'content' => [],
             ]);
         }
         $translate = new \Phalcon\Translate\Adapter\Csv([
@@ -1262,6 +1280,7 @@ class Engine
 
     /**
      * Application Bootstrap, init DI, register Modules, init events, init ErrorHandler
+     *
      * @return $this
      */
     public function bootstrap()
@@ -1277,6 +1296,7 @@ class Engine
         $this->attachModuleEvents();
         //Error Handler must run before router start
         if ($this->appMode == 'cli') {
+            $this->getApplication()->addModules($this->getDI()->getModuleManager()->getModules());
             $this->initErrorHandler(new Error\CLIErrorHandler());
         } else {
             $this->initErrorHandler(new Error\ErrorHandler);
@@ -1296,7 +1316,9 @@ class Engine
 
     /**
      * Register default error handler
+     *
      * @param Error\ErrorHandlerInterface $errorHandler
+     *
      * @return $this
      */
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)

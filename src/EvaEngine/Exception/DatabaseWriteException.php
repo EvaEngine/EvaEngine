@@ -23,6 +23,11 @@ class DatabaseWriteException extends IOException implements DatabaseExceptionInt
         return $this->dbErrorMessages;
     }
 
+    public function __toString()
+    {
+        return implode('|', $this->getDbErrorMessages()) . '|' . parent::__toString();
+    }
+
     public function __construct($message, array $errorMessages = [], $code = null, $previous = null, $statusCode = null)
     {
         $this->dbErrorMessages = $errorMessages;

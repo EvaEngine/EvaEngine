@@ -30,6 +30,17 @@ class StandardException extends PhalconException implements ExceptionInterface
         return $this->statusCode;
     }
 
+    /**
+     * Convert a class name into an unique int code number
+     * Code number length is 19 digits, such as 139570000284678023
+     * Details: 13957 (group number: 9 digits) 000 (split number: fixed 000) 0284678023 (unique class number 10 digits)
+     * Class with same namespace will get same group number
+     * Note: this method will return 9 digits number under 32bits system
+     *
+     * @param $className
+     *
+     * @return string
+     */
     public static function classNameToCode($className)
     {
         if (PHP_INT_SIZE !== 8) {
@@ -54,7 +65,7 @@ class StandardException extends PhalconException implements ExceptionInterface
      *
      * @param string $message
      * @param int $code
-     * @param null|int|Exception $previous ,  when $previous is int,will use as status code
+     * @param null|int|\Exception $previous ,  when $previous is int,will use as status code
      * @param null $statusCode
      */
     public function __construct($message, $code = null, $previous = null, $statusCode = null)
