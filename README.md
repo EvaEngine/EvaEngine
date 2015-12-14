@@ -39,6 +39,20 @@ Set env variables
 ./engine env --App=Wscn --Module=EvaBlog
 ```
 
+### Exception Tool
+
+List all exception code:
+
+```
+./engine exc
+```
+
+Search exception code:
+
+```
+./engine exc 116430001083568710
+```
+
 ### Create a Module
 
 Create a standard module:
