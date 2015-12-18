@@ -116,7 +116,6 @@ class Engine
 
     /**
      * @param $environment
-     *
      * @return $this
      */
     public function setEnvironment($environment)
@@ -128,7 +127,6 @@ class Engine
 
     /**
      * @param $appRoot
-     *
      * @return $this
      */
     public function setAppRoot($appRoot)
@@ -148,7 +146,6 @@ class Engine
 
     /**
      * @param $name
-     *
      * @return $this
      */
     public function setAppName($name)
@@ -168,7 +165,6 @@ class Engine
 
     /**
      * @param $path
-     *
      * @return $this
      */
     public function setConfigPath($path)
@@ -193,7 +189,6 @@ class Engine
 
     /**
      * @param $modulesPath
-     *
      * @return $this
      */
     public function setModulesPath($modulesPath)
@@ -218,9 +213,8 @@ class Engine
 
     /**
      *
-     * @param      $cacheFile cache file path
-     * @param bool $serialize
-     *
+     * @param $cacheFile cache file path
+     * @param bool                      $serialize
      * @return mixed|null
      */
     public function readCache($cacheFile, $serialize = false)
@@ -233,10 +227,9 @@ class Engine
     }
 
     /**
-     * @param      $cacheFile
-     * @param      $content
-     * @param bool $serialize
-     *
+     * @param $cacheFile
+     * @param $content
+     * @param bool      $serialize
      * @return bool
      */
     public function writeCache($cacheFile, $content, $serialize = false)
@@ -304,7 +297,6 @@ class Engine
      * - module:afterLoadModule
      *
      * @param  array $moduleSettings
-     *
      * @return $this
      */
     public function loadModules(array $moduleSettings)
@@ -425,7 +417,6 @@ class Engine
 
     /**
      * @param DiInterface $di
-     *
      * @return $this
      */
     public function setDI(DiInterface $di)
@@ -699,11 +690,7 @@ class Engine
                 $url = new UrlResolver();
                 $url->setVersionFile($config->staticBaseUriVersionFile);
                 $url->setBaseUri($config->baseUri);
-                $url->setStaticBaseUri(
-                    !empty($_COOKIE['staticBaseUri'])
-                        ? $_COOKIE['staticBaseUri']
-                        : $config->staticBaseUri
-                );
+                $url->setStaticBaseUri($config->staticBaseUri);
 
                 return $url;
             },
@@ -1224,7 +1211,7 @@ class Engine
         return new TokenStorage(
             array_merge(
                 array(
-                    'uniqueId' => $this->getAppName(),
+                'uniqueId' => $this->getAppName(),
                 ),
                 $config->tokenStorage->toArray()
             )
@@ -1239,14 +1226,14 @@ class Engine
             //empty translator
             return new \Phalcon\Translate\Adapter\NativeArray(
                 array(
-                    'content' => array()
+                'content' => array()
                 )
             );
         }
         $translate = new \Phalcon\Translate\Adapter\Csv(
             array(
-                'file' => $file,
-                'delimiter' => ',',
+            'file' => $file,
+            'delimiter' => ',',
             )
         );
 
@@ -1266,7 +1253,6 @@ class Engine
 
     /**
      * Application Bootstrap, init DI, register Modules, init events, init ErrorHandler
-     *
      * @return $this
      */
     public function bootstrap()
@@ -1301,9 +1287,7 @@ class Engine
 
     /**
      * Register default error handler
-     *
      * @param Error\ErrorHandlerInterface $errorHandler
-     *
      * @return $this
      */
     public function initErrorHandler(Error\ErrorHandlerInterface $errorHandler)
