@@ -1012,22 +1012,22 @@ class Engine
 
     public function diGlobalCache()
     {
-        return $this->diCache('globalCache', $this->getAppName() . '_global_');
+        return $this->diCache('globalCache', '_global_');
     }
 
     public function diViewCache()
     {
-        return $this->diCache('viewCache', $this->getAppName() . '_view_');
+        return $this->diCache('viewCache', '_view_');
     }
 
     public function diModelsCache()
     {
-        return $this->diCache('modelsCache', $this->getAppName() . '_models_');
+        return $this->diCache('modelsCache', '_models_');
     }
 
     public function diApiCache()
     {
-        return $this->diCache('apiCache', $this->getAppName() . '_api_');
+        return $this->diCache('apiCache', '_api_');
     }
 
     public function diFastCache()
