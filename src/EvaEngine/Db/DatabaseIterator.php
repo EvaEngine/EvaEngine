@@ -15,6 +15,7 @@ class DatabaseIterator implements \Iterator, \Countable
     const UNLIMITED = -1;
 
     protected $offset = 0;
+    protected $count = -1;
     protected $max = self::UNLIMITED;
     protected $condition = [];
     protected $entity;
@@ -89,6 +90,7 @@ class DatabaseIterator implements \Iterator, \Countable
     public function rewind()
     {
         $this->offset = 0;
+        $this->count = -1;
     }
 
     /**
@@ -103,6 +105,6 @@ class DatabaseIterator implements \Iterator, \Countable
      */
     public function count()
     {
-        return $this->entity->count($this->condition);
+        return $this->count < 0 ? $this->count = $this->entity->count($this->condition) : $this->count;
     }
 }
