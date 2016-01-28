@@ -134,8 +134,6 @@ Generate migration file for specific db table
 ./engine make:migration blog_posts --target=./tests --db-prefix=eva_
 ```
 
-
-
 Traversal all modules and generate all migrations
 
 ```
@@ -151,31 +149,30 @@ cd yinxing
 
 # init project
 composer require evaengine/evaengine:1.0.x-dev
-./vender/bin/engine make:project
+./vendor/bin/engine make:project
 
 # create module
-./vender/bin/engine make:module EvaMovie
+./vendor/bin/engine make:module EvaMovie
 
 # set environment as created module, as well as db name/username/password/etc
-./vender/bin/engine env --module=EvaMovie --db_dbname=yinxing --db_username=root --db_password=password
+./vendor/bin/engine env --module=EvaMovie --db_dbname=yinxing --db_username=root --db_password=password
 
 # create entity from DB
-./vender/bin/engine make:entity Movies --db-table=movie_movies
+./vendor/bin/engine make:entity Movies --db-table=movie_movies
 
 # create app for REST API
-./vender/bin/engine make:app YinxingApiVer1 
+./vendor/bin/engine make:app YinxingApiVer1 
 ```
 
-## Exception Design
+## Exceptions Design
 
-EvaEngine exceptions contains status code for http response. If an exception throw to top, EvaEngine will use `Error\ErrorHandler` to catch exception and set status code into response.
+EvaEngine exceptions contain status code for http response. If an exception throw to top, EvaEngine will use `Error\ErrorHandler` to catch exception and set status code into response.
 
 Interfaces:
 
-- ExceptionInterface
-- HttpRequestExceptionInterface  Exception keeps http request / response when calling remote resource failed
-- DatabaseExceptionInterface  Exception keeps database error messages
-- LoggableExceptionInterface  Exception should save to log
+- `ExceptionInterface`
+- `HttpRequestExceptionInterface` Exception will keep http request / response when calling remote resource failed
+- `DatabaseExceptionInterface` Exception will keep database error messages
 
 Exceptions dependents are as below:
 
@@ -186,7 +183,7 @@ Exceptions dependents are as below:
     - `DomainException` 400
     - `InvalidArgumentException` 400
       - `FormValidateException` 400
-      - `HttpRequestInvalidArgumentException` implements HttpRequestExceptionInterface 400
+      - `HttpRequestInvalidArgumentException` implements `HttpRequestExceptionInterface` 400
     - `LengthException` 400
     - `OperationNotPermittedException` 403
     - `ResourceConflictException` 409
@@ -195,8 +192,8 @@ Exceptions dependents are as below:
     - `UnauthorizedException` 401
     - `VerifyFailedException` 403
     - `UnsupportedOperationException` 405
-    - `HttpRequestLogicException` implements HttpRequestExceptionInterface 403
+    - `HttpRequestLogicException` implements `HttpRequestExceptionInterface` 403
   - `RuntimeException` 500
     - `IOException`
-      - `HttpRequestIOException` implements HttpRequestExceptionInterface
-      - `DatabaseWriteException` implements DatabaseExceptionInterface 
+      - `HttpRequestIOException` implements `HttpRequestExceptionInterface`
+      - `DatabaseWriteException` implements `DatabaseExceptionInterface` 
