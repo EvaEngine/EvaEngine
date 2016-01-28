@@ -9,12 +9,11 @@ before_script:
   - cd ../../ && phpenv config-add ./tests/phalcon.ini
   - composer self-update
   - composer install --dev --prefer-source
-  - pyrus install pear/PHP_CodeSniffer
   - phpenv rehash
 
 script:
   phpunit -v &
-  phpcs --standard=PSR2 --extensions=php --ignore=vendor/*,tests/*,cphalcon/* --warning-severity=0 ./
+  ./vendor/bin/phpcs --standard=PSR2 --extensions=php --warning-severity=0 ./src
 
 after_script:
   - ./vendor/bin/coveralls -v
