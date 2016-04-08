@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine\Service;
 
 use Eva\EvaEngine\Exception;
+use Eva\EvaEngine\IoC;
 use Phalcon\Session\AdapterInterface as SessionInterface;
 use Phalcon\DI\InjectionAwareInterface;
 use Phalcon\Http\RequestInterface;
@@ -81,6 +82,14 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
             $token = explode(' ', $token);
             return isset($token[1]) ? $token[1] : '';
         }
+
+        //For cookie
+        $cookies = IoC::get('cookies');
+        if ($cookies->has('api_key')) {
+            $token = $cookies->get('api_key')->getValue();
+            return $token;
+        }
+
         return '';
     }
 
