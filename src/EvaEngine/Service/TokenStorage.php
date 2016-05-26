@@ -59,7 +59,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
      * @param RequestInterface $request
      * @return string
      */
-    public static function discoverToken(RequestInterface $request)
+    public static function discoverToken(RequestInterface $request, $useCookie = true)
     {
         if ($token = $request->getQuery(TokenStorage::AUTH_QUERY_KEY, 'string')) {
             return $token;
@@ -85,7 +85,7 @@ class TokenStorage implements SessionInterface, InjectionAwareInterface
 
         //For cookie
         $cookies = IoC::get('cookies');
-        if ($cookies->has('api_key')) {
+        if ($cookies->has('api_key') && $useCookie) {
             $token = $cookies->get('api_key')->getValue();
             return $token;
         }
