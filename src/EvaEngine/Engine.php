@@ -680,6 +680,14 @@ class Engine
             },
             true
         );
+
+        $di->set(
+            'smsIntlSender',
+            function () use ($self) {
+                return $self->diSmsIntlSender();
+            },
+            true
+        );
         /**********************************
          * DI initialize for helpers
          ***********************************/
@@ -1116,6 +1124,28 @@ class Engine
         $config = $this->getDI()->getConfig();
         $adapterMapping = array(
             'submail' => 'Eva\EvaSms\Providers\Submail',
+        );
+        $adapterKey = $config->smsSender->provider;
+        $adapterKey = false === strpos($adapterKey, '\\') ? strtolower($adapterKey) : $adapterKey;
+        $adapterClass = empty($adapterMapping[$adapterKey]) ? $adapterKey : $adapterMapping[$adapterKey];
+        if (false === class_exists($adapterClass)) {
+            throw new Exception\RuntimeException(sprintf('No sms provider found by %s', $adapterClass));
+        }
+
+        $sender = new Sender();
+        $sender->setProvider(new $adapterClass($config->smsSender->appid, $config->smsSender->appkey));
+        if ($config->smsSender->timeout) {
+            $sender::setDefaultTimeout($config->smsSender->timeout);
+        }
+
+        return $sender;
+    }
+
+    public function diSmsIntlSender()
+    {
+        $config = $this->getDI()->getConfig();
+        $adapterMapping = array(
+            'submailIntl' => 'Eva\EvaSms\Providers\SubmailIntlAdapter',
         );
         $adapterKey = $config->smsSender->provider;
         $adapterKey = false === strpos($adapterKey, '\\') ? strtolower($adapterKey) : $adapterKey;
