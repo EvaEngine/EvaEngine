@@ -676,7 +676,7 @@ class Engine
         $di->set(
             'smsSender',
             function () use ($self) {
-                return $self->diSmsSender();
+                return $self->diSmsSenderGeneric();
             },
             true
         );
@@ -1130,6 +1130,20 @@ class Engine
             $sender::setDefaultTimeout($config->smsSender->timeout);
         }
 
+        return $sender;
+    }
+
+    public function diSmsSenderGeneric()
+    {
+        $config = $this->getDI()->getConfig();
+        /*$adapterMapping = array(
+            'submail' => 'Eva\EvaSms\Providers\Submail',
+            'submailIntl' => 'Eva\EvaSms\Providers\SubmailIntlAdapter',
+        );*/
+        $sender = new Sender();
+        if ($config->smsSender->timeout) {
+            $sender::setDefaultTimeout($config->smsSender->timeout);
+        }
         return $sender;
     }
 
