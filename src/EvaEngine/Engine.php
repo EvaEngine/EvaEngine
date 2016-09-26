@@ -680,6 +680,14 @@ class Engine
             },
             true
         );
+
+        $di->set(
+            'smsIntlSender',
+            function () use ($self) {
+                return $self->diSmsIntlSender();
+            },
+            true
+        );
         /**********************************
          * DI initialize for helpers
          ***********************************/
@@ -1144,8 +1152,8 @@ class Engine
         if ($config->smsSender->timeout) {
             $sender::setDefaultTimeout($config->smsSender->timeout);
         }
-        return $sender;
-    }
+	return $sender;
+    } 
 
     public function diMailer()
     {
