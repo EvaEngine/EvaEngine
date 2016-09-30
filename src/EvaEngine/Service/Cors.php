@@ -10,6 +10,7 @@
 namespace Eva\EvaEngine\Service;
 
 
+use Eva\EvaEngine\Exception\OriginNotAllowedException;
 use Phalcon\DI\InjectionAwareInterface;
 
 class Cors implements InjectionAwareInterface
@@ -46,9 +47,10 @@ class Cors implements InjectionAwareInterface
 
     public function simpleRequests()
     {
-        if ($this->ifHttpOriginIsInTheWhiteList()) {
-            $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+        if (! $this->ifHttpOriginIsInTheWhiteList()) {
+            throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
     }
 
     public function preflightedRequests(
@@ -58,15 +60,16 @@ class Cors implements InjectionAwareInterface
         . 'Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With, Content-Type'
     )
     {
-        if ($this->ifHttpOriginIsInTheWhiteList()) {
-            $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Credentials', (string)$allowCredentials);
-            $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
-            $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Methods', $allowMethods);
-            $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Headers', $allowHeaders);
-            if (strtoupper($this->getDI()->getRequest()->getMethod()) == 'OPTIONS') {
-                $this->getDI()->getResponse()->send();
-                exit();
-            }
+        if (! $this->ifHttpOriginIsInTheWhiteList()) {
+            throw new OriginNotAllowedException('Http Origin Is Not Allowed');
+        }
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Credentials', (string)$allowCredentials);
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Methods', $allowMethods);
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Headers', $allowHeaders);
+        if (strtoupper($this->getDI()->getRequest()->getMethod()) == 'OPTIONS') {
+            $this->getDI()->getResponse()->send();
+            exit();
         }
     }
 
