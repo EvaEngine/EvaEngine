@@ -63,8 +63,8 @@ class Cors implements InjectionAwareInterface
             $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
             $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Methods', $allowMethods);
             $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Headers', $allowHeaders);
-            if (strtoupper($this->request->getMethod()) == 'OPTIONS') {
-                $this->response->send();
+            if (strtoupper($this->getDI()->getRequest()->getMethod()) == 'OPTIONS') {
+                $this->getDI()->getResponse()->send();
                 exit();
             }
         }
