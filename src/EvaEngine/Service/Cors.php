@@ -47,6 +47,10 @@ class Cors implements InjectionAwareInterface
 
     public function simpleRequests()
     {
+        // TODO: Host == Origin
+        if (empty($_SERVER['HTTP_ORIGIN'])) {
+            return;
+        }
         if (! $this->ifHttpOriginIsInTheWhiteList()) {
             throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
@@ -60,6 +64,9 @@ class Cors implements InjectionAwareInterface
         . 'Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With, Content-Type'
     )
     {
+        if (empty($_SERVER['HTTP_ORIGIN'])) {
+            return;
+        }
         if (! $this->ifHttpOriginIsInTheWhiteList()) {
             throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
