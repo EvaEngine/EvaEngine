@@ -223,6 +223,7 @@ class Dispatch
                 'ignore_query_keys' => '_',
                 'jsonp_callback_key' => 'callback',
                 'format' => 'text', //allow text | jsonp
+                'cors_enabled' => false,
             ),
             $interceptorParams
         );
@@ -238,6 +239,8 @@ class Dispatch
         $ignoreQueryKeys = $interceptorParams['ignore_query_keys'] ?
             explode('|', $interceptorParams['ignore_query_keys']) : array();
         $interceptorParams['ignore_query_keys'] = $ignoreQueryKeys;
+
+        $interceptorParams['cors_enabled'] = (bool)$interceptorParams['cors_enabled'];
 
         return $interceptorParams;
     }
@@ -281,6 +284,11 @@ class Dispatch
 
         //cache key matched, response already prepared
         if (true === $interceptResult) {
+
+            if (true === $params['cors_enabled']) {     //$params
+                $di->getCors()->preflightedRequests();
+            }
+
             $di->getResponse()->send();
 
             return false;
