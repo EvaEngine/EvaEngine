@@ -1,12 +1,10 @@
 <?php
 /**
- * Wscn
+ * EvaEngine (http://evaengine.com/)
+ * A development engine based on Phalcon Framework.
  *
- * @link: https://github.com/wallstreetcn/wallstreetcn
- * @author: franktung<franktung@gmail.com>
- * @Date: 16/9/30
- * @Time: 下午4:59
- *
+ * @copyright Copyright (c) 2014-2015 EvaEngine Team (https://github.com/EvaEngine/EvaEngine)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Eva\EvaEngine\Exception;
