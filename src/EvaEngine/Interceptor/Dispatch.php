@@ -286,7 +286,7 @@ class Dispatch
         if (true === $interceptResult) {
 
             if (true === $params['cors_enabled']) {     //$params
-                $di->getCors()->preflightedRequests();
+                $di->getCors()->preflightRequests();
             }
 
             $di->getResponse()->send();
