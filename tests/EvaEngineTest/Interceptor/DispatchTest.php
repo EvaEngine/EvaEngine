@@ -2,6 +2,7 @@
 namespace Eva\EvaEngine\EvaEngineTest\Interceptor;
 
 use Eva\EvaEngine\Interceptor\Dispatch as DispatchInterceptor;
+use Eva\EvaEngine\Service\Cors;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Http\Request;
 use Phalcon\Http\Response;
@@ -62,10 +63,19 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
 
         $eventsManager = new Manager();
 
+        $cors = new Cors(
+            array(
+                array(
+                    'domain' => 'bar.com'
+                )
+            )
+        );
+
         $di->set('request', $request, true);
         $di->set('response', $response, true);
         $di->set('dispatcher', $dispatcher, true);
         $di->set('eventsManager', $eventsManager);
+        $di->set('cors', $cors);
         $this->di = $di;
 
         $application = new Application();
@@ -103,6 +113,7 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
             'ignore_query_keys' => array('_'),
             'jsonp_callback_key' => 'callback',
             'format' => 'text',
+            'cors_enabled' => false
             )
         );
 
@@ -110,9 +121,10 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
         $dispatcher = new Dispatcher();
         $dispatcher->setParams(
             array(
-            '_dispatch_cache' => 'lifetime=100&methods=get|post&ignore_query_keys=api_key|_&jsonp_callback_key=callback&format=jsonp'
+            '_dispatch_cache' => 'lifetime=100&methods=get|post&ignore_query_keys=api_key|_&jsonp_callback_key=callback&format=jsonp&cors_enabled=true'
             )
         );
+
         $this->assertEquals(
             $interceptor->getInterceptorParams($dispatcher),
             array(
@@ -121,6 +133,7 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
             'ignore_query_keys' => array('api_key', '_'),
             'jsonp_callback_key' => 'callback',
             'format' => 'jsonp',
+            'cors_enabled' => true
             )
         );
     }
@@ -369,5 +382,37 @@ class DispatchTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertEquals(false, $interceptor->injectInterceptor($dispatcher));
         $this->assertEquals('testcallback({"foo":"bar"})', $this->di->getResponse()->getContent());
+    }
+
+    public function testTextCacheHitWithCorsEnabled()
+    {
+        $this->di->getViewCache()->save('d6bd338ec8eb8666f3d054566f335039_h', '{"foo":"header"}');
+        $this->di->getViewCache()->save('d6bd338ec8eb8666f3d054566f335039_b', 'bar');
+
+        $_SERVER['HTTP_ORIGIN'] = 'https://api.bar.com';
+
+        $interceptor = new DispatchInterceptor();
+        /**
+         * @var Dispatcher $dispatcher
+         */
+        $dispatcher = $this->di->getDispatcher();
+        $dispatcher->setParams(
+            array(
+                '_dispatch_cache' => 'lifetime=100&cors_enabled=true'
+            )
+        );
+
+        /*
+         * Cors enabled when function injectInterceptor was called.
+         * So before calling function injectInterceptor, there will be no Access-Control-Allow-Origin header.
+         */
+        $this->assertEquals(false, $this->di->getResponse()->getHeaders()->get('Access-Control-Allow-Origin'));
+
+        $this->assertEquals(false, $interceptor->injectInterceptor($dispatcher));
+        $this->assertEquals('bar', $this->di->getResponse()->getContent());
+
+        $this->assertEquals($_SERVER['HTTP_ORIGIN'], $this->di->getResponse()->getHeaders()->get('Access-Control-Allow-Origin'));
+
+
     }
 }

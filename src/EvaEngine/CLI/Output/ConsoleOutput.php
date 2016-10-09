@@ -155,7 +155,6 @@ class ConsoleOutput extends StreamOutput implements ConsoleOutputInterface
             $this->writeln($v);
         }
         $this->writeln("");
-
     }
 
     private function getSpace($length)

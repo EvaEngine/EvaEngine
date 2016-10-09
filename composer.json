@@ -18,7 +18,8 @@
     "evaengine/eva-sms": "0.1.*"
   },
   "require-dev": {
-    "satooshi/php-coveralls": "dev-master"
+    "satooshi/php-coveralls": "1.x",
+    "phpunit/phpunit": "4.8.*"
   },
   "suggest": {
     "ext-redis": "*",

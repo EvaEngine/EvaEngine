@@ -43,7 +43,6 @@ class CLIErrorHandler implements ErrorHandlerInterface
         $output->writeln("");
         $output->writelnWarning(' [WARNING]: '. $errstr.' in file '. $errfile .' at line '.$errline);
         $output->writeln("");
-
     }
 
     /**
@@ -55,7 +54,6 @@ class CLIErrorHandler implements ErrorHandlerInterface
         $output = new ConsoleOutput();
         $output->writelnError($e->getMessage());
         $output->writelnComment($e->getTraceAsString());
-
     }
 
     /**
@@ -146,7 +144,5 @@ class CLIErrorHandler implements ErrorHandlerInterface
         if (!$useErrorController) {
             return;
         }
-
-
     }
 }

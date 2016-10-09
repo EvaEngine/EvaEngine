@@ -279,7 +279,6 @@ class ControllerBase extends Controller
             $exception->getTraceAsString()
         );
         */
-
     }
 
     /**

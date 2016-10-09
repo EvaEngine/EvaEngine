@@ -27,7 +27,6 @@ class MainTask extends TaskBase
         $this->output->writelnError("------------------------------");
         var_dump(func_get_args());
         $this->output->writelnError("------------------------------");
-
     }
 
     public function helpAction($params)

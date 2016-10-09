@@ -38,7 +38,6 @@ class SendCloudMailer
      */
     public function setPort($port)
     {
-
     }
 
     public function setUsername($username)

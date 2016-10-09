@@ -138,7 +138,7 @@ class Dispatch
             $bodyCache = $cache->get($bodyKey);
             $headersCache = $cache->get($headersKey);
             $hasCache = $headersCache && $bodyCache;
-        }else{
+        } else {
             // 要求刷新缓存时：先删了已有缓存，避免不正常退出时（如资源被移除）缓存未被刷新的情况。
             $cache->delete($headersKey);
         }
@@ -226,6 +226,7 @@ class Dispatch
                 'ignore_query_keys' => '_',
                 'jsonp_callback_key' => 'callback',
                 'format' => 'text', //allow text | jsonp
+                'cors_enabled' => false,
             ),
             $interceptorParams
         );
@@ -241,6 +242,8 @@ class Dispatch
         $ignoreQueryKeys = $interceptorParams['ignore_query_keys'] ?
             explode('|', $interceptorParams['ignore_query_keys']) : array();
         $interceptorParams['ignore_query_keys'] = $ignoreQueryKeys;
+
+        $interceptorParams['cors_enabled'] = (bool)$interceptorParams['cors_enabled'];
 
         return $interceptorParams;
     }
@@ -284,6 +287,10 @@ class Dispatch
 
         //cache key matched, response already prepared
         if (true === $interceptResult) {
+            if (true === $params['cors_enabled']) {     //$params
+                $di->getCors()->preflightRequests();
+            }
+
             $di->getResponse()->send();
 
             return false;

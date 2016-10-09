@@ -130,7 +130,6 @@ class Model extends PhalconModel
                 } else {
                     $data[$key] = null;
                 }
-
             } elseif (is_string($subdata)) {
                 $data[$key] = $this->$subdata();
             }
