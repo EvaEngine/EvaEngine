@@ -138,6 +138,9 @@ class Dispatch
             $bodyCache = $cache->get($bodyKey);
             $headersCache = $cache->get($headersKey);
             $hasCache = $headersCache && $bodyCache;
+        }else{
+            // 要求刷新缓存时：先删了已有缓存，避免不正常退出时（如资源被移除）缓存未被刷新的情况。
+            $cache->delete($headersKey);
         }
 
         if ($hasCache) {
