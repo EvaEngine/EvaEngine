@@ -10,8 +10,8 @@ before_script:
   - cd ../../../ && phpenv config-add ./tests/phalcon.ini
   - composer self-update
   - composer install --dev --prefer-source
-  - pear config-set php_bin /usr/bin/php
-  - pear install --alldeps php_codesniffer
+  - composer global require "squizlabs/php_codesniffer=*"
+  - export PATH=~/.composer/vendor/bin/:$PATH
   - phpenv rehash
 
 script:
