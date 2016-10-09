@@ -10,7 +10,9 @@ before_script:
   - cd ../../../ && phpenv config-add ./tests/phalcon.ini
   - composer self-update
   - composer install --dev --prefer-source
-  - pear install pear/PHP_CodeSniffer
+  - wget http://pear2.php.net/pyrus.phar
+  - php pyrus.phar
+  - pyrus install pear/PHP_CodeSniffer
   - phpenv rehash
 
 script:
