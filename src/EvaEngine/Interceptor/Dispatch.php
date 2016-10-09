@@ -138,7 +138,7 @@ class Dispatch
             $bodyCache = $cache->get($bodyKey);
             $headersCache = $cache->get($headersKey);
             $hasCache = $headersCache && $bodyCache;
-        }
+        } 
 
         if ($hasCache) {
             /**
