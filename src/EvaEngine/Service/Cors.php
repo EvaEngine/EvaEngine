@@ -46,13 +46,13 @@ class Cors implements InjectionAwareInterface
 
     public function simpleRequests()
     {
-        if (empty($_SERVER['HTTP_ORIGIN'])) {
+        if (empty($this->getDI()->getRequest()->getHeader('HTTP_ORIGIN'))) {
             return;
         }
-        if ($this->ifOriginIsSameAsHost()) {
+        if ($this->isOriginIsSameAsHost()) {
             return;
         }
-        if (! $this->ifHttpOriginIsInTheWhiteList()) {
+        if (! $this->isHttpOriginIsInTheWhiteList()) {
             throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
         $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
@@ -63,14 +63,14 @@ class Cors implements InjectionAwareInterface
         $allowMethods = 'GET, POST, PUT, DELETE, OPTIONS',
         $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
     ) {
-        if (empty($_SERVER['HTTP_ORIGIN'])) {
+        if (empty($this->getDI()->getRequest()->getHeader('HTTP_ORIGIN'))) {
             return;
         }
-        if ($this->ifOriginIsSameAsHost()) {
+        if ($this->isOriginIsSameAsHost()) {
             return;
         }
 
-        if (! $this->ifHttpOriginIsInTheWhiteList()) {
+        if (! $this->isHttpOriginIsInTheWhiteList()) {
             throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
         $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Credentials', (string)$allowCredentials);
@@ -83,7 +83,7 @@ class Cors implements InjectionAwareInterface
         }
     }
 
-    protected function ifHttpOriginIsInTheWhiteList()
+    protected function isHttpOriginIsInTheWhiteList()
     {
         $checked = false;
         foreach ($this->config as $domain) {
@@ -96,7 +96,7 @@ class Cors implements InjectionAwareInterface
         return $checked;
     }
 
-    public function ifOriginIsSameAsHost()
+    public function isOriginIsSameAsHost()
     {
         $originDomainArray = explode('.', parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
         $hostDomainArray = explode('.', $_SERVER['HTTP_HOST']);
