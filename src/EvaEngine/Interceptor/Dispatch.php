@@ -284,7 +284,6 @@ class Dispatch
 
         //cache key matched, response already prepared
         if (true === $interceptResult) {
-
             if (true === $params['cors_enabled']) {     //$params
                 $di->getCors()->preflightRequests();
             }

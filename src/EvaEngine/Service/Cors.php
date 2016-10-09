@@ -9,7 +9,6 @@
 
 namespace Eva\EvaEngine\Service;
 
-
 use Eva\EvaEngine\Exception\OriginNotAllowedException;
 use Phalcon\DI\InjectionAwareInterface;
 
@@ -63,8 +62,7 @@ class Cors implements InjectionAwareInterface
         $allowCredentials = 'true',
         $allowMethods = 'GET, POST, PUT, DELETE, OPTIONS',
         $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
-    )
-    {
+    ) {
         if (empty($_SERVER['HTTP_ORIGIN'])) {
             return;
         }
@@ -107,6 +105,4 @@ class Cors implements InjectionAwareInterface
         }
         return false;
     }
-
-
 }

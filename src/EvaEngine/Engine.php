@@ -1264,7 +1264,6 @@ class Engine
     {
         $config = $this->getDI()->getConfig()->cors;
         return new Cors($config->toArray());
-
     }
 
 

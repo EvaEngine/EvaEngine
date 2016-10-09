@@ -9,7 +9,10 @@
 
 namespace Eva\EvaEngine\Exception;
 
-
+/**
+ * Cors Origin Not Allowed Exception
+ * @package Eva\EvaEngine\Exception
+ */
 class OriginNotAllowedException extends StandardException
 {
     /**
