@@ -46,7 +46,8 @@ class Cors implements InjectionAwareInterface
 
     public function simpleRequests()
     {
-        if (empty($this->getDI()->getRequest()->getHeader('HTTP_ORIGIN'))) {
+        $httpOrigin = $this->getDI()->getRequest()->getHeader('HTTP_ORIGIN');
+        if (empty($httpOrigin)) {
             return;
         }
         if ($this->isOriginIsSameAsHost()) {
@@ -55,7 +56,7 @@ class Cors implements InjectionAwareInterface
         if (! $this->isHttpOriginIsInTheWhiteList()) {
             throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
-        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $httpOrigin);
     }
 
     public function preflightRequests(
@@ -63,7 +64,8 @@ class Cors implements InjectionAwareInterface
         $allowMethods = 'GET, POST, PUT, DELETE, OPTIONS',
         $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
     ) {
-        if (empty($this->getDI()->getRequest()->getHeader('HTTP_ORIGIN'))) {
+        $httpOrigin = $this->getDI()->getRequest()->getHeader('HTTP_ORIGIN');
+        if (empty($httpOrigin)) {
             return;
         }
         if ($this->isOriginIsSameAsHost()) {
@@ -74,7 +76,7 @@ class Cors implements InjectionAwareInterface
             throw new OriginNotAllowedException('Http Origin Is Not Allowed');
         }
         $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Credentials', (string)$allowCredentials);
-        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+        $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Origin', $httpOrigin);
         $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Methods', $allowMethods);
         $this->getDI()->getResponse()->setHeader('Access-Control-Allow-Headers', $allowHeaders);
         if (strtoupper($this->getDI()->getRequest()->getMethod()) == 'OPTIONS') {
@@ -87,7 +89,7 @@ class Cors implements InjectionAwareInterface
     {
         $checked = false;
         foreach ($this->config as $domain) {
-            $originDomainArray = explode('.', parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
+            $originDomainArray = explode('.', parse_url($this->getDI()->getRequest()->getHeader('HTTP_ORIGIN'), PHP_URL_HOST));
             $allowedDomainArray = explode('.', $domain['domain']);
             if (! (count($allowedDomainArray) > count($originDomainArray)) && ! array_diff($allowedDomainArray, $originDomainArray)) {
                 $checked = true;
@@ -98,8 +100,8 @@ class Cors implements InjectionAwareInterface
 
     public function isOriginIsSameAsHost()
     {
-        $originDomainArray = explode('.', parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
-        $hostDomainArray = explode('.', $_SERVER['HTTP_HOST']);
+        $originDomainArray = explode('.', parse_url($this->getDI()->getRequest()->getHeader('HTTP_ORIGIN'), PHP_URL_HOST));
+        $hostDomainArray = explode('.', $this->getDI()->getRequest()->getHeader('HTTP_HOST'));
         if (! (count($hostDomainArray) > count($originDomainArray)) && ! array_diff($hostDomainArray, $originDomainArray)) {
             return true;
         }
