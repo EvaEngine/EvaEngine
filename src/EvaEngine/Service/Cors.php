@@ -62,8 +62,7 @@ class Cors implements InjectionAwareInterface
     public function preflightRequests(
         $allowCredentials = 'true',
         $allowMethods = 'GET, POST, PUT, DELETE, OPTIONS',
-        $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma,'
-        . 'Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
+        $allowHeaders = 'Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With'
     )
     {
         if (empty($_SERVER['HTTP_ORIGIN'])) {
